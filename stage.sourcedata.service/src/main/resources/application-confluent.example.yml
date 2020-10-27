@@ -1,0 +1,22 @@
+micronaut:
+  application.name: stg-sourcedata
+
+kafka:
+  bootstrap:
+    servers: pkc-lq8v7.eu-central-1.aws.confluent.cloud:9092
+  
+  security:
+    protocol: SASL_SSL
+  
+  ssl:
+    endpoint:
+      identification:
+        algorithm: https
+  
+  sasl:
+    jaas:
+      config: org.apache.kafka.common.security.plain.PlainLoginModule   required username="{{ CLUSTER_API_KEY }}"   password="{{ CLUSTER_API_SECRET }}";
+    mechanism: PLAIN
+
+  replication.factor: {{ REPLICATION_FACTOR }}
+    
