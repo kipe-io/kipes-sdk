@@ -5,10 +5,13 @@ import java.time.Duration;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.JoinWindows;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.kstream.StreamJoined;
+import org.apache.kafka.streams.kstream.Transformer;
+import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
@@ -66,14 +69,22 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 		final Duration windowSize = Duration.ofSeconds(0);
 		final boolean retainDuplicates = true; // topology creation will fail on false 
 
-		// create processor store
-		final String storeName = getProcessorStoreTopicName(topicName);
+		// create transformer store
+		final String transformerStoreName = getProcessorStoreTopicName(topicName+"-transformer");
 		@SuppressWarnings("rawtypes")
-		StoreBuilder<KeyValueStore<String,IncrementalAggregate>> keyValueStoreBuilder =
-				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(storeName),
+		StoreBuilder<KeyValueStore<String,IncrementalAggregate>> transformerStoreBuilder =
+				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(transformerStoreName),
 						jsonSerdeRegistry.getSerde(String.class),
 						jsonSerdeRegistry.getSerde(IncrementalAggregate.class));
-		builder.addStateStore(keyValueStoreBuilder);
+		builder.addStateStore(transformerStoreBuilder);
+
+		// create dedup store
+		final String dedupStoreName = getProcessorStoreTopicName(topicName+"-dedup");
+		StoreBuilder<KeyValueStore<SymbolTimestampKey,ImpulseData>> dedupStoreBuilder =
+				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(dedupStoreName),
+						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class),
+						jsonSerdeRegistry.getSerde(ImpulseData.class));
+		builder.addStateStore(dedupStoreBuilder);
 
 		// create topology
 		emaStream
@@ -107,7 +118,31 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 				.withOtherValueSerde(jsonSerdeRegistry.getSerde(MACDHistogramData.class)))
 		
 		// calculate the impulse data
-		.transform(() -> new IncrementalImpulseTransformer(storeName), storeName)
+		.transform(() -> new IncrementalImpulseTransformer(transformerStoreName), transformerStoreName)
+		// deduplicate per SymbolTimestampKey
+		.transform(() -> new Transformer<SymbolTimestampKey, ImpulseData, KeyValue<SymbolTimestampKey, ImpulseData>>() {
+
+			private KeyValueStore<SymbolTimestampKey, ImpulseData> state;
+			
+			@SuppressWarnings("unchecked")
+			public void init(ProcessorContext context) {
+				this.state = (KeyValueStore<SymbolTimestampKey, ImpulseData>)context.getStateStore(dedupStoreName);
+			}
+
+			@Override
+			public KeyValue<SymbolTimestampKey, ImpulseData> transform(SymbolTimestampKey key, ImpulseData value) {
+				ImpulseData lastImpulseData = this.state.get(key);
+				this.state.put(key, value);
+				
+				return value.equals(lastImpulseData)? null : new KeyValue<>(key, value);
+			}
+
+			@Override
+			public void close() {
+				// nothing to do
+			}
+			
+		}, dedupStoreName)
 		.to(topicName, Produced.with(
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
 				jsonSerdeRegistry.getSerde(ImpulseData.class)));
