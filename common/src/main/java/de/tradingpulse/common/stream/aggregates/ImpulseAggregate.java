@@ -30,8 +30,8 @@ public class ImpulseAggregate implements DeepCloneable<ImpulseAggregate>{
 		
 		clone.impulseData = ImpulseData.builder()
 				.key(keyClone)
-				.lastDirection(impulseData.getLastDirection())
-				.direction(impulseData.getDirection())
+				.lastTradingDirection(impulseData.getLastTradingDirection())
+				.tradingDirection(impulseData.getTradingDirection())
 				.build();
 		
 		return clone;
@@ -39,7 +39,7 @@ public class ImpulseAggregate implements DeepCloneable<ImpulseAggregate>{
 	
 	public ImpulseData aggregate(DoubleData emaData, MACDHistogramData macdHistogramData) {
 		
-		TradingDirection direction = null;
+		TradingDirection tradingDirection = null;
 		
 		if(emaData == null || macdHistogramData == null || emaData.getVChange() == null || macdHistogramData.getHChange() == null) {
 			this.impulseData = null;
@@ -48,18 +48,18 @@ public class ImpulseAggregate implements DeepCloneable<ImpulseAggregate>{
 		
 		if(emaData.getVChange() > 0 && macdHistogramData.getHChange() > 0) {
 			// if both indicators raise then it's a long
-			direction = TradingDirection.LONG;
+			tradingDirection = TradingDirection.LONG;
 			
 		} else if(emaData.getVChange() < 0 && macdHistogramData.getHChange() < 0) {
 			// if both indicators fall then it's a short
-			direction = TradingDirection.SHORT;
+			tradingDirection = TradingDirection.SHORT;
 		} else {
-			direction = TradingDirection.NEUTRAL;
+			tradingDirection = TradingDirection.NEUTRAL;
 		}
 		
 		this.impulseData = ImpulseData.builder()
-				.direction(direction)
-				.lastDirection(this.impulseData == null? null : this.impulseData.getDirection())
+				.tradingDirection(tradingDirection)
+				.lastTradingDirection(this.impulseData == null? null : this.impulseData.getTradingDirection())
 				.build();
 		
 		return this.impulseData;

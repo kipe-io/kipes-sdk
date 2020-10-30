@@ -39,6 +39,8 @@
 		<module>stage.indicators.service</module>
 		<module>stage.systems</module>
 		<module>stage.systems.service</module>
+		<module>stage.tradingscreens</module>
+		<module>stage.tradingscreens.service</module>
 	</modules>
 
 	<dependencyManagement>

@@ -27,23 +27,23 @@ class ImpulseAggregateTest {
 	
 	@Test
 	void test_aggregate__calculates_correctly_long() {
-		assertEquals(LONG, new ImpulseAggregate().aggregate(emaData(1.0), macdData(1.0)).getDirection());
+		assertEquals(LONG, new ImpulseAggregate().aggregate(emaData(1.0), macdData(1.0)).getTradingDirection());
 	}
 
 	@Test
 	void test_aggregate__calculates_correctly_short() {
-		assertEquals(SHORT, new ImpulseAggregate().aggregate(emaData(-1.0), macdData(-1.0)).getDirection());
+		assertEquals(SHORT, new ImpulseAggregate().aggregate(emaData(-1.0), macdData(-1.0)).getTradingDirection());
 	}
 
 	@Test
 	void test_aggregate__calculates_correctly_neutral() {
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 0.0), macdData( 0.0)).getDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 0.0), macdData(-1.0)).getDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 0.0), macdData( 1.0)).getDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData(-1.0), macdData( 0.0)).getDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 1.0), macdData( 0.0)).getDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData(-1.0), macdData( 1.0)).getDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 1.0), macdData(-1.0)).getDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 0.0), macdData( 0.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 0.0), macdData(-1.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 0.0), macdData( 1.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData(-1.0), macdData( 0.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 1.0), macdData( 0.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData(-1.0), macdData( 1.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 1.0), macdData(-1.0)).getTradingDirection());
 	}
 
 	@Test
@@ -53,8 +53,8 @@ class ImpulseAggregateTest {
 		TradingDirection lastDirection = NEUTRAL;
 		
 		ImpulseData impulseData = ImpulseData.builder()
-				.lastDirection(SHORT)
-				.direction(lastDirection)
+				.lastTradingDirection(SHORT)
+				.tradingDirection(lastDirection)
 				.build();
 		
 		ImpulseAggregate a = new ImpulseAggregate(impulseData);
@@ -63,7 +63,7 @@ class ImpulseAggregateTest {
 		String json = mapper.writeValueAsString(a);
 		a = mapper.readValue(json, ImpulseAggregate.class);
 		
-		assertEquals(lastDirection, a.aggregate(emaData(1.0), macdData(1.0)).getLastDirection());
+		assertEquals(lastDirection, a.aggregate(emaData(1.0), macdData(1.0)).getLastTradingDirection());
 	}
 	
 	private DoubleData emaData(double vChange) {

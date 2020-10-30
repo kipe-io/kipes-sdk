@@ -49,7 +49,11 @@ public abstract class AbstractStreamFactory {
 	 * @throws InterruptedException 
 	 */
 	protected void initTopics() throws InterruptedException, ExecutionException {
-		Set<NewTopic> newTopics = Arrays.asList(getTopicNames()).stream()
+		ensureTopics(getTopicNames());
+	}
+	
+	protected void ensureTopics(String...topicNames) throws InterruptedException, ExecutionException {
+		Set<NewTopic> newTopics = Arrays.asList(topicNames).stream()
 				// TODO externalize numPartitions 
 				.map(topicName -> new NewTopic(topicName, 1, replicationFactor))
 				.collect(Collectors.toSet());

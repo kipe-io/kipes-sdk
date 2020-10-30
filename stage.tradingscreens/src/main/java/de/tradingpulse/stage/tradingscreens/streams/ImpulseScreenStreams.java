@@ -9,8 +9,8 @@ import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.data.SymbolTimestampKey;
-import de.tradingpulse.common.stream.data.TradingScreenData;
 import de.tradingpulse.stage.tradingscreens.TradingScreensStageConstants;
+import de.tradingpulse.stage.tradingscreens.data.SwingTradingScreenData;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
@@ -19,7 +19,7 @@ import io.micronaut.context.annotation.Factory;
 @Factory
 class ImpulseScreenStreams extends AbstractStreamFactory {
 
-	static final String TOPIC_IMPULSE_SCREEN = TradingScreensStageConstants.STAGE_NAME + "-" + "impulse_screen";
+	static final String TOPIC_SWING_TRADING_SCREEN = TradingScreensStageConstants.STAGE_NAME + "-" + "swing_trading_screen";
 
 	@Inject
 	private JsonSerdeRegistry jsonSerdeRegistry;
@@ -27,18 +27,18 @@ class ImpulseScreenStreams extends AbstractStreamFactory {
 	@Override
 	protected String[] getTopicNames() {
 		return new String[] {
-				TOPIC_IMPULSE_SCREEN
+				TOPIC_SWING_TRADING_SCREEN
 		};
 	}
 	
 	@Singleton
-	@Named(TOPIC_IMPULSE_SCREEN)
-	KStream<SymbolTimestampKey, TradingScreenData> impulseScreenStream(final ConfiguredStreamBuilder builder) {
+	@Named(TOPIC_SWING_TRADING_SCREEN)
+	KStream<SymbolTimestampKey, SwingTradingScreenData> swingTradingScreenStream(final ConfiguredStreamBuilder builder) {
 		
 		return builder
-				.stream(TOPIC_IMPULSE_SCREEN, Consumed.with(
+				.stream(TOPIC_SWING_TRADING_SCREEN, Consumed.with(
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-						jsonSerdeRegistry.getSerde(TradingScreenData.class))
+						jsonSerdeRegistry.getSerde(SwingTradingScreenData.class))
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
 	}
 
