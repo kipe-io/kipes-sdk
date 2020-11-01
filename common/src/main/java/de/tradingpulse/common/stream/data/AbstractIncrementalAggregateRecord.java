@@ -3,7 +3,11 @@ package de.tradingpulse.common.stream.data;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
+import lombok.Builder.Default;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
  * Foundation for all records describing financial time-line data.<br>
@@ -24,12 +28,17 @@ import lombok.Data;
  * </ul>
  * The first one is part of the key ({@link #getKey()}), the second is part of
  * the record data ({@link #getTimeRangeTimestamp()}). The time range itself is
- * described by {@link #timeRange}
+ * described by {@link #timeRange} and defaults to MILLISECOND. Both
+ * timestamps are the same with time range MILLISECOND. 
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
 public abstract class AbstractIncrementalAggregateRecord {
 
 	private SymbolTimestampKey key;
+	@Default
 	private TimeRange timeRange = TimeRange.MILLISECOND;
 
 	@JsonProperty(access = Access.READ_ONLY)

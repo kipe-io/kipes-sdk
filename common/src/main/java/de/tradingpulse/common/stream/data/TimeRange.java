@@ -7,6 +7,7 @@ import de.tradingpulse.common.utils.TimeUtils;
 public enum TimeRange {
 
 	MILLISECOND((timestampMillisUTC) -> timestampMillisUTC),
+	MINUTE(TimeUtils::getStartOfMinuteTimestampUTC),
 	DAY(TimeUtils::getStartOfDayTimestampUTC),
 	WEEK(TimeUtils::getStartOfWeekTimestampUTC);
 	
