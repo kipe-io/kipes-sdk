@@ -3,8 +3,8 @@ package de.tradingpulse.timelinetest;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
-import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.timelinetest.streams.MinuteStreamFactory;
 import de.tradingpulse.timelinetest.streams.SecondsStreamsFactory;
 import io.micronaut.configuration.kafka.annotation.KafkaKey;

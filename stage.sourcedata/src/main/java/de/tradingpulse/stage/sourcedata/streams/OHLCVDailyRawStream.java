@@ -9,8 +9,8 @@ import org.apache.kafka.streams.Topology.AutoOffsetReset;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.rawtypes.OHLCVRawRecord;
 import de.tradingpulse.stage.sourcedata.SourceDataStageConstants;
+import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRawRecord;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;

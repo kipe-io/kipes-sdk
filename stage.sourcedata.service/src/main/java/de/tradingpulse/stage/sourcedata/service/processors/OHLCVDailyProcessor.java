@@ -6,8 +6,8 @@ import javax.inject.Singleton;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Produced;
 
-import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;

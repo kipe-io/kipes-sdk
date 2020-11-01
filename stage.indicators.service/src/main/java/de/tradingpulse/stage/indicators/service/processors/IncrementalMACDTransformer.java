@@ -10,8 +10,8 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.aggregates.MACDHistogramAggregate;
 import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
-import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 
 class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLCVRecord, KeyValue<SymbolTimestampKey, MACDHistogramData>> {
 	

@@ -1,6 +1,12 @@
-package de.tradingpulse.common.stream.recordtypes;
+package de.tradingpulse.stage.sourcedata.recordtypes;
 
-import de.tradingpulse.common.stream.rawtypes.OHLCVRawRecord;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+
+import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.TimeRange;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,13 +22,26 @@ public class OHLCVRecord extends AbstractIncrementalAggregateRecord {
 
 	public static final OHLCVRecord from(OHLCVRawRecord rawData) {
 		return builder()
-				.key(SymbolTimestampKey.from(rawData))
+				.key(extractKey(rawData))
 				.timeRange(TimeRange.DAY)
 				.open(rawData.getOpen())
 				.high(rawData.getHigh())
 				.low(rawData.getLow())
 				.close(rawData.getClose())
 				.volume(rawData.getVolume())
+				.build();
+	}
+	
+	static final SymbolTimestampKey extractKey(OHLCVRawRecord rawData) {
+		final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		
+		return SymbolTimestampKey.builder()
+				.symbol(rawData.getSymbol())
+				.timestamp(
+						LocalDate.parse(rawData.getDate(), dtf)
+						.atStartOfDay()
+						.toEpochSecond(ZoneOffset.UTC)
+						* 1000)
 				.build();
 	}
 	

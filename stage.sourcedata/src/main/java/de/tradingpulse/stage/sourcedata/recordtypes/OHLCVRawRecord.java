@@ -1,4 +1,4 @@
-package de.tradingpulse.common.stream.rawtypes;
+package de.tradingpulse.stage.sourcedata.recordtypes;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

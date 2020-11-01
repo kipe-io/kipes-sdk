@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import de.tradingpulse.common.stream.aggregates.EMAAggregate;
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.recordtypes.DoubleData;
-import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 
 class IncrementalEMATransformer implements Transformer<SymbolTimestampKey, OHLCVRecord, KeyValue<SymbolTimestampKey, DoubleData>> {
 	
