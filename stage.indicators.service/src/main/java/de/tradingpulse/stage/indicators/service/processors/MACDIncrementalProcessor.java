@@ -11,7 +11,7 @@ import org.apache.kafka.streams.state.Stores;
 
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
-import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
 import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
@@ -46,7 +46,7 @@ class MACDIncrementalProcessor extends AbstractProcessorFactory {
 		initMACDHistogramStream(
 				indicatorsStreamsFacade.getMacd12269WeeklyIncrementalStreamName(), 
 				12, 26, 9, 
-				sourceDataStreamsFacade.getOhlcvWeeklyIncrementalStream(), 
+				sourceDataStreamsFacade.getOhlcvWeeklyStream(), 
 				builder);
 	}
 	
@@ -55,7 +55,7 @@ class MACDIncrementalProcessor extends AbstractProcessorFactory {
 			final int fastPeriod,
 			final int slowPeriod,
 			final int signalPeriod,
-			final KStream<SymbolTimestampKey, OHLCVData> sourceStream, 
+			final KStream<SymbolTimestampKey, OHLCVRecord> sourceStream, 
 			final ConfiguredStreamBuilder builder
 	) {
 		

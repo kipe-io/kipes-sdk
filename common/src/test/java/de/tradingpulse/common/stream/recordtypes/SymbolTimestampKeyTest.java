@@ -1,4 +1,4 @@
-package de.tradingpulse.common.stream.data;
+package de.tradingpulse.common.stream.recordtypes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

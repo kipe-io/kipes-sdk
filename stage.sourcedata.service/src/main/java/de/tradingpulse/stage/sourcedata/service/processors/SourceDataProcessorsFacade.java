@@ -21,7 +21,7 @@ public class SourceDataProcessorsFacade {
 	private OHLCVDailyProcessor dailyProcessor;
 
 	@Inject
-	private OHLCVWeeklyIncrementalProcessor weeklyIncrementalProcessor;
+	private OHLCVWeeklyProcessor weeklyIncrementalProcessor;
 	
 	@PostConstruct
 	void postConstruct() {

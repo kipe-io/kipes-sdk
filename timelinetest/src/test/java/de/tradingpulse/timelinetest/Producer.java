@@ -1,6 +1,6 @@
 package de.tradingpulse.timelinetest;
 
-import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.timelinetest.streams.SecondsStreamsFactory;
 import io.micronaut.configuration.kafka.annotation.KafkaClient;
@@ -11,5 +11,5 @@ import io.micronaut.configuration.kafka.annotation.Topic;
 public interface Producer {
 	
 	@Topic(SecondsStreamsFactory.TOPIC_DATA_15_SEC)
-	void send(@KafkaKey SymbolTimestampKey key, OHLCVData value);
+	void send(@KafkaKey SymbolTimestampKey key, OHLCVRecord value);
 }

@@ -21,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import de.tradingpulse.common.stream.aggregates.EMAAggregate;
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.recordtypes.DoubleData;
-import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 
 @ExtendWith(MockitoExtension.class)
@@ -243,7 +243,7 @@ class IncrementalEMATransformerTest {
 		when(stateMock.get(SYMBOL)).thenReturn(null);
 
 		SymbolTimestampKey key = createKey(0);
-		OHLCVData value = createValue(key, 1.0);
+		OHLCVRecord value = createValue(key, 1.0);
 		
 		KeyValue<SymbolTimestampKey, DoubleData> keyValue = t.transform(key, value);
 		
@@ -465,7 +465,7 @@ class IncrementalEMATransformerTest {
 	
 	private DoubleData addRecord(IncrementalEMATransformer t, long timestamp, double close) {
 		SymbolTimestampKey key = createKey(timestamp);
-		OHLCVData value = createValue(key, close);
+		OHLCVRecord value = createValue(key, close);
 		
 		KeyValue<SymbolTimestampKey, DoubleData> keyValue = t.transform(key, value);
 		
@@ -489,8 +489,8 @@ class IncrementalEMATransformerTest {
 				.build();
 	}
 	
-	private OHLCVData createValue(SymbolTimestampKey key, Double close) {
-		return OHLCVData.builder()
+	private OHLCVRecord createValue(SymbolTimestampKey key, Double close) {
+		return OHLCVRecord.builder()
 				.key(key)
 				.open(null)
 				.high(null)

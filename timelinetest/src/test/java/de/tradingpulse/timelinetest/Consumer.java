@@ -3,7 +3,7 @@ package de.tradingpulse.timelinetest;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
-import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.timelinetest.streams.MinuteStreamFactory;
 import de.tradingpulse.timelinetest.streams.SecondsStreamsFactory;
@@ -16,8 +16,8 @@ import lombok.Data;
 @KafkaListener(groupId="Consumer")
 public class Consumer {
 	
-	private OHLCVData receivedDataAggMin;
-	private OHLCVData receivedDataWinMin;
+	private OHLCVRecord receivedDataAggMin;
+	private OHLCVRecord receivedDataWinMin;
 	
 	@Inject
 	private SecondsStreamsFactory secondStreamsFactory;
@@ -36,12 +36,12 @@ public class Consumer {
 	}
 	
 	@Topic(MinuteStreamFactory.TOPIC_DATA_AGG_MINUTE)
-	public void receiveDataAggMin(@KafkaKey SymbolTimestampKey key, OHLCVData value) {
+	public void receiveDataAggMin(@KafkaKey SymbolTimestampKey key, OHLCVRecord value) {
 		this.receivedDataAggMin = value;
 	}
 	
 	@Topic(MinuteStreamFactory.TOPIC_DATA_WINDOWED_MINUTE)
-	public void receiveDataWinMin(@KafkaKey SymbolTimestampKey key, OHLCVData value) {
+	public void receiveDataWinMin(@KafkaKey SymbolTimestampKey key, OHLCVRecord value) {
 		this.receivedDataWinMin = value;
 	}
 }

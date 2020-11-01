@@ -10,10 +10,10 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.aggregates.MACDHistogramAggregate;
 import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
-import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 
-class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLCVData, KeyValue<SymbolTimestampKey, MACDHistogramData>> {
+class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLCVRecord, KeyValue<SymbolTimestampKey, MACDHistogramData>> {
 	
 	private final String storeName;
 	private final int fastPeriod;
@@ -38,7 +38,7 @@ class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLC
 		this.state = (KeyValueStore<String, IncrementalAggregate<MACDHistogramAggregate>>)context.getStateStore(this.storeName);
 	}
 	
-	public KeyValue<SymbolTimestampKey, MACDHistogramData> transform(SymbolTimestampKey key, OHLCVData value) {
+	public KeyValue<SymbolTimestampKey, MACDHistogramData> transform(SymbolTimestampKey key, OHLCVRecord value) {
 		
 		IncrementalAggregate<MACDHistogramAggregate> incrementalAggregate = Optional
 				.ofNullable(this.state.get(key.getSymbol()))

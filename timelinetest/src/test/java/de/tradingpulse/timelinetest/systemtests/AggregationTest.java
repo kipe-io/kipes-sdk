@@ -19,7 +19,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import ch.qos.logback.core.util.TimeUtil;
-import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.utils.TimeUtils;
 import de.tradingpulse.timelinetest.Consumer;
@@ -35,13 +35,13 @@ class AggregationTest {
 	private OfDouble d = new Random().doubles(10.0, 20.0).iterator();
 	
 	@Inject @Named(SecondsStreamsFactory.TOPIC_DATA_15_SEC)
-	private KStream<SymbolTimestampKey, OHLCVData> data15Sec;
+	private KStream<SymbolTimestampKey, OHLCVRecord> data15Sec;
 
 	@Inject @Named(MinuteStreamFactory.TOPIC_DATA_AGG_MINUTE)
-	private KStream<SymbolTimestampKey, OHLCVData> dataAggMinute;
+	private KStream<SymbolTimestampKey, OHLCVRecord> dataAggMinute;
 
 	@Inject @Named(MinuteStreamFactory.TOPIC_DATA_WINDOWED_MINUTE)
-	private KStream<SymbolTimestampKey, OHLCVData> dataWinMinute;
+	private KStream<SymbolTimestampKey, OHLCVRecord> dataWinMinute;
 
 	@Inject
 	private Producer producer;
@@ -62,25 +62,25 @@ class AggregationTest {
 		
 		await().atMost(Duration.ofMinutes(1)).until(() -> System.currentTimeMillis() >= ts);
 		
-		OHLCVData data1 = generateOHLCVData();		
+		OHLCVRecord data1 = generateOHLCVData();		
 		producer.send(data1.getKey(), data1);
 
-		OHLCVData data2 = generateOHLCVData();
+		OHLCVRecord data2 = generateOHLCVData();
 		producer.send(data2.getKey(), data2);
 
-		OHLCVData data3 = generateOHLCVData();
+		OHLCVRecord data3 = generateOHLCVData();
 		producer.send(data3.getKey(), data3);
 		
 		await().atMost(Duration.ofMinutes(1)).until(() -> consumer.getReceivedDataAggMin() != null );
 		
-		OHLCVData dataAgg = data1.aggregateWith(data2).aggregateWith(data3);
+		OHLCVRecord dataAgg = data1.aggregateWith(data2).aggregateWith(data3);
 		dataAgg.getKey().setTimestamp(TimeUtils.getStartOfMinuteTimestampUTC(dataAgg.getKey().getTimestamp()));
 		assertEquals(dataAgg, consumer.getReceivedDataAggMin());
 		assertEquals(dataAgg, consumer.getReceivedDataWinMin());
 	}
 	
-	private OHLCVData generateOHLCVData() {
-		return OHLCVData.builder()
+	private OHLCVRecord generateOHLCVData() {
+		return OHLCVRecord.builder()
 				.key(SymbolTimestampKey.builder()
 						.symbol("symbol")
 						.timestamp(System.currentTimeMillis())

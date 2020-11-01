@@ -10,7 +10,7 @@ import org.apache.kafka.streams.Topology.AutoOffsetReset;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
@@ -31,13 +31,13 @@ public class SecondsStreamsFactory extends AbstractStreamFactory {
 	}
 	
 	@Singleton @Named(TOPIC_DATA_15_SEC)
-	KStream<SymbolTimestampKey, OHLCVData> data15SecStream(final ConfiguredStreamBuilder builder)
+	KStream<SymbolTimestampKey, OHLCVRecord> data15SecStream(final ConfiguredStreamBuilder builder)
 	throws InterruptedException, ExecutionException
 	{
 		return builder
 				.stream(TOPIC_DATA_15_SEC, Consumed.with(
 						serdeRegistry.getSerde(SymbolTimestampKey.class), 
-						serdeRegistry.getSerde(OHLCVData.class))
+						serdeRegistry.getSerde(OHLCVRecord.class))
 						.withOffsetResetPolicy(AutoOffsetReset.LATEST));
 	}
 

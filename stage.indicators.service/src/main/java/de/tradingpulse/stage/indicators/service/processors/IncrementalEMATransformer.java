@@ -12,10 +12,10 @@ import org.slf4j.LoggerFactory;
 import de.tradingpulse.common.stream.aggregates.EMAAggregate;
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.recordtypes.DoubleData;
-import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 
-class IncrementalEMATransformer implements Transformer<SymbolTimestampKey, OHLCVData, KeyValue<SymbolTimestampKey, DoubleData>> {
+class IncrementalEMATransformer implements Transformer<SymbolTimestampKey, OHLCVRecord, KeyValue<SymbolTimestampKey, DoubleData>> {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(IncrementalEMATransformer.class);
 	
@@ -36,7 +36,7 @@ class IncrementalEMATransformer implements Transformer<SymbolTimestampKey, OHLCV
 		this.state = (KeyValueStore<String, IncrementalAggregate<EMAAggregate>>)context.getStateStore(this.storeName);
 	}
 	
-	public KeyValue<SymbolTimestampKey, DoubleData> transform(SymbolTimestampKey key, OHLCVData value) {
+	public KeyValue<SymbolTimestampKey, DoubleData> transform(SymbolTimestampKey key, OHLCVRecord value) {
 		
 		IncrementalAggregate<EMAAggregate> incrementalAggregate = Optional
 				.ofNullable(this.state.get(key.getSymbol()))

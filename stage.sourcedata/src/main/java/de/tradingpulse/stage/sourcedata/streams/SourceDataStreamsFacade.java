@@ -7,7 +7,7 @@ import javax.inject.Singleton;
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.rawtypes.OHLCVRawRecord;
-import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import lombok.Getter;
 
@@ -19,12 +19,12 @@ public final class SourceDataStreamsFacade {
     private KStream<String, OHLCVRawRecord> ohlcvDailyRawStream;
 	private final String ohlcvDailyRawStreamName = OHLCVDailyRawStream.TOPIC_OHLCV_DAILY_RAW;
 	
-	@Inject @Named(OHLCVDailyStream.TOPIC_OHLCV_DAILY)
-    private KStream<SymbolTimestampKey, OHLCVData> ohlcvDailyStream;
-	private final String ohlcvDailyStreamName = OHLCVDailyStream.TOPIC_OHLCV_DAILY;
+	@Inject @Named(OHLCVStreams.TOPIC_OHLCV_DAILY)
+    private KStream<SymbolTimestampKey, OHLCVRecord> ohlcvDailyStream;
+	private final String ohlcvDailyStreamName = OHLCVStreams.TOPIC_OHLCV_DAILY;
 
-	@Inject @Named(OHLCVWeeklyIncrementalStream.TOPIC_OHLCV_WEEKLY_INCREMENTAL)
-    private KStream<SymbolTimestampKey, OHLCVData> ohlcvWeeklyIncrementalStream;
-	private final String ohlcvWeeklyIncrementalStreamName = OHLCVWeeklyIncrementalStream.TOPIC_OHLCV_WEEKLY_INCREMENTAL;
+	@Inject @Named(OHLCVStreams.TOPIC_OHLCV_WEEKLY)
+    private KStream<SymbolTimestampKey, OHLCVRecord> ohlcvWeeklyStream;
+	private final String ohlcvWeeklyStreamName = OHLCVStreams.TOPIC_OHLCV_WEEKLY;
 
 }

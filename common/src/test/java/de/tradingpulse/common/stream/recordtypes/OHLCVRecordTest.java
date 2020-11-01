@@ -1,14 +1,12 @@
-package de.tradingpulse.common.stream.data;
+package de.tradingpulse.common.stream.recordtypes;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
 import de.tradingpulse.common.stream.rawtypes.OHLCVRawRecord;
-import de.tradingpulse.common.stream.recordtypes.OHLCVData;
-import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 
-class OHLCVDataTest {
+class OHLCVRecordTest {
 
 	@Test
 	void test_from() {
@@ -22,10 +20,12 @@ class OHLCVDataTest {
 				.volume(5L)
 				.build();
 		
-		OHLCVData data = OHLCVData.from(rawData);
+		OHLCVRecord data = OHLCVRecord.from(rawData);
 		
 		assertEquals(rawData.getSymbol(), data.getKey().getSymbol());
 		assertEquals(86400000, data.getKey().getTimestamp());
+		assertEquals(TimeRange.DAY, data.getTimeRange());
+		assertEquals(86400000, data.getTimeRangeTimestamp());
 		assertEquals(rawData.getOpen(), data.getOpen());
 		assertEquals(rawData.getHigh(), data.getHigh());
 		assertEquals(rawData.getLow(), data.getLow());
@@ -36,11 +36,12 @@ class OHLCVDataTest {
 	
 	@Test
 	void test_aggregateWith() {
-		OHLCVData a = OHLCVData.builder()
+		OHLCVRecord a = OHLCVRecord.builder()
 				.key(SymbolTimestampKey.builder()
 						.symbol("symbol")
 						.timestamp(0)
 						.build())
+				.timeRange(TimeRange.DAY)
 				.open(0d)
 				.high(2d)
 				.low(4d)
@@ -48,11 +49,12 @@ class OHLCVDataTest {
 				.volume(8l)
 				.build();
 		
-		OHLCVData b = OHLCVData.builder()
+		OHLCVRecord b = OHLCVRecord.builder()
 				.key(SymbolTimestampKey.builder()
 						.symbol("symbol")
 						.timestamp(1)
 						.build())
+				.timeRange(TimeRange.MINUTE)
 				.open(1d)
 				.high(3d)
 				.low(5d)
@@ -60,9 +62,10 @@ class OHLCVDataTest {
 				.volume(9l)
 				.build();
 		
-		OHLCVData aggregate = a.aggregateWith(b);
+		OHLCVRecord aggregate = a.aggregateWith(b);
 		
-		assertEquals(a.getKey(), aggregate.getKey());
+		assertEquals(b.getKey(), aggregate.getKey());
+		assertEquals(TimeRange.DAY, aggregate.getTimeRange());
 		assertEquals(a.getOpen(), aggregate.getOpen());
 		assertEquals(b.getHigh(), aggregate.getHigh());
 		assertEquals(a.getLow(), aggregate.getLow());

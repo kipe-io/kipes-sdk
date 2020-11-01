@@ -1,4 +1,4 @@
-package de.tradingpulse.common.stream.data;
+package de.tradingpulse.common.stream.recordtypes;
 
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;

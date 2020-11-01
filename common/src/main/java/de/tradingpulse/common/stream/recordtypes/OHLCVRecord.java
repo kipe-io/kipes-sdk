@@ -2,19 +2,22 @@ package de.tradingpulse.common.stream.recordtypes;
 
 import de.tradingpulse.common.stream.rawtypes.OHLCVRawRecord;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class OHLCVData {
+@SuperBuilder
+public class OHLCVRecord extends AbstractIncrementalAggregateRecord {
 
-	public static final OHLCVData from(OHLCVRawRecord rawData) {
+	public static final OHLCVRecord from(OHLCVRawRecord rawData) {
 		return builder()
 				.key(SymbolTimestampKey.from(rawData))
+				.timeRange(TimeRange.DAY)
 				.open(rawData.getOpen())
 				.high(rawData.getHigh())
 				.low(rawData.getLow())
@@ -22,8 +25,6 @@ public class OHLCVData {
 				.volume(rawData.getVolume())
 				.build();
 	}
-	
-	private SymbolTimestampKey key;
 	
     private Double open;
     private Double high;
@@ -36,16 +37,20 @@ public class OHLCVData {
      * the same key as this object and adjusted ohlcv data matching an
      * time aggregate of both objects.
      */
-    public OHLCVData aggregateWith(OHLCVData other) {
+    public OHLCVRecord aggregateWith(OHLCVRecord other) {
     	
-    	boolean isOtherOlder = this.key.getTimestamp() < other.key.getTimestamp();
+    	boolean isOtherLater = getKey().getTimestamp() < other.getKey().getTimestamp();
     	
-    	return OHLCVData.builder()
-    			.key(key)
-    			.open(isOtherOlder? this.open : other.open)
+    	return OHLCVRecord.builder()
+    			.key(SymbolTimestampKey.builder()
+    					.symbol(getKey().getSymbol())
+    					.timestamp(isOtherLater? other.getKey().getTimestamp() : getKey().getTimestamp())
+    					.build())
+    			.timeRange(getTimeRange())
+    			.open(isOtherLater? this.open : other.open)
     			.high(this.high.doubleValue() > other.high.doubleValue()? this.high : other.high)
     			.low(this.low.doubleValue() < other.low.doubleValue()? this.low : other.low)
-    			.close(isOtherOlder? other.close : this.close)
+    			.close(isOtherLater? other.close : this.close)
     			.volume(this.volume.longValue() + other.volume.longValue())
     			.build();
     }

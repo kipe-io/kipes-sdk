@@ -13,7 +13,7 @@ import org.apache.kafka.streams.state.Stores;
 
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.recordtypes.DoubleData;
-import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
 import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
@@ -54,19 +54,19 @@ class EMAIncrementalProcessor extends AbstractProcessorFactory {
 		initEMAIncrementalStream(
 				indicatorsStreamsFacade.getEma13WeeklyIncrementalStreamName(), 
 				13, 
-				sourceDataStreamsFacade.getOhlcvWeeklyIncrementalStream());
+				sourceDataStreamsFacade.getOhlcvWeeklyStream());
 		
 		// EMA(26) weekly incremental
 		initEMAIncrementalStream(
 				indicatorsStreamsFacade.getEma26WeeklyIncrementalStreamName(), 
 				26, 
-				sourceDataStreamsFacade.getOhlcvWeeklyIncrementalStream());
+				sourceDataStreamsFacade.getOhlcvWeeklyStream());
 	}
 	
 	void initEMAIncrementalStream(
 			final String topicName,
 			final int numObservations,
-			final KStream<SymbolTimestampKey, OHLCVData> sourceStream 
+			final KStream<SymbolTimestampKey, OHLCVRecord> sourceStream 
 	) {
 		
 		final String storeName = getProcessorStoreTopicName(topicName);
