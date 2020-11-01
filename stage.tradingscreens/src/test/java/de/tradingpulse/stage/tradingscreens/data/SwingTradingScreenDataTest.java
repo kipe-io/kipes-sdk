@@ -1,8 +1,8 @@
 package de.tradingpulse.stage.tradingscreens.data;
 
-import static de.tradingpulse.common.stream.data.TradingDirection.LONG;
-import static de.tradingpulse.common.stream.data.TradingDirection.NEUTRAL;
-import static de.tradingpulse.common.stream.data.TradingDirection.SHORT;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
 import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.LONG_ENTRY;
 import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.SHORT_ENTRY;
 import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.LONG_EXIT;
@@ -24,9 +24,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.tradingpulse.common.stream.data.ImpulseData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
-import de.tradingpulse.common.stream.data.TradingDirection;
+import de.tradingpulse.common.stream.recordtypes.ImpulseData;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 
 class SwingTradingScreenDataTest {
 

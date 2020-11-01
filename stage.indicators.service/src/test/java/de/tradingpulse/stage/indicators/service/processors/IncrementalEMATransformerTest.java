@@ -20,9 +20,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.tradingpulse.common.stream.aggregates.EMAAggregate;
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
-import de.tradingpulse.common.stream.data.DoubleData;
-import de.tradingpulse.common.stream.data.OHLCVData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.DoubleData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 
 @ExtendWith(MockitoExtension.class)
 class IncrementalEMATransformerTest {

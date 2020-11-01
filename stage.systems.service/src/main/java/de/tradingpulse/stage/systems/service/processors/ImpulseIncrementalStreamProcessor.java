@@ -17,11 +17,11 @@ import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
-import de.tradingpulse.common.stream.data.DoubleData;
-import de.tradingpulse.common.stream.data.ImpulseData;
-import de.tradingpulse.common.stream.data.ImpulseSourceData;
-import de.tradingpulse.common.stream.data.MACDHistogramData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.DoubleData;
+import de.tradingpulse.common.stream.recordtypes.ImpulseData;
+import de.tradingpulse.common.stream.recordtypes.ImpulseSourceData;
+import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
 import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;

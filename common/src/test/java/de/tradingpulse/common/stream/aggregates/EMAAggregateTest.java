@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.tradingpulse.common.stream.data.DoubleData;
+import de.tradingpulse.common.stream.recordtypes.DoubleData;
 
 class EMAAggregateTest {
 

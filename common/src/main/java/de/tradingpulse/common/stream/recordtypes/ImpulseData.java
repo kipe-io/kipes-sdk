@@ -1,8 +1,8 @@
-package de.tradingpulse.common.stream.data;
+package de.tradingpulse.common.stream.recordtypes;
 
-import static de.tradingpulse.common.stream.data.TradingDirection.LONG;
-import static de.tradingpulse.common.stream.data.TradingDirection.NEUTRAL;
-import static de.tradingpulse.common.stream.data.TradingDirection.SHORT;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;

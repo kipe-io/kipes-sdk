@@ -1,7 +1,7 @@
 package de.tradingpulse.common.stream.aggregates;
 
-import de.tradingpulse.common.stream.data.DoubleData;
-import de.tradingpulse.common.stream.data.MACDHistogramData;
+import de.tradingpulse.common.stream.recordtypes.DoubleData;
+import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

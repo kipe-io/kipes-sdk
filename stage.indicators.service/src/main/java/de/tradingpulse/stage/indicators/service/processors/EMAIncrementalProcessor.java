@@ -12,9 +12,9 @@ import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
-import de.tradingpulse.common.stream.data.DoubleData;
-import de.tradingpulse.common.stream.data.OHLCVData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.DoubleData;
+import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
 import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;

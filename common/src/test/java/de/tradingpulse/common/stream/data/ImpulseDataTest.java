@@ -1,8 +1,8 @@
 package de.tradingpulse.common.stream.data;
 
-import static de.tradingpulse.common.stream.data.TradingDirection.LONG;
-import static de.tradingpulse.common.stream.data.TradingDirection.NEUTRAL;
-import static de.tradingpulse.common.stream.data.TradingDirection.SHORT;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -11,6 +11,9 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import de.tradingpulse.common.stream.recordtypes.ImpulseData;
+import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 
 class ImpulseDataTest {
 

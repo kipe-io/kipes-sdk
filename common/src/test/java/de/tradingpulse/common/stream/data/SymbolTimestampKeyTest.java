@@ -4,13 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
+import de.tradingpulse.common.stream.rawtypes.OHLCVRawRecord;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+
 class SymbolTimestampKeyTest {
 	
 	@Test
 	void test_from_OHLCVRawData() {
 		
 		SymbolTimestampKey stk = SymbolTimestampKey.from(
-				OHLCVDataRaw.builder()
+				OHLCVRawRecord.builder()
 				.symbol("symbol")
 				.date("1970-01-02")
 				.build());

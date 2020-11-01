@@ -6,9 +6,9 @@ import javax.inject.Singleton;
 
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.data.OHLCVData;
-import de.tradingpulse.common.stream.data.OHLCVDataRaw;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.rawtypes.OHLCVRawRecord;
+import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import lombok.Getter;
 
 @Singleton
@@ -16,7 +16,7 @@ import lombok.Getter;
 public final class SourceDataStreamsFacade {
 
 	@Inject @Named(OHLCVDailyRawStream.TOPIC_OHLCV_DAILY_RAW)
-    private KStream<String, OHLCVDataRaw> ohlcvDailyRawStream;
+    private KStream<String, OHLCVRawRecord> ohlcvDailyRawStream;
 	private final String ohlcvDailyRawStreamName = OHLCVDailyRawStream.TOPIC_OHLCV_DAILY_RAW;
 	
 	@Inject @Named(OHLCVDailyStream.TOPIC_OHLCV_DAILY)

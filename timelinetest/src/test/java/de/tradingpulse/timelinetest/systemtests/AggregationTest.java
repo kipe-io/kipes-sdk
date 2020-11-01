@@ -19,8 +19,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import ch.qos.logback.core.util.TimeUtil;
-import de.tradingpulse.common.stream.data.OHLCVData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.utils.TimeUtils;
 import de.tradingpulse.timelinetest.Consumer;
 import de.tradingpulse.timelinetest.Producer;

@@ -8,7 +8,7 @@ import org.apache.kafka.streams.Topology.AutoOffsetReset;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.tradingscreens.TradingScreensStageConstants;
 import de.tradingpulse.stage.tradingscreens.data.SwingTradingScreenData;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;

@@ -1,5 +1,6 @@
-package de.tradingpulse.common.stream.data;
+package de.tradingpulse.common.stream.recordtypes;
 
+import de.tradingpulse.common.stream.rawtypes.OHLCVRawRecord;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class OHLCVData {
 
-	public static final OHLCVData from(OHLCVDataRaw rawData) {
+	public static final OHLCVData from(OHLCVRawRecord rawData) {
 		return builder()
 				.key(SymbolTimestampKey.from(rawData))
 				.open(rawData.getOpen())

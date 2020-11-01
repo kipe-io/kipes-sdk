@@ -2,7 +2,7 @@ package de.tradingpulse.common.stream.aggregates;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import de.tradingpulse.common.stream.data.DoubleData;
+import de.tradingpulse.common.stream.recordtypes.DoubleData;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;

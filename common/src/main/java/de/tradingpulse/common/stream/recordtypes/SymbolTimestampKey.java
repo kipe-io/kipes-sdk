@@ -1,9 +1,10 @@
-package de.tradingpulse.common.stream.data;
+package de.tradingpulse.common.stream.recordtypes;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import de.tradingpulse.common.stream.rawtypes.OHLCVRawRecord;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SymbolTimestampKey {
 
-	public static final SymbolTimestampKey from(OHLCVDataRaw rawData) {
+	public static final SymbolTimestampKey from(OHLCVRawRecord rawData) {
 		final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		
 		return builder()

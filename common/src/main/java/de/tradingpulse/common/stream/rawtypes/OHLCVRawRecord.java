@@ -1,4 +1,4 @@
-package de.tradingpulse.common.stream.data;
+package de.tradingpulse.common.stream.rawtypes;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OHLCVDataRaw {
+public class OHLCVRawRecord {
 
     private String symbol;
     private String date;

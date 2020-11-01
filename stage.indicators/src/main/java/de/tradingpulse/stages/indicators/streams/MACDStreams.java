@@ -8,8 +8,8 @@ import org.apache.kafka.streams.Topology.AutoOffsetReset;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.data.MACDHistogramData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stages.indicators.IndicatorsStageConstants;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;

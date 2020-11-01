@@ -1,4 +1,4 @@
-package de.tradingpulse.common.stream.data;
+package de.tradingpulse.common.stream.recordtypes;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;

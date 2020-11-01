@@ -9,8 +9,8 @@ import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.KeyValueStore;
 
-import de.tradingpulse.common.stream.data.OHLCVData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.utils.TimeUtils;
 import de.tradingpulse.stage.sourcedata.SourceDataStageConstants;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;

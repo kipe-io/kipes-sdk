@@ -1,8 +1,8 @@
 package de.tradingpulse.common.stream.aggregates;
 
-import static de.tradingpulse.common.stream.data.TradingDirection.LONG;
-import static de.tradingpulse.common.stream.data.TradingDirection.NEUTRAL;
-import static de.tradingpulse.common.stream.data.TradingDirection.SHORT;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.tradingpulse.common.stream.data.DoubleData;
-import de.tradingpulse.common.stream.data.ImpulseData;
-import de.tradingpulse.common.stream.data.MACDHistogramData;
-import de.tradingpulse.common.stream.data.TradingDirection;
+import de.tradingpulse.common.stream.recordtypes.DoubleData;
+import de.tradingpulse.common.stream.recordtypes.ImpulseData;
+import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
+import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 
 class ImpulseAggregateTest {
 

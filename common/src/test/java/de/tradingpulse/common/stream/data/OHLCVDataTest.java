@@ -4,11 +4,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import de.tradingpulse.common.stream.rawtypes.OHLCVRawRecord;
+import de.tradingpulse.common.stream.recordtypes.OHLCVData;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+
 class OHLCVDataTest {
 
 	@Test
 	void test_from() {
-		OHLCVDataRaw rawData = OHLCVDataRaw.builder()
+		OHLCVRawRecord rawData = OHLCVRawRecord.builder()
 				.symbol("symbol")
 				.date("1970-01-02")
 				.open(1.0)

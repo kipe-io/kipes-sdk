@@ -1,10 +1,10 @@
 package de.tradingpulse.common.stream.aggregates;
 
-import de.tradingpulse.common.stream.data.DoubleData;
-import de.tradingpulse.common.stream.data.ImpulseData;
-import de.tradingpulse.common.stream.data.MACDHistogramData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
-import de.tradingpulse.common.stream.data.TradingDirection;
+import de.tradingpulse.common.stream.recordtypes.DoubleData;
+import de.tradingpulse.common.stream.recordtypes.ImpulseData;
+import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
