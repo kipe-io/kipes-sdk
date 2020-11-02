@@ -6,9 +6,9 @@ import javax.inject.Singleton;
 
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.data.DoubleData;
-import de.tradingpulse.common.stream.data.MACDHistogramData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
+import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 import lombok.Getter;
 
 @Singleton
@@ -18,29 +18,29 @@ public class IndicatorsStreamsFacade {
 	// daily streams ----------------------------------------------------------
 
 	@Inject @Named(EMAStreams.TOPIC_EMA_13_DAILY)
-	private KStream<SymbolTimestampKey, DoubleData> ema13DailyStream;
+	private KStream<SymbolTimestampKey, DoubleRecord> ema13DailyStream;
 	private final String ema13DailyStreamName = EMAStreams.TOPIC_EMA_13_DAILY;
 	
 	@Inject @Named(EMAStreams.TOPIC_EMA_26_DAILY)
-	private KStream<SymbolTimestampKey, DoubleData> ema26DailyStream;
+	private KStream<SymbolTimestampKey, DoubleRecord> ema26DailyStream;
 	private final String ema26DailyStreamName = EMAStreams.TOPIC_EMA_26_DAILY;
 	
 	@Inject @Named(MACDStreams.TOPIC_MACD_12_26_9_DAILY)
-	private KStream<SymbolTimestampKey, MACDHistogramData> macd12269DailyStream;
+	private KStream<SymbolTimestampKey, MACDHistogramRecord> macd12269DailyStream;
 	private final String macd12269DailyStreamName = MACDStreams.TOPIC_MACD_12_26_9_DAILY;
 
 	// weekly incremental streams ---------------------------------------------
 
-	@Inject @Named(EMAStreams.TOPIC_EMA_13_WEEKLY_INCREMENTAL)
-	private KStream<SymbolTimestampKey, DoubleData> ema13WeeklyIncrementalStream;
-	private final String ema13WeeklyIncrementalStreamName = EMAStreams.TOPIC_EMA_13_WEEKLY_INCREMENTAL;
+	@Inject @Named(EMAStreams.TOPIC_EMA_13_WEEKLY)
+	private KStream<SymbolTimestampKey, DoubleRecord> ema13WeeklyStream;
+	private final String ema13WeeklyStreamName = EMAStreams.TOPIC_EMA_13_WEEKLY;
 	
-	@Inject @Named(EMAStreams.TOPIC_EMA_26_WEEKLY_INCREMENTAL)
-	private KStream<SymbolTimestampKey, DoubleData> ema26WeeklyIncrementalStream;
-	private final String ema26WeeklyIncrementalStreamName = EMAStreams.TOPIC_EMA_26_WEEKLY_INCREMENTAL;
+	@Inject @Named(EMAStreams.TOPIC_EMA_26_WEEKLY)
+	private KStream<SymbolTimestampKey, DoubleRecord> ema26WeeklyStream;
+	private final String ema26WeeklyStreamName = EMAStreams.TOPIC_EMA_26_WEEKLY;
 	
-	@Inject @Named(MACDStreams.TOPIC_MACD_12_26_9_WEEKLY_INCREMENTAL)
-	private KStream<SymbolTimestampKey, MACDHistogramData> macd12269WeeklyIncrementalStream;
-	private final String macd12269WeeklyIncrementalStreamName = MACDStreams.TOPIC_MACD_12_26_9_WEEKLY_INCREMENTAL;
+	@Inject @Named(MACDStreams.TOPIC_MACD_12_26_9_WEEKLY)
+	private KStream<SymbolTimestampKey, MACDHistogramRecord> macd12269WeeklyStream;
+	private final String macd12269WeeklyStreamName = MACDStreams.TOPIC_MACD_12_26_9_WEEKLY;
 	
 }

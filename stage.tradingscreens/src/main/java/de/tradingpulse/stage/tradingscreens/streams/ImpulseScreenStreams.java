@@ -8,9 +8,9 @@ import org.apache.kafka.streams.Topology.AutoOffsetReset;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.tradingscreens.TradingScreensStageConstants;
-import de.tradingpulse.stage.tradingscreens.data.SwingTradingScreenData;
+import de.tradingpulse.stage.tradingscreens.data.SwingTradingScreenRecord;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
@@ -33,12 +33,12 @@ class ImpulseScreenStreams extends AbstractStreamFactory {
 	
 	@Singleton
 	@Named(TOPIC_SWING_TRADING_SCREEN)
-	KStream<SymbolTimestampKey, SwingTradingScreenData> swingTradingScreenStream(final ConfiguredStreamBuilder builder) {
+	KStream<SymbolTimestampKey, SwingTradingScreenRecord> swingTradingScreenStream(final ConfiguredStreamBuilder builder) {
 		
 		return builder
 				.stream(TOPIC_SWING_TRADING_SCREEN, Consumed.with(
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-						jsonSerdeRegistry.getSerde(SwingTradingScreenData.class))
+						jsonSerdeRegistry.getSerde(SwingTradingScreenRecord.class))
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
 	}
 

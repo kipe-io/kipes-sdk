@@ -1,8 +1,8 @@
 package de.tradingpulse.stage.tradingscreens.data;
 
-import static de.tradingpulse.common.stream.data.TradingDirection.LONG;
-import static de.tradingpulse.common.stream.data.TradingDirection.NEUTRAL;
-import static de.tradingpulse.common.stream.data.TradingDirection.SHORT;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
 import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.LONG_ENTRY;
 import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.SHORT_ENTRY;
 import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.LONG_EXIT;
@@ -24,9 +24,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.tradingpulse.common.stream.data.ImpulseData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
-import de.tradingpulse.common.stream.data.TradingDirection;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.TradingDirection;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 
 class SwingTradingScreenDataTest {
 
@@ -36,27 +36,27 @@ class SwingTradingScreenDataTest {
 				.symbol("symbol")
 				.timestamp(1)
 				.build();
-		ImpulseData	sID	= createImpulseData(NEUTRAL, LONG);
+		ImpulseRecord	sID	= createImpulseData(NEUTRAL, LONG);
 		sID.setKey(sTs);
 		
 		SymbolTimestampKey	lTs	= SymbolTimestampKey.builder()
 				.symbol("symbol")
 				.timestamp(0)
 				.build();
-		ImpulseData	lID	= createImpulseData(SHORT, NEUTRAL);
+		ImpulseRecord	lID	= createImpulseData(SHORT, NEUTRAL);
 		lID.setKey(lTs);
 		
-		SwingTradingScreenData data = SwingTradingScreenData.builder()
+		SwingTradingScreenRecord record = SwingTradingScreenRecord.builder()
 				.key(sTs)
-				.longRangeImpulseData(lID)
-				.shortRangeImpulseData(sID)
+				.longRangeImpulseRecord(lID)
+				.shortRangeImpulseRecord(sID)
 				.build();
 		
 		ObjectMapper mapper = new ObjectMapper();
-		String json = mapper.writeValueAsString(data);
-		SwingTradingScreenData serdeData = mapper.readValue(json, SwingTradingScreenData.class);
+		String json = mapper.writeValueAsString(record);
+		SwingTradingScreenRecord serdeData = mapper.readValue(json, SwingTradingScreenRecord.class);
 		
-		assertEquals(data, serdeData);
+		assertEquals(record, serdeData);
 	}
 	
 	@ParameterizedTest
@@ -71,13 +71,13 @@ class SwingTradingScreenDataTest {
 			EntrySignal entrySignal,
 			ExitSignal exitSignal
 	) {
-		SwingTradingScreenData data = SwingTradingScreenData.builder()
-				.longRangeImpulseData(createImpulseData(longRangeImpulseLast, longRangeImpulseCurrent))
-				.shortRangeImpulseData(createImpulseData(shortRangeImpulseLast, shortRangeImpulseCurrent))
+		SwingTradingScreenRecord record = SwingTradingScreenRecord.builder()
+				.longRangeImpulseRecord(createImpulseData(longRangeImpulseLast, longRangeImpulseCurrent))
+				.shortRangeImpulseRecord(createImpulseData(shortRangeImpulseLast, shortRangeImpulseCurrent))
 				.build();
 		
-		assertEquals(last, data.getLastTradingDirection());
-		assertEquals(current, data.getTradingDirection());
+		assertEquals(last, record.getLastTradingDirection());
+		assertEquals(current, record.getTradingDirection());
 	}
 
 	@ParameterizedTest
@@ -92,15 +92,15 @@ class SwingTradingScreenDataTest {
 			EntrySignal entrySignal,
 			ExitSignal exitSignal
 	) {
-		SwingTradingScreenData data = SwingTradingScreenData.builder()
-				.longRangeImpulseData(createImpulseData(longRangeImpulseLast, longRangeImpulseCurrent))
-				.shortRangeImpulseData(createImpulseData(shortRangeImpulseLast, shortRangeImpulseCurrent))
+		SwingTradingScreenRecord record = SwingTradingScreenRecord.builder()
+				.longRangeImpulseRecord(createImpulseData(longRangeImpulseLast, longRangeImpulseCurrent))
+				.shortRangeImpulseRecord(createImpulseData(shortRangeImpulseLast, shortRangeImpulseCurrent))
 				.build();
 		
 		if(entrySignal == null) {
-			assertTrue(data.getEntrySignal().isEmpty());
+			assertTrue(record.getEntrySignal().isEmpty());
 		} else {
-			assertEquals(entrySignal, data.getEntrySignal().get());
+			assertEquals(entrySignal, record.getEntrySignal().get());
 		}
 	}
 
@@ -117,21 +117,21 @@ class SwingTradingScreenDataTest {
 			EntrySignal entrySignal,
 			ExitSignal exitSignal
 	) {
-		SwingTradingScreenData data = SwingTradingScreenData.builder()
-				.longRangeImpulseData(createImpulseData(longRangeImpulseLast, longRangeImpulseCurrent))
-				.shortRangeImpulseData(createImpulseData(shortRangeImpulseLast, shortRangeImpulseCurrent))
+		SwingTradingScreenRecord record = SwingTradingScreenRecord.builder()
+				.longRangeImpulseRecord(createImpulseData(longRangeImpulseLast, longRangeImpulseCurrent))
+				.shortRangeImpulseRecord(createImpulseData(shortRangeImpulseLast, shortRangeImpulseCurrent))
 				.build();
 		
 		try {
-			data.getExitSignal();
+			record.getExitSignal();
 			fail("UnsupportedOperationException expected");
 		} catch (UnsupportedOperationException e) {
 			// OK
 		}
 	}
 	
-	ImpulseData createImpulseData(TradingDirection last, TradingDirection current) {
-		return ImpulseData.builder()
+	ImpulseRecord createImpulseData(TradingDirection last, TradingDirection current) {
+		return ImpulseRecord.builder()
 				.lastTradingDirection(last)
 				.tradingDirection(current)
 				.build();

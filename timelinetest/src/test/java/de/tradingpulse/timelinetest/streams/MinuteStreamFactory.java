@@ -19,9 +19,9 @@ import org.apache.kafka.streams.kstream.TimeWindows;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.WindowStore;
 
-import de.tradingpulse.common.stream.data.OHLCVData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.utils.TimeUtils;
+import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
@@ -41,7 +41,7 @@ public class MinuteStreamFactory extends AbstractStreamFactory {
 	private JsonSerdeRegistry serdeRegistry;
 	
 	@Inject @Named(SecondsStreamsFactory.TOPIC_DATA_15_SEC)
-	private KStream<SymbolTimestampKey, OHLCVData> data15Sec;
+	private KStream<SymbolTimestampKey, OHLCVRecord> data15Sec;
 	
 	@Override
 	protected String[] getTopicNames() {
@@ -63,7 +63,7 @@ public class MinuteStreamFactory extends AbstractStreamFactory {
 	}
 	
 	@Singleton @Named(TOPIC_DATA_AGG_MINUTE)
-	KStream<SymbolTimestampKey, OHLCVData> dataAggMinuteStream(final ConfiguredStreamBuilder builder)
+	KStream<SymbolTimestampKey, OHLCVRecord> dataAggMinuteStream(final ConfiguredStreamBuilder builder)
 	throws InterruptedException, ExecutionException
 	{
 		data15Sec.map((data15Key, data15Value) -> {
@@ -78,9 +78,9 @@ public class MinuteStreamFactory extends AbstractStreamFactory {
 		})
 		.through(TOPIC_DATA_15SECS_GROUPED_MINUTELY, Produced.with(
 				serdeRegistry.getSerde(SymbolTimestampKey.class), 
-				serdeRegistry.getSerde(OHLCVData.class)))
+				serdeRegistry.getSerde(OHLCVRecord.class)))
 		.groupByKey()
-		.<OHLCVData>aggregate(() -> null, (key, ohlcvData, aggregateOhlcvData ) -> {
+		.<OHLCVRecord>aggregate(() -> null, (key, ohlcvData, aggregateOhlcvData ) -> {
 			
 			if(aggregateOhlcvData == null) {
 				// the data gets the same key as the group (essentially setting the timestamp to week start) 
@@ -89,24 +89,24 @@ public class MinuteStreamFactory extends AbstractStreamFactory {
 			}
 			return aggregateOhlcvData.aggregateWith(ohlcvData);
 		}, Materialized
-				.<SymbolTimestampKey, OHLCVData, KeyValueStore<Bytes,byte[]>>as(STORE_MINUTE_AGGREGATE)
+				.<SymbolTimestampKey, OHLCVRecord, KeyValueStore<Bytes,byte[]>>as(STORE_MINUTE_AGGREGATE)
 				.withKeySerde(serdeRegistry.getSerde(SymbolTimestampKey.class))
-				.withValueSerde(serdeRegistry.getSerde(OHLCVData.class))
+				.withValueSerde(serdeRegistry.getSerde(OHLCVRecord.class))
 				.withCachingDisabled())
 		.toStream()
 		.to(TOPIC_DATA_AGG_MINUTE, Produced.with(
 				serdeRegistry.getSerde(SymbolTimestampKey.class), 
-				serdeRegistry.getSerde(OHLCVData.class)));
+				serdeRegistry.getSerde(OHLCVRecord.class)));
 		
 		return builder
 				.stream(TOPIC_DATA_AGG_MINUTE, Consumed.with(
 						serdeRegistry.getSerde(SymbolTimestampKey.class), 
-						serdeRegistry.getSerde(OHLCVData.class))
+						serdeRegistry.getSerde(OHLCVRecord.class))
 						.withOffsetResetPolicy(AutoOffsetReset.LATEST));
 	}
 	
 	@Singleton @Named(TOPIC_DATA_WINDOWED_MINUTE)
-	KStream<SymbolTimestampKey, OHLCVData> dataWinMinuteStream(final ConfiguredStreamBuilder builder)
+	KStream<SymbolTimestampKey, OHLCVRecord> dataWinMinuteStream(final ConfiguredStreamBuilder builder)
 	throws InterruptedException, ExecutionException
 	{
 		data15Sec.map((data15Key, data15Value) -> {
@@ -114,19 +114,19 @@ public class MinuteStreamFactory extends AbstractStreamFactory {
 		})
 		.through(TOPIC_DATA_15SECS_GROUPED_SYMBOL, Produced.with(
 				serdeRegistry.getSerde(String.class), 
-				serdeRegistry.getSerde(OHLCVData.class)))
+				serdeRegistry.getSerde(OHLCVRecord.class)))
 		.groupByKey()
 		.windowedBy(TimeWindows.of(Duration.ofMinutes(1)).advanceBy(Duration.ofMinutes(1)))
-		.<OHLCVData>aggregate(() -> null, (key, ohlcvData, aggregateOhlcvData ) -> {
+		.<OHLCVRecord>aggregate(() -> null, (key, ohlcvData, aggregateOhlcvData ) -> {
 			
 			if(aggregateOhlcvData == null) {
 				return ohlcvData;
 			}
 			return aggregateOhlcvData.aggregateWith(ohlcvData);
 		}, Materialized
-				.<String, OHLCVData, WindowStore<Bytes,byte[]>>as(STORE_SYMBOL_AGGREGATE)
+				.<String, OHLCVRecord, WindowStore<Bytes,byte[]>>as(STORE_SYMBOL_AGGREGATE)
 				.withKeySerde(serdeRegistry.getSerde(String.class))
-				.withValueSerde(serdeRegistry.getSerde(OHLCVData.class))
+				.withValueSerde(serdeRegistry.getSerde(OHLCVRecord.class))
 				.withCachingDisabled())
 		.toStream()
 		.map((windowedSymbol, aggregatedValue) -> {
@@ -142,12 +142,12 @@ public class MinuteStreamFactory extends AbstractStreamFactory {
 		})
 		.to(TOPIC_DATA_WINDOWED_MINUTE, Produced.with(
 				serdeRegistry.getSerde(SymbolTimestampKey.class), 
-				serdeRegistry.getSerde(OHLCVData.class)));
+				serdeRegistry.getSerde(OHLCVRecord.class)));
 		
 		return builder
 				.stream(TOPIC_DATA_WINDOWED_MINUTE, Consumed.with(
 						serdeRegistry.getSerde(SymbolTimestampKey.class), 
-						serdeRegistry.getSerde(OHLCVData.class))
+						serdeRegistry.getSerde(OHLCVRecord.class))
 						.withOffsetResetPolicy(AutoOffsetReset.LATEST));
 	}
 }

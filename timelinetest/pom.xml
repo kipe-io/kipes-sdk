@@ -25,6 +25,11 @@
 			<artifactId>streams</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.tradingpulse.stage</groupId>
+			<artifactId>sourcedata</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>ch.qos.logback</groupId>

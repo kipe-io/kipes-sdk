@@ -9,8 +9,8 @@ import org.apache.kafka.streams.Topology.AutoOffsetReset;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.data.OHLCVDataRaw;
 import de.tradingpulse.stage.sourcedata.SourceDataStageConstants;
+import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRawRecord;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
@@ -33,12 +33,12 @@ class OHLCVDailyRawStream extends AbstractStreamFactory {
 	
 	@Singleton
     @Named(TOPIC_OHLCV_DAILY_RAW)
-    KStream<String, OHLCVDataRaw> ohlcvDailyRawStream(final ConfiguredStreamBuilder builder) {
+    KStream<String, OHLCVRawRecord> ohlcvDailyRawStream(final ConfiguredStreamBuilder builder) {
 		
 		return builder.stream(
         		TOPIC_OHLCV_DAILY_RAW,
         		Consumed
-        		.with(Serdes.String(), jsonSerdeRegistry.getSerde(OHLCVDataRaw.class))
+        		.with(Serdes.String(), jsonSerdeRegistry.getSerde(OHLCVRawRecord.class))
         		.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
     }
 }

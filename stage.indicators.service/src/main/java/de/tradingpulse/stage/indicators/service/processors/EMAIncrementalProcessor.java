@@ -12,10 +12,10 @@ import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
-import de.tradingpulse.common.stream.data.DoubleData;
-import de.tradingpulse.common.stream.data.OHLCVData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
+import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
@@ -52,21 +52,21 @@ class EMAIncrementalProcessor extends AbstractProcessorFactory {
 		
 		// EMA(13) weekly incremental
 		initEMAIncrementalStream(
-				indicatorsStreamsFacade.getEma13WeeklyIncrementalStreamName(), 
+				indicatorsStreamsFacade.getEma13WeeklyStreamName(), 
 				13, 
-				sourceDataStreamsFacade.getOhlcvWeeklyIncrementalStream());
+				sourceDataStreamsFacade.getOhlcvWeeklyStream());
 		
 		// EMA(26) weekly incremental
 		initEMAIncrementalStream(
-				indicatorsStreamsFacade.getEma26WeeklyIncrementalStreamName(), 
+				indicatorsStreamsFacade.getEma26WeeklyStreamName(), 
 				26, 
-				sourceDataStreamsFacade.getOhlcvWeeklyIncrementalStream());
+				sourceDataStreamsFacade.getOhlcvWeeklyStream());
 	}
 	
 	void initEMAIncrementalStream(
 			final String topicName,
 			final int numObservations,
-			final KStream<SymbolTimestampKey, OHLCVData> sourceStream 
+			final KStream<SymbolTimestampKey, OHLCVRecord> sourceStream 
 	) {
 		
 		final String storeName = getProcessorStoreTopicName(topicName);
@@ -86,7 +86,7 @@ class EMAIncrementalProcessor extends AbstractProcessorFactory {
 				storeName)
 		.to(topicName, Produced.with(
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-				jsonSerdeRegistry.getSerde(DoubleData.class)));
+				jsonSerdeRegistry.getSerde(DoubleRecord.class)));
 	}
 	
 	// ------------------------------------------------------------------------

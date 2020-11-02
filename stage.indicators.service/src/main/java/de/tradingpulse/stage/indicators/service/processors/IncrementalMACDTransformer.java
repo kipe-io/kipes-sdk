@@ -8,12 +8,12 @@ import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
 
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
-import de.tradingpulse.common.stream.aggregates.MACDHistogramAggregate;
-import de.tradingpulse.common.stream.data.MACDHistogramData;
-import de.tradingpulse.common.stream.data.OHLCVData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
+import de.tradingpulse.stages.indicators.aggregates.MACDHistogramAggregate;
+import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 
-class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLCVData, KeyValue<SymbolTimestampKey, MACDHistogramData>> {
+class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLCVRecord, KeyValue<SymbolTimestampKey, MACDHistogramRecord>> {
 	
 	private final String storeName;
 	private final int fastPeriod;
@@ -38,7 +38,7 @@ class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLC
 		this.state = (KeyValueStore<String, IncrementalAggregate<MACDHistogramAggregate>>)context.getStateStore(this.storeName);
 	}
 	
-	public KeyValue<SymbolTimestampKey, MACDHistogramData> transform(SymbolTimestampKey key, OHLCVData value) {
+	public KeyValue<SymbolTimestampKey, MACDHistogramRecord> transform(SymbolTimestampKey key, OHLCVRecord value) {
 		
 		IncrementalAggregate<MACDHistogramAggregate> incrementalAggregate = Optional
 				.ofNullable(this.state.get(key.getSymbol()))
@@ -48,18 +48,19 @@ class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLC
 				.ofNullable(incrementalAggregate.getAggregate(key.getTimestamp()))
 				.orElseGet(() -> new MACDHistogramAggregate(this.fastPeriod, this.slowPeriod, this.signalPeriod));
 		
-		MACDHistogramData macdHistogramData = macdAggregate.aggregate(value.getClose());
+		MACDHistogramRecord macdHistogramRecord = macdAggregate.aggregate(value.getClose());
 
 		incrementalAggregate.setAggregate(key.getTimestamp(), macdAggregate);
 		this.state.put(key.getSymbol(), incrementalAggregate);
 		
-		if(macdHistogramData == null) {
+		if(macdHistogramRecord == null) {
 			return null;
 		}
 		
-		macdHistogramData.setKey(key);
+		macdHistogramRecord.setKey(value.getKey());
+		macdHistogramRecord.setTimeRange(value.getTimeRange());
 		
-		return new KeyValue<>(key, macdHistogramData); 
+		return new KeyValue<>(key, macdHistogramRecord); 
 	}
 	
 	public void close() { 

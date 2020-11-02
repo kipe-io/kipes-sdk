@@ -18,6 +18,17 @@ class TimeUtilsTest {
 	}
 
 	@Test
+	void test_getStartOfDayTimestampUTC() {
+		// Tuesday, 2020-09-01 09:34:31 UTC
+		long timestampMillisUTC = 1598952871000L;
+		
+		// Tuesday, 2020-09-01 00:00:00 UTC
+		long startOfDay = 1598918400000L;
+		
+		assertEquals(startOfDay, TimeUtils.getStartOfDayTimestampUTC(timestampMillisUTC));
+	}
+
+	@Test
 	void test_getStartOfMinuteTimestampUTC() {
 		// Tuesday, 2020-09-01 09:34:31 UTC
 		long timestampMillisUTC = 1598952871000L;

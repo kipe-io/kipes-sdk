@@ -7,13 +7,13 @@ import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
 
-import de.tradingpulse.common.stream.aggregates.ImpulseAggregate;
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
-import de.tradingpulse.common.stream.data.ImpulseData;
-import de.tradingpulse.common.stream.data.ImpulseSourceData;
-import de.tradingpulse.common.stream.data.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.systems.aggregates.ImpulseAggregate;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseSourceRecord;
 
-public class IncrementalImpulseTransformer implements Transformer<SymbolTimestampKey, ImpulseSourceData, KeyValue<SymbolTimestampKey, ImpulseData>> {
+public class IncrementalImpulseTransformer implements Transformer<SymbolTimestampKey, ImpulseSourceRecord, KeyValue<SymbolTimestampKey, ImpulseRecord>> {
 	
 	private final String storeName;
 	private KeyValueStore<String, IncrementalAggregate<ImpulseAggregate>> state;
@@ -27,7 +27,7 @@ public class IncrementalImpulseTransformer implements Transformer<SymbolTimestam
 		this.state = (KeyValueStore<String, IncrementalAggregate<ImpulseAggregate>>)context.getStateStore(this.storeName);
 	}
 	
-	public KeyValue<SymbolTimestampKey, ImpulseData> transform(SymbolTimestampKey key, ImpulseSourceData value) {
+	public KeyValue<SymbolTimestampKey, ImpulseRecord> transform(SymbolTimestampKey key, ImpulseSourceRecord value) {
 		
 		IncrementalAggregate<ImpulseAggregate> incrementalAggregate = Optional
 				.ofNullable(this.state.get(key.getSymbol()))
@@ -37,17 +37,19 @@ public class IncrementalImpulseTransformer implements Transformer<SymbolTimestam
 				.ofNullable(incrementalAggregate.getAggregate(key.getTimestamp()))
 				.orElseGet(ImpulseAggregate::new);
 		
-		ImpulseData impulseData = impulseAggregate.aggregate(value.getEmaData(), value.getMacdHistogramData());
+		ImpulseRecord impulseRecord = impulseAggregate.aggregate(value.getEmaData(), value.getMacdHistogramData());
 		incrementalAggregate.setAggregate(key.getTimestamp(), impulseAggregate);
+		if(impulseRecord != null) {
+			impulseRecord.setKey(value.getKey());
+			impulseRecord.setTimeRange(value.getTimeRange());			
+		}
 		this.state.put(key.getSymbol(), incrementalAggregate);
 		
-		if(impulseData == null ) {
+		if(impulseRecord == null ) {
 			return null;
 		}
 		
-		impulseData.setKey(key);
-		
-		return new KeyValue<>(key, impulseData); 
+		return new KeyValue<>(key, impulseRecord); 
 	}
 	
 	public void close() { 

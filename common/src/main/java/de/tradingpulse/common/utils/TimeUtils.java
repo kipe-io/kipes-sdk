@@ -26,7 +26,23 @@ public class TimeUtils {
 	}
 
 	/**
-	 * Returns the timestamp of the fist second of the minute the given timestamp is at. 
+	 * Returns the timestamp of the first second of the day the given timestamp is at. 
+	 */
+	public static final Long getStartOfDayTimestampUTC(Long timestampMillisUTC) {
+		
+		long epochSecond = timestampMillisUTC / 1000;
+		return LocalDateTime.ofEpochSecond(epochSecond, 0, ZoneOffset.UTC)
+				.atOffset(ZoneOffset.UTC)
+				.toZonedDateTime()
+				.withHour(0)
+				.withMinute(0)
+				.withSecond(0)
+				.withNano(0)
+				.toEpochSecond() * 1000;
+	}
+	
+	/**
+	 * Returns the timestamp of the first second of the minute the given timestamp is at. 
 	 */
 	public static final Long getStartOfMinuteTimestampUTC(Long timestampMillisUTC) {
 		
