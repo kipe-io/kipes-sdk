@@ -45,12 +45,12 @@ class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLC
 				.orElseGet(IncrementalAggregate::new);
 		
 		MACDHistogramAggregate macdAggregate = Optional
-				.ofNullable(incrementalAggregate.getAggregate(key.getTimestamp()))
+				.ofNullable(incrementalAggregate.getAggregate(value.getTimeRangeTimestamp()))
 				.orElseGet(() -> new MACDHistogramAggregate(this.fastPeriod, this.slowPeriod, this.signalPeriod));
 		
 		MACDHistogramRecord macdHistogramRecord = macdAggregate.aggregate(value.getClose());
 
-		incrementalAggregate.setAggregate(key.getTimestamp(), macdAggregate);
+		incrementalAggregate.setAggregate(value.getTimeRangeTimestamp(), macdAggregate);
 		this.state.put(key.getSymbol(), incrementalAggregate);
 		
 		if(macdHistogramRecord == null) {

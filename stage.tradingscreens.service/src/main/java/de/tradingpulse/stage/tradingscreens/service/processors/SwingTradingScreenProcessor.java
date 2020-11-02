@@ -18,7 +18,6 @@ import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
-import de.tradingpulse.common.utils.TimeUtils;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
 import de.tradingpulse.stage.tradingscreens.data.SwingTradingScreenRecord;
@@ -74,56 +73,57 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 		builder.addStateStore(dedupStoreBuilder);
 		
 		// create topology
-		KStream<SymbolTimestampKey, SwingTradingScreenRecord> stsrStream = shortTimeRangeStream
+		KStream<SymbolTimestampKey, SwingTradingScreenRecord> stsrStream = 
+				shortTimeRangeStream
 		
-		// map daily impulse data onto weekly key
-		.map((key, value) -> {
-			SymbolTimestampKey weeklyKey = SymbolTimestampKey.builder()
-					.timestamp(TimeUtils.getStartOfWeekTimestampUTC(key.getTimestamp()))
-					.symbol(key.getSymbol())
-					.build();
-			
-			return new KeyValue<>(weeklyKey, value);
-		})
-		// push to intermediate sink as the subsequent join would otherwise create a topic by itself
-		.through(shortTimeRangeReKeyedTopicName, Produced.with(
-				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-				jsonSerdeRegistry.getSerde(ImpulseRecord.class)))
-		// join daily and weekly impulse
-		.join(
-				
-				longTimeRangeStream,
-				
-				// join logic below delivers swing trading screen data
-				(shortTimeRangeImpulseRecord, longTimeRangeImpulseRecord) -> SwingTradingScreenRecord.builder()
-							.key(shortTimeRangeImpulseRecord.getKey())
-							.timeRange(shortTimeRangeImpulseRecord.getTimeRange())
-							.shortRangeImpulseRecord(shortTimeRangeImpulseRecord)
-							.longRangeImpulseRecord(longTimeRangeImpulseRecord)
-							.build(),
-							
-				// window size can be small as we know the data is at minimum at minute intervals
-				// TODO: verify storeRetentionPeriod is suitable
-				// background: I assume we would need to have a retention period 
-				// for as long as the long time range is  
-				JoinWindows
-				.of(windowSize)
-				.grace(storeRetentionPeriod),
-				// configuration of the underlying window join stores for keeping the data
-				StreamJoined.<SymbolTimestampKey, ImpulseRecord, ImpulseRecord>with(
-						Stores.persistentWindowStore(
-								topicName+"-join-store-left", 
-								storeRetentionPeriod, 
-								windowSize, 
-								retainDuplicates), 
-						Stores.persistentWindowStore(
-								topicName+"-join-store-right", 
-								storeRetentionPeriod, 
-								windowSize, 
-								retainDuplicates))
-				.withKeySerde(jsonSerdeRegistry.getSerde(SymbolTimestampKey.class))
-				.withValueSerde(jsonSerdeRegistry.getSerde(ImpulseRecord.class))
-				.withOtherValueSerde(jsonSerdeRegistry.getSerde(ImpulseRecord.class)));
+//				// map daily impulse data onto weekly key
+//				.map((key, value) -> {
+//					SymbolTimestampKey weeklyKey = SymbolTimestampKey.builder()
+//							.timestamp(TimeUtils.getStartOfWeekTimestampUTC(key.getTimestamp()))
+//							.symbol(key.getSymbol())
+//							.build();
+//					
+//					return new KeyValue<>(weeklyKey, value);
+//				})
+//				// push to intermediate sink as the subsequent join would otherwise create a topic by itself
+//				.through(shortTimeRangeReKeyedTopicName, Produced.with(
+//						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
+//						jsonSerdeRegistry.getSerde(ImpulseRecord.class)))
+				// join daily and weekly impulse
+				.join(
+						
+						longTimeRangeStream,
+						
+						// join logic below delivers swing trading screen data
+						(shortTimeRangeImpulseRecord, longTimeRangeImpulseRecord) -> SwingTradingScreenRecord.builder()
+									.key(shortTimeRangeImpulseRecord.getKey())
+									.timeRange(shortTimeRangeImpulseRecord.getTimeRange())
+									.shortRangeImpulseRecord(shortTimeRangeImpulseRecord)
+									.longRangeImpulseRecord(longTimeRangeImpulseRecord)
+									.build(),
+									
+						// window size can be small as we know the data is at minimum at minute intervals
+						// TODO: verify storeRetentionPeriod is suitable
+						// background: I assume we would need to have a retention period 
+						// for as long as the long time range is 
+						JoinWindows
+						.of(windowSize)
+						.grace(storeRetentionPeriod),
+						// configuration of the underlying window join stores for keeping the data
+						StreamJoined.<SymbolTimestampKey, ImpulseRecord, ImpulseRecord>with(
+								Stores.persistentWindowStore(
+										topicName+"-join-store-left", 
+										storeRetentionPeriod, 
+										windowSize, 
+										retainDuplicates), 
+								Stores.persistentWindowStore(
+										topicName+"-join-store-right", 
+										storeRetentionPeriod, 
+										windowSize, 
+										retainDuplicates))
+						.withKeySerde(jsonSerdeRegistry.getSerde(SymbolTimestampKey.class))
+						.withValueSerde(jsonSerdeRegistry.getSerde(ImpulseRecord.class))
+						.withOtherValueSerde(jsonSerdeRegistry.getSerde(ImpulseRecord.class)));
 		
 		stsrStream
 		// deduplicate by both impulse data ignoring timestamps

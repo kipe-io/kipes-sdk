@@ -72,6 +72,9 @@ class OHLCVWeeklyProcessor extends AbstractProcessorFactory {
 				.withValueSerde(jsonSerdeRegistry.getSerde(OHLCVRecord.class))
 				.withCachingDisabled())	// disabled so that incremental aggregates are available
 		.toStream()
+		// map weekly keys back to change date
+		.map((weeklyKey, weeklyRecord) -> new KeyValue<>(weeklyRecord.getKey(), weeklyRecord))
+		// push to sink
 		.to(sourceDataStreamsFacade.getOhlcvWeeklyStreamName(), Produced.with(
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
 				jsonSerdeRegistry.getSerde(OHLCVRecord.class)));

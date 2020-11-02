@@ -43,13 +43,13 @@ class IncrementalEMATransformer implements Transformer<SymbolTimestampKey, OHLCV
 				.orElseGet(IncrementalAggregate::new);
 		
 		EMAAggregate emaAggregate = Optional
-				.ofNullable(incrementalAggregate.getAggregate(key.getTimestamp()))
+				.ofNullable(incrementalAggregate.getAggregate(value.getTimeRangeTimestamp()))
 				.orElseGet(() -> new EMAAggregate(this.numObservations));
 		
 		DoubleRecord emaData = emaAggregate.aggregate(value.getClose());
 		LOG.debug("transform@{}: {}, {} -> {}", this.storeName, key, value, emaData);
 
-		boolean stored = incrementalAggregate.setAggregate(key.getTimestamp(), emaAggregate);
+		boolean stored = incrementalAggregate.setAggregate(value.getTimeRangeTimestamp(), emaAggregate);
 		
 		if(! stored ) {
 			LOG.warn("transform@{}: out of order {}, must not be earlier than {}. Value ignored.", this.storeName, value, incrementalAggregate.getStableTimestamp());

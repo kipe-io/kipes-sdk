@@ -34,11 +34,11 @@ public class IncrementalImpulseTransformer implements Transformer<SymbolTimestam
 				.orElseGet(IncrementalAggregate::new);
 		
 		ImpulseAggregate impulseAggregate = Optional
-				.ofNullable(incrementalAggregate.getAggregate(key.getTimestamp()))
+				.ofNullable(incrementalAggregate.getAggregate(value.getTimeRangeTimestamp()))
 				.orElseGet(ImpulseAggregate::new);
 		
 		ImpulseRecord impulseRecord = impulseAggregate.aggregate(value.getEmaData(), value.getMacdHistogramData());
-		incrementalAggregate.setAggregate(key.getTimestamp(), impulseAggregate);
+		incrementalAggregate.setAggregate(value.getTimeRangeTimestamp(), impulseAggregate);
 		if(impulseRecord != null) {
 			impulseRecord.setKey(value.getKey());
 			impulseRecord.setTimeRange(value.getTimeRange());			

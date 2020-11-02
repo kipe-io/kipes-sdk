@@ -1,6 +1,7 @@
 package de.tradingpulse.stage.systems.service.processors;
 
 import java.time.Duration;
+import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -44,7 +45,7 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 	private JsonSerdeRegistry jsonSerdeRegistry;
 	
 	@Override
-	protected void initProcessors() {
+	protected void initProcessors() throws InterruptedException, ExecutionException {
 		// impulse daily
 		createImpulseStream(
 				systemsStreamsFacade.getImpulseDailyStreamName(), 
@@ -62,7 +63,7 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 			final String topicName,
 			final KStream<SymbolTimestampKey, DoubleRecord> emaStream,
 			final KStream<SymbolTimestampKey, MACDHistogramRecord> macdStream 
-	) {
+	) throws InterruptedException, ExecutionException {
 
 		// setup join parameters
 		final Duration storeRetentionPeriod = Duration.ofMinutes(10);
