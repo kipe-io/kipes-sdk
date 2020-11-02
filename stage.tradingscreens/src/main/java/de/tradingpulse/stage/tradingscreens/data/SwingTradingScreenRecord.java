@@ -12,32 +12,33 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class SwingTradingScreenData {
+@SuperBuilder
+public class SwingTradingScreenRecord extends AbstractIncrementalAggregateRecord {
 
-	private SymbolTimestampKey key;
-	private ImpulseRecord longRangeImpulseData;
-	private	ImpulseRecord	shortRangeImpulseData;
+	private ImpulseRecord longRangeImpulseRecord;
+	private	ImpulseRecord shortRangeImpulseRecord;
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	public TradingDirection getLastTradingDirection() {
-		return this.longRangeImpulseData.getLastTradingDirection();
+		return this.longRangeImpulseRecord.getLastTradingDirection();
 	}
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	public TradingDirection getTradingDirection() {
-		return this.longRangeImpulseData.getTradingDirection();
+		return this.longRangeImpulseRecord.getTradingDirection();
 	}
 
 	/**
@@ -58,15 +59,15 @@ public class SwingTradingScreenData {
 		// see test class for complete list of signals.
 		// 
 		// The 
-		if(longRangeImpulseData == null || shortRangeImpulseData == null) {
+		if(longRangeImpulseRecord == null || shortRangeImpulseRecord == null) {
 			return Optional.empty();
 		}
 		
-		TradingDirection longRangeChange = this.longRangeImpulseData.getChangeTradingDirection();
-		TradingDirection longRangeDirection = this.longRangeImpulseData.getTradingDirection();
+		TradingDirection longRangeChange = this.longRangeImpulseRecord.getChangeTradingDirection();
+		TradingDirection longRangeDirection = this.longRangeImpulseRecord.getTradingDirection();
 		
-		TradingDirection shortRangeChange = this.shortRangeImpulseData.getChangeTradingDirection();
-		TradingDirection shortRangeDirection = this.shortRangeImpulseData.getTradingDirection();
+		TradingDirection shortRangeChange = this.shortRangeImpulseRecord.getChangeTradingDirection();
+		TradingDirection shortRangeDirection = this.shortRangeImpulseRecord.getTradingDirection();
 		
 		if(longRangeChange == SHORT) {
 			switch(shortRangeChange) {
