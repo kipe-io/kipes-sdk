@@ -76,19 +76,6 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 		KStream<SymbolTimestampKey, SwingTradingScreenRecord> stsrStream = 
 				shortTimeRangeStream
 		
-//				// map daily impulse data onto weekly key
-//				.map((key, value) -> {
-//					SymbolTimestampKey weeklyKey = SymbolTimestampKey.builder()
-//							.timestamp(TimeUtils.getStartOfWeekTimestampUTC(key.getTimestamp()))
-//							.symbol(key.getSymbol())
-//							.build();
-//					
-//					return new KeyValue<>(weeklyKey, value);
-//				})
-//				// push to intermediate sink as the subsequent join would otherwise create a topic by itself
-//				.through(shortTimeRangeReKeyedTopicName, Produced.with(
-//						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-//						jsonSerdeRegistry.getSerde(ImpulseRecord.class)))
 				// join daily and weekly impulse
 				.join(
 						
