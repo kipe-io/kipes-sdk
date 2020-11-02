@@ -10,7 +10,7 @@ import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.systems.SystemsStageConstants;
-import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
@@ -20,7 +20,7 @@ import io.micronaut.context.annotation.Factory;
 class ImpulseStreams extends AbstractStreamFactory {
 
 	static final String TOPIC_IMPULSE_DAILY = SystemsStageConstants.STAGE_NAME + "-" + "impulse_daily";
-	static final String TOPIC_IMPULSE_WEEKLY_INCREMENTAL = SystemsStageConstants.STAGE_NAME + "-" + "impulse_weekly_incremental";
+	static final String TOPIC_IMPULSE_WEEKLY = SystemsStageConstants.STAGE_NAME + "-" + "impulse_weekly";
 
 	@Inject
 	private JsonSerdeRegistry jsonSerdeRegistry;
@@ -29,29 +29,29 @@ class ImpulseStreams extends AbstractStreamFactory {
 	protected String[] getTopicNames() {
 		return new String[] {
 				TOPIC_IMPULSE_DAILY,
-				TOPIC_IMPULSE_WEEKLY_INCREMENTAL
+				TOPIC_IMPULSE_WEEKLY
 		};
 	}
 	
 	@Singleton
 	@Named(TOPIC_IMPULSE_DAILY)
-	KStream<SymbolTimestampKey, ImpulseData> impulseDailyStream(final ConfiguredStreamBuilder builder) {
+	KStream<SymbolTimestampKey, ImpulseRecord> impulseDailyStream(final ConfiguredStreamBuilder builder) {
 		
 		return builder
 				.stream(TOPIC_IMPULSE_DAILY, Consumed.with(
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-						jsonSerdeRegistry.getSerde(ImpulseData.class))
+						jsonSerdeRegistry.getSerde(ImpulseRecord.class))
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
 	}
 	
 	@Singleton
-	@Named(TOPIC_IMPULSE_WEEKLY_INCREMENTAL)
-	KStream<SymbolTimestampKey, ImpulseData> impulseWeeklyIncrementalStream(final ConfiguredStreamBuilder builder) {
+	@Named(TOPIC_IMPULSE_WEEKLY)
+	KStream<SymbolTimestampKey, ImpulseRecord> impulseWeeklyStream(final ConfiguredStreamBuilder builder) {
 		
 		return builder
-				.stream(TOPIC_IMPULSE_WEEKLY_INCREMENTAL, Consumed.with(
+				.stream(TOPIC_IMPULSE_WEEKLY, Consumed.with(
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-						jsonSerdeRegistry.getSerde(ImpulseData.class))
+						jsonSerdeRegistry.getSerde(ImpulseRecord.class))
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
 	}
 }

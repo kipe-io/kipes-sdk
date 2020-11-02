@@ -3,7 +3,7 @@ package de.tradingpulse.stage.systems.aggregates;
 import de.tradingpulse.common.stream.aggregates.DeepCloneable;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
-import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 import lombok.AllArgsConstructor;
@@ -15,54 +15,57 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ImpulseAggregate implements DeepCloneable<ImpulseAggregate>{
 
-	private ImpulseData impulseData;
+	private ImpulseRecord impulseRecord;
 	
 	public ImpulseAggregate deepClone() {
 		ImpulseAggregate clone = new ImpulseAggregate();
 		
-		if(this.impulseData == null) {
+		if(this.impulseRecord == null) {
 			return clone;
 		}
 		
-		SymbolTimestampKey keyClone = impulseData.getKey() == null? null : SymbolTimestampKey.builder()
-				.symbol(impulseData.getKey().getSymbol())
-				.timestamp(impulseData.getKey().getTimestamp())
+		SymbolTimestampKey keyClone = impulseRecord.getKey() == null? null : SymbolTimestampKey.builder()
+				.symbol(impulseRecord.getKey().getSymbol())
+				.timestamp(impulseRecord.getKey().getTimestamp())
 				.build();
 		
-		clone.impulseData = ImpulseData.builder()
+		clone.impulseRecord = ImpulseRecord.builder()
 				.key(keyClone)
-				.lastTradingDirection(impulseData.getLastTradingDirection())
-				.tradingDirection(impulseData.getTradingDirection())
+				.timeRange(impulseRecord.getTimeRange())
+				.lastTradingDirection(impulseRecord.getLastTradingDirection())
+				.tradingDirection(impulseRecord.getTradingDirection())
 				.build();
 		
 		return clone;
 	}
 	
-	public ImpulseData aggregate(DoubleRecord emaData, MACDHistogramRecord macdHistogramData) {
+	public ImpulseRecord aggregate(DoubleRecord emaRecord, MACDHistogramRecord macdHistogramRecord) {
 		
 		TradingDirection tradingDirection = null;
 		
-		if(emaData == null || macdHistogramData == null || emaData.getVChange() == null || macdHistogramData.getHChange() == null) {
-			this.impulseData = null;
+		if(emaRecord == null || macdHistogramRecord == null || emaRecord.getVChange() == null || macdHistogramRecord.getHChange() == null) {
+			this.impulseRecord = null;
 			return null;
 		}
 		
-		if(emaData.getVChange() > 0 && macdHistogramData.getHChange() > 0) {
+		if(emaRecord.getVChange() > 0 && macdHistogramRecord.getHChange() > 0) {
 			// if both indicators raise then it's a long
 			tradingDirection = TradingDirection.LONG;
 			
-		} else if(emaData.getVChange() < 0 && macdHistogramData.getHChange() < 0) {
+		} else if(emaRecord.getVChange() < 0 && macdHistogramRecord.getHChange() < 0) {
 			// if both indicators fall then it's a short
 			tradingDirection = TradingDirection.SHORT;
 		} else {
 			tradingDirection = TradingDirection.NEUTRAL;
 		}
 		
-		this.impulseData = ImpulseData.builder()
+		this.impulseRecord = ImpulseRecord.builder()
+				.key(emaRecord.getKey())
+				.timeRange(emaRecord.getTimeRange())
 				.tradingDirection(tradingDirection)
-				.lastTradingDirection(this.impulseData == null? null : this.impulseData.getTradingDirection())
+				.lastTradingDirection(this.impulseRecord == null? null : this.impulseRecord.getTradingDirection())
 				.build();
 		
-		return this.impulseData;
+		return this.impulseRecord;
 	}
 }

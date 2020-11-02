@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
-import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,8 +27,8 @@ import lombok.NoArgsConstructor;
 public class SwingTradingScreenData {
 
 	private SymbolTimestampKey key;
-	private ImpulseData longRangeImpulseData;
-	private	ImpulseData	shortRangeImpulseData;
+	private ImpulseRecord longRangeImpulseData;
+	private	ImpulseRecord	shortRangeImpulseData;
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	public TradingDirection getLastTradingDirection() {

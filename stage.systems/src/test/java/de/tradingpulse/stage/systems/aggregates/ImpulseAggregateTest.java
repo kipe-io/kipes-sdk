@@ -11,8 +11,9 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
-import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 
@@ -28,23 +29,23 @@ class ImpulseAggregateTest {
 	
 	@Test
 	void test_aggregate__calculates_correctly_long() {
-		assertEquals(LONG, new ImpulseAggregate().aggregate(emaData(1.0), macdData(1.0)).getTradingDirection());
+		assertEquals(LONG, new ImpulseAggregate().aggregate(emaRecord(1.0), macdRecord(1.0)).getTradingDirection());
 	}
 
 	@Test
 	void test_aggregate__calculates_correctly_short() {
-		assertEquals(SHORT, new ImpulseAggregate().aggregate(emaData(-1.0), macdData(-1.0)).getTradingDirection());
+		assertEquals(SHORT, new ImpulseAggregate().aggregate(emaRecord(-1.0), macdRecord(-1.0)).getTradingDirection());
 	}
 
 	@Test
 	void test_aggregate__calculates_correctly_neutral() {
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 0.0), macdData( 0.0)).getTradingDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 0.0), macdData(-1.0)).getTradingDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 0.0), macdData( 1.0)).getTradingDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData(-1.0), macdData( 0.0)).getTradingDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 1.0), macdData( 0.0)).getTradingDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData(-1.0), macdData( 1.0)).getTradingDirection());
-		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaData( 1.0), macdData(-1.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaRecord( 0.0), macdRecord( 0.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaRecord( 0.0), macdRecord(-1.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaRecord( 0.0), macdRecord( 1.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaRecord(-1.0), macdRecord( 0.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaRecord( 1.0), macdRecord( 0.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaRecord(-1.0), macdRecord( 1.0)).getTradingDirection());
+		assertEquals(NEUTRAL, new ImpulseAggregate().aggregate(emaRecord( 1.0), macdRecord(-1.0)).getTradingDirection());
 	}
 
 	@Test
@@ -53,27 +54,31 @@ class ImpulseAggregateTest {
 	{
 		TradingDirection lastDirection = NEUTRAL;
 		
-		ImpulseData impulseData = ImpulseData.builder()
+		ImpulseRecord impulseRecord = ImpulseRecord.builder()
+				.key(SymbolTimestampKey.builder()
+						.symbol("symbol")
+						.timestamp(0)
+						.build())
 				.lastTradingDirection(SHORT)
 				.tradingDirection(lastDirection)
 				.build();
 		
-		ImpulseAggregate a = new ImpulseAggregate(impulseData);
+		ImpulseAggregate a = new ImpulseAggregate(impulseRecord);
 		
 		ObjectMapper mapper = new ObjectMapper();
 		String json = mapper.writeValueAsString(a);
 		a = mapper.readValue(json, ImpulseAggregate.class);
 		
-		assertEquals(lastDirection, a.aggregate(emaData(1.0), macdData(1.0)).getLastTradingDirection());
+		assertEquals(lastDirection, a.aggregate(emaRecord(1.0), macdRecord(1.0)).getLastTradingDirection());
 	}
 	
-	private DoubleRecord emaData(double vChange) {
+	private DoubleRecord emaRecord(double vChange) {
 		return DoubleRecord.builder()
 				.vChange(vChange)
 				.build();
 	}
 	
-	private MACDHistogramRecord macdData(double hChange) {
+	private MACDHistogramRecord macdRecord(double hChange) {
 		return MACDHistogramRecord.builder()
 				.hChange(hChange)
 				.build();

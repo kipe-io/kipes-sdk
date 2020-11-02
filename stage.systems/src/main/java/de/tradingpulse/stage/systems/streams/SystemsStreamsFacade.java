@@ -7,7 +7,7 @@ import javax.inject.Singleton;
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
-import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import lombok.Getter;
 
 @Singleton
@@ -15,11 +15,11 @@ import lombok.Getter;
 public final class SystemsStreamsFacade {
 
 	@Inject @Named(ImpulseStreams.TOPIC_IMPULSE_DAILY)
-    private KStream<SymbolTimestampKey, ImpulseData> impulseDailyStream;
+    private KStream<SymbolTimestampKey, ImpulseRecord> impulseDailyStream;
 	private final String impulseDailyStreamName = ImpulseStreams.TOPIC_IMPULSE_DAILY;
 	
-	@Inject @Named(ImpulseStreams.TOPIC_IMPULSE_WEEKLY_INCREMENTAL)
-    private KStream<SymbolTimestampKey, ImpulseData> impulseWeeklyIncrementalStream;
-	private final String impulseWeeklyIncrementalStreamName = ImpulseStreams.TOPIC_IMPULSE_WEEKLY_INCREMENTAL;
+	@Inject @Named(ImpulseStreams.TOPIC_IMPULSE_WEEKLY)
+    private KStream<SymbolTimestampKey, ImpulseRecord> impulseWeeklyStream;
+	private final String impulseWeeklyStreamName = ImpulseStreams.TOPIC_IMPULSE_WEEKLY;
 
 }

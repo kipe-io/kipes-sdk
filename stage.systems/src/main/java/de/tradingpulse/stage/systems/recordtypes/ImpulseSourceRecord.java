@@ -1,18 +1,21 @@
 package de.tradingpulse.stage.systems.recordtypes;
 
-import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class ImpulseSourceData {
+@SuperBuilder
+public class ImpulseSourceRecord extends AbstractIncrementalAggregateRecord {
 	
-	private SymbolTimestampKey key;
 	private DoubleRecord emaData;
 	private MACDHistogramRecord macdHistogramData;
 }

@@ -14,17 +14,17 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 
-class ImpulseDataTest {
+class ImpulseRecordTest {
 
 	@ParameterizedTest
 	@MethodSource("createTradingDirections")
 	void test_getChangeTradingDirection(TradingDirection last, TradingDirection current, TradingDirection change) {
-		ImpulseData data = ImpulseData.builder()
+		ImpulseRecord record = ImpulseRecord.builder()
 				.lastTradingDirection(last)
 				.tradingDirection(current)
 				.build();
 		
-		assertEquals(change, data.getChangeTradingDirection());
+		assertEquals(change, record.getChangeTradingDirection());
 	}
 
 	static Stream<Arguments> createTradingDirections() {

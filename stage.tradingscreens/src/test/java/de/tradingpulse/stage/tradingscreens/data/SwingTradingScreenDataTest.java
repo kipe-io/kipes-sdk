@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
-import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 
 class SwingTradingScreenDataTest {
 
@@ -36,14 +36,14 @@ class SwingTradingScreenDataTest {
 				.symbol("symbol")
 				.timestamp(1)
 				.build();
-		ImpulseData	sID	= createImpulseData(NEUTRAL, LONG);
+		ImpulseRecord	sID	= createImpulseData(NEUTRAL, LONG);
 		sID.setKey(sTs);
 		
 		SymbolTimestampKey	lTs	= SymbolTimestampKey.builder()
 				.symbol("symbol")
 				.timestamp(0)
 				.build();
-		ImpulseData	lID	= createImpulseData(SHORT, NEUTRAL);
+		ImpulseRecord	lID	= createImpulseData(SHORT, NEUTRAL);
 		lID.setKey(lTs);
 		
 		SwingTradingScreenData data = SwingTradingScreenData.builder()
@@ -130,8 +130,8 @@ class SwingTradingScreenDataTest {
 		}
 	}
 	
-	ImpulseData createImpulseData(TradingDirection last, TradingDirection current) {
-		return ImpulseData.builder()
+	ImpulseRecord createImpulseData(TradingDirection last, TradingDirection current) {
+		return ImpulseRecord.builder()
 				.lastTradingDirection(last)
 				.tradingDirection(current)
 				.build();

@@ -7,20 +7,21 @@ import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ImpulseData {
+@SuperBuilder
+public class ImpulseRecord extends AbstractIncrementalAggregateRecord {
 
-	private SymbolTimestampKey key;
 	private TradingDirection tradingDirection;
 	private TradingDirection lastTradingDirection;
 	
@@ -61,7 +62,7 @@ public class ImpulseData {
 						tradingDirection));
 	}
 	
-	public boolean isSameImpulse(ImpulseData other) {
+	public boolean isSameImpulse(ImpulseRecord other) {
 		return this.tradingDirection == other.tradingDirection
 				&& this.lastTradingDirection == other.lastTradingDirection;
 	}

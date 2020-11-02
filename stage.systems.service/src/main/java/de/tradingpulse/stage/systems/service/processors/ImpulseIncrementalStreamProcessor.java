@@ -18,8 +18,8 @@ import org.apache.kafka.streams.state.Stores;
 
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
-import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
-import de.tradingpulse.stage.systems.recordtypes.ImpulseSourceData;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseSourceRecord;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
 import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
@@ -53,7 +53,7 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 		
 		// impulse weekly incremental
 		createImpulseStream(
-				systemsStreamsFacade.getImpulseWeeklyIncrementalStreamName(), 
+				systemsStreamsFacade.getImpulseWeeklyStreamName(), 
 				indicatorsStreamsFacade.getEma13WeeklyStream(), 
 				indicatorsStreamsFacade.getMacd12269WeeklyStream());
 	}
@@ -80,23 +80,25 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 
 		// create dedup store
 		final String dedupStoreName = getProcessorStoreTopicName(topicName+"-dedup");
-		StoreBuilder<KeyValueStore<SymbolTimestampKey,ImpulseData>> dedupStoreBuilder =
+		StoreBuilder<KeyValueStore<SymbolTimestampKey,ImpulseRecord>> dedupStoreBuilder =
 				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(dedupStoreName),
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class),
-						jsonSerdeRegistry.getSerde(ImpulseData.class));
+						jsonSerdeRegistry.getSerde(ImpulseRecord.class));
 		builder.addStateStore(dedupStoreBuilder);
 
 		// create topology
-		emaStream
+		KStream<SymbolTimestampKey, ImpulseSourceRecord> isrStream = emaStream
 		
 		// join ema and macd to Impulse
 		.join(
 				macdStream,
 				// join logic below
-				(emaData, macdHistogramData) -> new ImpulseSourceData(
-						emaData.getKey(),
-						emaData,
-						macdHistogramData),
+				(emaData, macdHistogramData) -> ImpulseSourceRecord.builder()
+						.key(emaData.getKey())
+						.timeRange(emaData.getTimeRange())
+						.emaData(emaData)
+						.macdHistogramData(macdHistogramData)
+						.build(),
 				// window size can be small as we know the data is at minimum at minute intervals
 				JoinWindows
 				.of(windowSize)
@@ -115,23 +117,24 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 								retainDuplicates))
 				.withKeySerde(jsonSerdeRegistry.getSerde(SymbolTimestampKey.class))
 				.withValueSerde(jsonSerdeRegistry.getSerde(DoubleRecord.class))
-				.withOtherValueSerde(jsonSerdeRegistry.getSerde(MACDHistogramRecord.class)))
+				.withOtherValueSerde(jsonSerdeRegistry.getSerde(MACDHistogramRecord.class)));
 		
+		isrStream
 		// calculate the impulse data
 		.transform(() -> new IncrementalImpulseTransformer(transformerStoreName), transformerStoreName)
 		// deduplicate per SymbolTimestampKey
-		.transform(() -> new Transformer<SymbolTimestampKey, ImpulseData, KeyValue<SymbolTimestampKey, ImpulseData>>() {
+		.transform(() -> new Transformer<SymbolTimestampKey, ImpulseRecord, KeyValue<SymbolTimestampKey, ImpulseRecord>>() {
 
-			private KeyValueStore<SymbolTimestampKey, ImpulseData> state;
+			private KeyValueStore<SymbolTimestampKey, ImpulseRecord> state;
 			
 			@SuppressWarnings("unchecked")
 			public void init(ProcessorContext context) {
-				this.state = (KeyValueStore<SymbolTimestampKey, ImpulseData>)context.getStateStore(dedupStoreName);
+				this.state = (KeyValueStore<SymbolTimestampKey, ImpulseRecord>)context.getStateStore(dedupStoreName);
 			}
 
 			@Override
-			public KeyValue<SymbolTimestampKey, ImpulseData> transform(SymbolTimestampKey key, ImpulseData value) {
-				ImpulseData lastImpulseData = this.state.get(key);
+			public KeyValue<SymbolTimestampKey, ImpulseRecord> transform(SymbolTimestampKey key, ImpulseRecord value) {
+				ImpulseRecord lastImpulseData = this.state.get(key);
 				this.state.put(key, value);
 				
 				return value.equals(lastImpulseData)? null : new KeyValue<>(key, value);
@@ -145,6 +148,6 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 		}, dedupStoreName)
 		.to(topicName, Produced.with(
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-				jsonSerdeRegistry.getSerde(ImpulseData.class)));
+				jsonSerdeRegistry.getSerde(ImpulseRecord.class)));
 	}
 }
