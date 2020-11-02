@@ -1,7 +1,8 @@
-package de.tradingpulse.common.stream.aggregates;
+package de.tradingpulse.stages.indicators.aggregates;
 
-import de.tradingpulse.common.stream.recordtypes.DoubleData;
-import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
+import de.tradingpulse.common.stream.aggregates.DeepCloneable;
+import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
+import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -44,7 +45,7 @@ public class MACDHistogramAggregate implements DeepCloneable<MACDHistogramAggreg
 		return clone;
 	}
 	
-	private synchronized DoubleData getEMAFast(double value) {
+	private synchronized DoubleRecord getEMAFast(double value) {
 		if(this.emaFastAggregate == null) {
 			this.emaFastAggregate = new EMAAggregate(fastPeriod);	
 		}
@@ -52,7 +53,7 @@ public class MACDHistogramAggregate implements DeepCloneable<MACDHistogramAggreg
 		return this.emaFastAggregate.aggregate(value);
 	}
 	
-	private synchronized DoubleData getEMASlow(double value) {
+	private synchronized DoubleRecord getEMASlow(double value) {
 		if(this.emaSlowAggregate == null) {
 			this.emaSlowAggregate = new EMAAggregate(slowPeriod);	
 		}
@@ -60,7 +61,7 @@ public class MACDHistogramAggregate implements DeepCloneable<MACDHistogramAggreg
 		return this.emaSlowAggregate.aggregate(value);
 	}
 	
-	private synchronized DoubleData getEMASignal(double macd) {
+	private synchronized DoubleRecord getEMASignal(double macd) {
 		if(this.emaSignalAggregate == null) {
 			this.emaSignalAggregate = new EMAAggregate(signalPeriod);	
 		}
@@ -70,24 +71,24 @@ public class MACDHistogramAggregate implements DeepCloneable<MACDHistogramAggreg
 	
 	/**
 	 * Aggregates a new value to calculate the current MACD histogram.
-	 * Please note the returned {@link MACDHistogramData} has no key set and
+	 * Please note the returned {@link MACDHistogramRecord} has no key set and
 	 * might be null for early values in the stream (for exactly slow + signal - 2 values). 
 	 */
-	public MACDHistogramData aggregate(double value) {
+	public MACDHistogramRecord aggregate(double value) {
 		
 		Double mOld = this.macd;
 		Double sOld = this.signal;
 		Double hOld = this.histogram;
 		
 		// we need to aggregate both to get the EMAs loaded
-		DoubleData emaFast = getEMAFast(value);
-		DoubleData emaSlow = getEMASlow(value);
+		DoubleRecord emaFast = getEMAFast(value);
+		DoubleRecord emaSlow = getEMASlow(value);
 		if(emaFast == null || emaSlow == null) {
 			return null;
 		}
 		
 		this.macd = emaFast.getValue() - emaSlow.getValue();
-		DoubleData emaSignal = getEMASignal(macd);
+		DoubleRecord emaSignal = getEMASignal(macd);
 		if(emaSignal == null) {
 			return null;
 		}
@@ -95,7 +96,7 @@ public class MACDHistogramAggregate implements DeepCloneable<MACDHistogramAggreg
 		this.signal = emaSignal.getValue();
 		this.histogram = this.macd - this.signal;
 		
-		return MACDHistogramData.builder()
+		return MACDHistogramRecord.builder()
 				.macd(this.macd)
 				.mChange(mOld == null? null : this.macd - mOld)
 				.signal(this.signal)

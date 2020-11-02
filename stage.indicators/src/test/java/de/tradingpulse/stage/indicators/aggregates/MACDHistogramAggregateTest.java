@@ -1,4 +1,4 @@
-package de.tradingpulse.common.stream.aggregates;
+package de.tradingpulse.stage.indicators.aggregates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -9,7 +9,9 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
+import de.tradingpulse.stages.indicators.aggregates.EMAAggregate;
+import de.tradingpulse.stages.indicators.aggregates.MACDHistogramAggregate;
+import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 
 class MACDHistogramAggregateTest {
 
@@ -45,7 +47,7 @@ class MACDHistogramAggregateTest {
 		MACDHistogramAggregate a = new MACDHistogramAggregate(fastPeriod, slowPeriod, signalPeriod);
 		
 		double value, macd, signal, histogram;
-		MACDHistogramData data;
+		MACDHistogramRecord data;
 		
 		// 1
 		value = 1.6;
@@ -96,7 +98,7 @@ class MACDHistogramAggregateTest {
 		histogram = macd - signal;
 		
 		data = a.aggregate(value);
-		MACDHistogramData data_6 = data;
+		MACDHistogramRecord data_6 = data;
 		
 		assertNull(data.getKey());
 		assertEquals(macd, data.getMacd());

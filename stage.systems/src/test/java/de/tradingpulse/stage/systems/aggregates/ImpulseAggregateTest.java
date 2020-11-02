@@ -1,28 +1,29 @@
-package de.tradingpulse.common.stream.aggregates;
+package de.tradingpulse.stage.systems.aggregates;
 
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.tradingpulse.common.stream.recordtypes.DoubleData;
-import de.tradingpulse.common.stream.recordtypes.ImpulseData;
-import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
+import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
+import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 
 class ImpulseAggregateTest {
 
 	@Test
 	void test_aggregate__returns_null() {
 		assertNull(new ImpulseAggregate().aggregate(null, null));
-		assertNull(new ImpulseAggregate().aggregate(new DoubleData(), null));
-		assertNull(new ImpulseAggregate().aggregate(null, new MACDHistogramData()));
-		assertNull(new ImpulseAggregate().aggregate(new DoubleData(), new MACDHistogramData()));
+		assertNull(new ImpulseAggregate().aggregate(new DoubleRecord(), null));
+		assertNull(new ImpulseAggregate().aggregate(null, new MACDHistogramRecord()));
+		assertNull(new ImpulseAggregate().aggregate(new DoubleRecord(), new MACDHistogramRecord()));
 	}	
 	
 	@Test
@@ -66,14 +67,14 @@ class ImpulseAggregateTest {
 		assertEquals(lastDirection, a.aggregate(emaData(1.0), macdData(1.0)).getLastTradingDirection());
 	}
 	
-	private DoubleData emaData(double vChange) {
-		return DoubleData.builder()
+	private DoubleRecord emaData(double vChange) {
+		return DoubleRecord.builder()
 				.vChange(vChange)
 				.build();
 	}
 	
-	private MACDHistogramData macdData(double hChange) {
-		return MACDHistogramData.builder()
+	private MACDHistogramRecord macdData(double hChange) {
+		return MACDHistogramRecord.builder()
 				.hChange(hChange)
 				.build();
 	}

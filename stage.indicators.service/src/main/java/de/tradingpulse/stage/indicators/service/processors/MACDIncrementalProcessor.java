@@ -10,10 +10,10 @@ import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
-import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
+import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
@@ -44,7 +44,7 @@ class MACDIncrementalProcessor extends AbstractProcessorFactory {
 				builder);
 		// MACD weekly incremental 12,26,9
 		initMACDHistogramStream(
-				indicatorsStreamsFacade.getMacd12269WeeklyIncrementalStreamName(), 
+				indicatorsStreamsFacade.getMacd12269WeeklyStreamName(), 
 				12, 26, 9, 
 				sourceDataStreamsFacade.getOhlcvWeeklyStream(), 
 				builder);
@@ -77,6 +77,6 @@ class MACDIncrementalProcessor extends AbstractProcessorFactory {
 				storeName)
 		.to(topicName, Produced.with(
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-				jsonSerdeRegistry.getSerde(MACDHistogramData.class)));
+				jsonSerdeRegistry.getSerde(MACDHistogramRecord.class)));
 	}
 }

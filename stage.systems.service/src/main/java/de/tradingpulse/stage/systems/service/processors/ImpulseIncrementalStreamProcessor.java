@@ -17,12 +17,12 @@ import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
-import de.tradingpulse.common.stream.recordtypes.DoubleData;
-import de.tradingpulse.common.stream.recordtypes.ImpulseData;
-import de.tradingpulse.common.stream.recordtypes.ImpulseSourceData;
-import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseSourceData;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
+import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
+import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
@@ -54,14 +54,14 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 		// impulse weekly incremental
 		createImpulseStream(
 				systemsStreamsFacade.getImpulseWeeklyIncrementalStreamName(), 
-				indicatorsStreamsFacade.getEma13WeeklyIncrementalStream(), 
-				indicatorsStreamsFacade.getMacd12269WeeklyIncrementalStream());
+				indicatorsStreamsFacade.getEma13WeeklyStream(), 
+				indicatorsStreamsFacade.getMacd12269WeeklyStream());
 	}
 	
 	private void createImpulseStream(
 			final String topicName,
-			final KStream<SymbolTimestampKey, DoubleData> emaStream,
-			final KStream<SymbolTimestampKey, MACDHistogramData> macdStream 
+			final KStream<SymbolTimestampKey, DoubleRecord> emaStream,
+			final KStream<SymbolTimestampKey, MACDHistogramRecord> macdStream 
 	) {
 
 		// setup join parameters
@@ -102,7 +102,7 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 				.of(windowSize)
 				.grace(storeRetentionPeriod),
 				// configuration of the underlying window join stores for keeping the data
-				StreamJoined.<SymbolTimestampKey, DoubleData, MACDHistogramData>with(
+				StreamJoined.<SymbolTimestampKey, DoubleRecord, MACDHistogramRecord>with(
 						Stores.persistentWindowStore(
 								topicName+"-join-store-left", 
 								storeRetentionPeriod, 
@@ -114,8 +114,8 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 								windowSize, 
 								retainDuplicates))
 				.withKeySerde(jsonSerdeRegistry.getSerde(SymbolTimestampKey.class))
-				.withValueSerde(jsonSerdeRegistry.getSerde(DoubleData.class))
-				.withOtherValueSerde(jsonSerdeRegistry.getSerde(MACDHistogramData.class)))
+				.withValueSerde(jsonSerdeRegistry.getSerde(DoubleRecord.class))
+				.withOtherValueSerde(jsonSerdeRegistry.getSerde(MACDHistogramRecord.class)))
 		
 		// calculate the impulse data
 		.transform(() -> new IncrementalImpulseTransformer(transformerStoreName), transformerStoreName)

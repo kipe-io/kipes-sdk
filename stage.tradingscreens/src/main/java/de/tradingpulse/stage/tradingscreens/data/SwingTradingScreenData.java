@@ -1,6 +1,8 @@
 package de.tradingpulse.stage.tradingscreens.data;
 
-import static de.tradingpulse.common.stream.recordtypes.TradingDirection.*;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
 import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.LONG_ENTRY;
 import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.SHORT_ENTRY;
 
@@ -10,9 +12,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-import de.tradingpulse.common.stream.recordtypes.ImpulseData;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

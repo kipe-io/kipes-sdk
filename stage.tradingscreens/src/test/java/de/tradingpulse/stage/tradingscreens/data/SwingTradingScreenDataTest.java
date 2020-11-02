@@ -24,9 +24,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.tradingpulse.common.stream.recordtypes.ImpulseData;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
 
 class SwingTradingScreenDataTest {
 

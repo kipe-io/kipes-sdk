@@ -1,4 +1,4 @@
-package de.tradingpulse.common.stream.recordtypes;
+package de.tradingpulse.stage.systems.recordtypes;
 
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;
@@ -7,6 +7,8 @@ import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
+import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

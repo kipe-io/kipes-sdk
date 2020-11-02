@@ -1,8 +1,9 @@
-package de.tradingpulse.common.stream.aggregates;
+package de.tradingpulse.stages.indicators.aggregates;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import de.tradingpulse.common.stream.recordtypes.DoubleData;
+import de.tradingpulse.common.stream.aggregates.DeepCloneable;
+import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -54,10 +55,10 @@ public class EMAAggregate implements DeepCloneable<EMAAggregate>{
 	
 	/**
 	 * Aggregates a new value.
-	 * Please note the returned {@link DoubleData} has no key set and might be
+	 * Please note the returned {@link DoubleRecord} has no key set and might be
 	 * null for early values in the stream (for exactly n - 1 values). 
 	 */
-	public DoubleData aggregate(double value) {
+	public DoubleRecord aggregate(double value) {
 		
 		Double vOld = this.ema;
 		
@@ -83,7 +84,7 @@ public class EMAAggregate implements DeepCloneable<EMAAggregate>{
 			this.ema = value * factor + this.ema * (1.0-factor);
 		}
 		
-		return DoubleData.builder()
+		return DoubleRecord.builder()
 				.value(this.ema)
 				.vChange(vOld == null? null : this.ema - vOld)
 				.build();

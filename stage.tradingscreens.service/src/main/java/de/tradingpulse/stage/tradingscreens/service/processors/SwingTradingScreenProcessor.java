@@ -17,9 +17,9 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
-import de.tradingpulse.common.stream.recordtypes.ImpulseData;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.utils.TimeUtils;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
 import de.tradingpulse.stage.tradingscreens.data.SwingTradingScreenData;
 import de.tradingpulse.stage.tradingscreens.streams.TradingScreensStreamsFacade;

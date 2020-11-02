@@ -9,13 +9,13 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.tradingpulse.common.stream.aggregates.EMAAggregate;
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
-import de.tradingpulse.common.stream.recordtypes.DoubleData;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
+import de.tradingpulse.stages.indicators.aggregates.EMAAggregate;
+import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 
-class IncrementalEMATransformer implements Transformer<SymbolTimestampKey, OHLCVRecord, KeyValue<SymbolTimestampKey, DoubleData>> {
+class IncrementalEMATransformer implements Transformer<SymbolTimestampKey, OHLCVRecord, KeyValue<SymbolTimestampKey, DoubleRecord>> {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(IncrementalEMATransformer.class);
 	
@@ -36,7 +36,7 @@ class IncrementalEMATransformer implements Transformer<SymbolTimestampKey, OHLCV
 		this.state = (KeyValueStore<String, IncrementalAggregate<EMAAggregate>>)context.getStateStore(this.storeName);
 	}
 	
-	public KeyValue<SymbolTimestampKey, DoubleData> transform(SymbolTimestampKey key, OHLCVRecord value) {
+	public KeyValue<SymbolTimestampKey, DoubleRecord> transform(SymbolTimestampKey key, OHLCVRecord value) {
 		
 		IncrementalAggregate<EMAAggregate> incrementalAggregate = Optional
 				.ofNullable(this.state.get(key.getSymbol()))
@@ -46,7 +46,7 @@ class IncrementalEMATransformer implements Transformer<SymbolTimestampKey, OHLCV
 				.ofNullable(incrementalAggregate.getAggregate(key.getTimestamp()))
 				.orElseGet(() -> new EMAAggregate(this.numObservations));
 		
-		DoubleData emaData = emaAggregate.aggregate(value.getClose());
+		DoubleRecord emaData = emaAggregate.aggregate(value.getClose());
 		LOG.debug("transform@{}: {}, {} -> {}", this.storeName, key, value, emaData);
 
 		boolean stored = incrementalAggregate.setAggregate(key.getTimestamp(), emaAggregate);
@@ -61,7 +61,8 @@ class IncrementalEMATransformer implements Transformer<SymbolTimestampKey, OHLCV
 			return null;
 		}
 		
-		emaData.setKey(key);
+		emaData.setKey(value.getKey());
+		emaData.setTimeRange(value.getTimeRange());
 		
 		return new KeyValue<>(key, emaData); 
 	}

@@ -18,11 +18,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import de.tradingpulse.common.stream.aggregates.EMAAggregate;
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
-import de.tradingpulse.common.stream.recordtypes.DoubleData;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
+import de.tradingpulse.stages.indicators.aggregates.EMAAggregate;
+import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 
 @ExtendWith(MockitoExtension.class)
 class IncrementalEMATransformerTest {
@@ -49,6 +49,8 @@ class IncrementalEMATransformerTest {
 	
 	@Test
 	void test_usecase() {
+		// test for correct incremental calculation
+		
 		IncrementalEMATransformer t = createIncrementalEMATransformer(13);
 		IncrementalAggregate<EMAAggregate> incAgg = new IncrementalAggregate<>();
 		
@@ -61,8 +63,8 @@ class IncrementalEMATransformerTest {
 		addRecord(t, 1567382400000L, 205.7);
 		addRecord(t, 1567382400000L, 209.19);
 		addRecord(t, 1567382400000L, 213.28);
-		DoubleData emaT = addRecord(t, 1567382400000L, 213.26);
-		DoubleData ema = emaAgg.aggregate(213.26);
+		DoubleRecord emaT = addRecord(t, 1567382400000L, 213.26);
+		DoubleRecord ema = emaAgg.aggregate(213.26);
 		
 		assertNull(emaT);
 		assertNull(ema);
@@ -225,6 +227,8 @@ class IncrementalEMATransformerTest {
 
 	@Test
 	void test_init__store_was_aquired_with_correct_name() {
+		// validation happens at #afterEach()
+		
 		IncrementalEMATransformer t = new IncrementalEMATransformer(STORE_NAME, 1);
 		
 		when(processorCtxMock.getStateStore(STORE_NAME)).thenReturn(stateMock);
@@ -245,7 +249,7 @@ class IncrementalEMATransformerTest {
 		SymbolTimestampKey key = createKey(0);
 		OHLCVRecord value = createValue(key, 1.0);
 		
-		KeyValue<SymbolTimestampKey, DoubleData> keyValue = t.transform(key, value);
+		KeyValue<SymbolTimestampKey, DoubleRecord> keyValue = t.transform(key, value);
 		
 		assertNull(keyValue);
 		verify(stateMock).put(eq(SYMBOL), notNull());
@@ -265,9 +269,9 @@ class IncrementalEMATransformerTest {
 		// record 1 - ts 0 -----------------------------------------------------
 		long timestamp = 0;
 		double close = 1.0;
-		DoubleData ema = emaAgg.aggregate(close);
+		DoubleRecord ema = emaAgg.aggregate(close);
 		
-		DoubleData emaT = addRecord(t, timestamp, close);
+		DoubleRecord emaT = addRecord(t, timestamp, close);
 		
 		assertNull(emaT);
 		
@@ -314,9 +318,9 @@ class IncrementalEMATransformerTest {
 		// record 1 - ts 0 -----------------------------------------------------
 		long timestamp = 0;
 		double close = 1.0;
-		DoubleData ema = emaAgg.aggregate(close);
+		DoubleRecord ema = emaAgg.aggregate(close);
 		
-		DoubleData emaT = addRecord(t, timestamp, close);
+		DoubleRecord emaT = addRecord(t, timestamp, close);
 		
 		assertNull(emaT);
 		
@@ -363,9 +367,9 @@ class IncrementalEMATransformerTest {
 		// record 1 - ts 0 -----------------------------------------------------
 		long timestamp = 0;
 		double close = 1.0;
-		DoubleData ema = emaAgg.aggregate(close);
+		DoubleRecord ema = emaAgg.aggregate(close);
 		
-		DoubleData emaT = addRecord(t, timestamp, close);
+		DoubleRecord emaT = addRecord(t, timestamp, close);
 		
 		assertNull(emaT);
 		
@@ -413,9 +417,9 @@ class IncrementalEMATransformerTest {
 		// record 1 - ts 0 -----------------------------------------------------
 		long timestamp = 0;
 		double close = 1.0;
-		DoubleData ema = emaAgg.aggregate(close);
+		DoubleRecord ema = emaAgg.aggregate(close);
 		
-		DoubleData emaT = addRecord(t, timestamp, close);
+		DoubleRecord emaT = addRecord(t, timestamp, close);
 		
 		assertNull(emaT);
 		
@@ -463,11 +467,11 @@ class IncrementalEMATransformerTest {
 	// utilities
 	// -------------------------------------------------------------------------
 	
-	private DoubleData addRecord(IncrementalEMATransformer t, long timestamp, double close) {
+	private DoubleRecord addRecord(IncrementalEMATransformer t, long timestamp, double close) {
 		SymbolTimestampKey key = createKey(timestamp);
 		OHLCVRecord value = createValue(key, close);
 		
-		KeyValue<SymbolTimestampKey, DoubleData> keyValue = t.transform(key, value);
+		KeyValue<SymbolTimestampKey, DoubleRecord> keyValue = t.transform(key, value);
 		
 		return keyValue == null? null : keyValue.value;
 	}

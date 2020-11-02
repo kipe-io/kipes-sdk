@@ -1,4 +1,4 @@
-package de.tradingpulse.common.stream.aggregates;
+package de.tradingpulse.stage.indicators.aggregates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.tradingpulse.common.stream.recordtypes.DoubleData;
+import de.tradingpulse.stages.indicators.aggregates.EMAAggregate;
+import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 
 class EMAAggregateTest {
 
@@ -130,11 +131,11 @@ class EMAAggregateTest {
 		a.aggregate(7.0);
 		a.aggregate(8.0);
 		a.aggregate(9.0);
-		DoubleData ema_10 = a.aggregate(10.0);
+		DoubleRecord ema_10 = a.aggregate(10.0);
 		
 		double expected = 11.0 * k + initialEma * (1-k);
 		
-		DoubleData ema_11 = a.aggregate(11.0);
+		DoubleRecord ema_11 = a.aggregate(11.0);
 		assertEquals(expected, ema_11.getValue());
 		
 		assertEquals(expected - ema_10.getValue(), ema_11.getVChange());
@@ -158,7 +159,7 @@ class EMAAggregateTest {
 		a.aggregate(8.0);
 		a.aggregate(9.0);
 		a.aggregate(10.0);
-		DoubleData ema_11 = a.aggregate(11.0);
+		DoubleRecord ema_11 = a.aggregate(11.0);
 
 		double expected = 12.0 * k + ema_11.getValue() * (1-k);
 		
@@ -166,7 +167,7 @@ class EMAAggregateTest {
 		String json = mapper.writeValueAsString(a);
 		a = mapper.readValue(json, EMAAggregate.class);
 		
-		DoubleData ema_12 = a.aggregate(12.0);
+		DoubleRecord ema_12 = a.aggregate(12.0);
 		assertEquals(expected, ema_12.getValue());
 		assertEquals(expected - ema_11.getValue(), ema_12.getVChange());
 	}

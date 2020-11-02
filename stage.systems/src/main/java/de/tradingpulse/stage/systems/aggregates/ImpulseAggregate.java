@@ -1,10 +1,11 @@
-package de.tradingpulse.common.stream.aggregates;
+package de.tradingpulse.stage.systems.aggregates;
 
-import de.tradingpulse.common.stream.recordtypes.DoubleData;
-import de.tradingpulse.common.stream.recordtypes.ImpulseData;
-import de.tradingpulse.common.stream.recordtypes.MACDHistogramData;
+import de.tradingpulse.common.stream.aggregates.DeepCloneable;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
+import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
+import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -37,7 +38,7 @@ public class ImpulseAggregate implements DeepCloneable<ImpulseAggregate>{
 		return clone;
 	}
 	
-	public ImpulseData aggregate(DoubleData emaData, MACDHistogramData macdHistogramData) {
+	public ImpulseData aggregate(DoubleRecord emaData, MACDHistogramRecord macdHistogramData) {
 		
 		TradingDirection tradingDirection = null;
 		

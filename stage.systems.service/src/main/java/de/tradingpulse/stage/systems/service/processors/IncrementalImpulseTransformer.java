@@ -7,11 +7,11 @@ import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
 
-import de.tradingpulse.common.stream.aggregates.ImpulseAggregate;
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
-import de.tradingpulse.common.stream.recordtypes.ImpulseData;
-import de.tradingpulse.common.stream.recordtypes.ImpulseSourceData;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.systems.aggregates.ImpulseAggregate;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseData;
+import de.tradingpulse.stage.systems.recordtypes.ImpulseSourceData;
 
 public class IncrementalImpulseTransformer implements Transformer<SymbolTimestampKey, ImpulseSourceData, KeyValue<SymbolTimestampKey, ImpulseData>> {
 	
