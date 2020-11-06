@@ -3,9 +3,13 @@ package de.tradingpulse.common.utils;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 public class TimeUtils {
 
+	/** yyyy-MM-dd */
+	public static final DateTimeFormatter FORMATTER_YYYY_MM_DD = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	
 	private TimeUtils() {}
 	
 	/**
