@@ -6,7 +6,7 @@ Repository for all tradingpulse micro-services.
 
 - Java 11
 - Maven 3.6.3
-- access to confluent cloud
+- access to confluent cloud, NOTE: this all was tested only with kafka@confluent
 - (bash, kafka cmdline tools for our commandline tools)
 
 ## Setup local kafka commandline config
@@ -88,6 +88,17 @@ If you want a service to redo it's work, to re-process records there are multipl
     ...
 
 Once you restart the stage service the topics will be recreated and the input records get processed again. Note: the <STAGENAME> parameter is a regexp, actually. 
+
+### 6) Setup, run and verify the IEXCloud Connector
+
+- make sure you have access to iexcloud.io api
+- copy `connector.iexcloud/*.example.properties` to files without that `example` and fill with your settings
+- make sure the sourcedata stage topics are available (at least the topic referenced in your `iexcloudconnector.properties`)
+- run the connector:
+
+    $ connect-standalone.sh standalone.confluent.properties iexcloudconnector.properties
+    
+- check that new records arrive at the referenced topic
 
 
 

@@ -24,8 +24,8 @@ class SymbolOffset implements Comparable<SymbolOffset> {
 			Map<String, Object> offset)
 	{
 		return new SymbolOffset(
-				partition.get(PARTITION_KEY_SYMBOL), 
-				LocalDate.parse((String)offset.get(OFFSET_KEY_LAST_FETCHED_DATE), TimeUtils.FORMATTER_YYYY_MM_DD));
+				partition == null? null : partition.get(PARTITION_KEY_SYMBOL), 
+				offset == null? null : LocalDate.parse((String)offset.get(OFFSET_KEY_LAST_FETCHED_DATE), TimeUtils.FORMATTER_YYYY_MM_DD));
 	}
 	
 	static Map<String, String> createKafkaPartition(String symbol) {

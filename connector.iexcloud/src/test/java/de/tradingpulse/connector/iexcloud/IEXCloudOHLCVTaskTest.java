@@ -3,6 +3,7 @@ package de.tradingpulse.connector.iexcloud;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -38,22 +39,22 @@ class IEXCloudOHLCVTaskTest {
 	}
 
 	// ------------------------------------------------------------------------
-	// test_poll
+	// test_internalPoll
 	// ------------------------------------------------------------------------
 	
 	@Test
-	void test_poll__on_offset_null__return_null()
+	void test_internalPoll__on_offset_null__return_null()
 	throws InterruptedException
 	{
 		IEXCloudOHLCVTask task = createTask();
 		
 		when(symbolOffsetProviderMock.getNextSymbolOffsetForPoll()).thenReturn(null);
 		
-		assertNull(task.poll());
+		assertNull(task.internalPoll());
 	}
 	
 	@Test
-	void test_poll__on_offset_call_facade_when_empty_response__return_null()
+	void test_internalPoll__on_offset_call_facade_when_empty_response__return_null()
 	throws InterruptedException
 	{
 		IEXCloudOHLCVTask task = createTask();
@@ -61,20 +62,21 @@ class IEXCloudOHLCVTaskTest {
 		when(symbolOffsetProviderMock.getNextSymbolOffsetForPoll()).thenReturn(createSymbolOffset());
 		when(iexCloudFacadeMock.fetchOHLCVSince(any(), any())).thenReturn(Collections.emptyList());
 
-		assertNull(task.poll());
+		assertNull(task.internalPoll());
 		// verification happens at #afterEach
 	}
 	
 	@Test
-	void test_poll__on_offset_call_facade_when_response__return_list()
+	void test_internalPoll__on_offset_call_facade_when_response__return_list()
 	throws InterruptedException
 	{
 		IEXCloudOHLCVTask task = createTask();
 		
 		when(symbolOffsetProviderMock.getNextSymbolOffsetForPoll()).thenReturn(createSymbolOffset());
 		when(iexCloudFacadeMock.fetchOHLCVSince(any(), any())).thenReturn(Arrays.asList(createRecord()));
-
-		assertNotNull(task.poll());
+		doNothing().when(symbolOffsetProviderMock).updateOffsets(any());
+		
+		assertNotNull(task.internalPoll());
 		// verification happens at #afterEach
 	}
 	

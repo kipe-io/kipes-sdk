@@ -139,6 +139,19 @@ class IEXCloudFacadeTest {
 	// ------------------------------------------------------------------------
 
 	@Test
+	void test_removeAlreadyFetchedDates__when_nothing_fetched__return_all() {
+		List<IEXCloudOHLCVRecord> records = Arrays.asList(
+				null,
+				createRecord("2020-01-01"),
+				createRecord("2020-01-02"));
+		
+		List<IEXCloudOHLCVRecord> cleanedRecords = createFacade()
+				.removeAlreadyFetchedDates(records, null);
+		
+		assertEquals(2, cleanedRecords.size());
+	}
+
+	@Test
 	void test_removeAlreadyFetchedDates() {
 		List<IEXCloudOHLCVRecord> records = Arrays.asList(
 				null,

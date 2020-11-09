@@ -42,8 +42,10 @@ class SymbolOffsetProvider {
 
 	final List<String> symbols;
 	final Collection<Map<String, String>> partitions;
+	// delivers initial offsets
 	final OffsetStorageReader offsetStorageReader;
-
+	// stores in-flight offsets
+	final Map<String, SymbolOffset> updatedOffsetMap = new HashMap<>();
 	// ------------------------------------------------------------------------
 	// constructors
 	// ------------------------------------------------------------------------
@@ -58,6 +60,32 @@ class SymbolOffsetProvider {
 	// methods
 	// ------------------------------------------------------------------------
 
+	synchronized void updateOffsets(List<IEXCloudOHLCVRecord> records) {
+		if(records == null) {
+			return;
+		}
+
+		// Note that referencing the latest offset like this comes with a lot
+		// of potential issues. Most notably: When these are stored here the
+		// records haven't even been tried to move to Kafka. So it is well
+		// possible they won't end up there. 
+		// However, we need to do this here, as the offsetStorageReader is only
+		// a reliable source of truth for the init case.
+		//
+		// See https://cwiki.apache.org/confluence/display/KAFKA/KIP-618%3A+Atomic+commit+of+source+connector+records+and+offsets
+		// for a proper solution. 
+		
+		records.forEach(record -> {
+			SymbolOffset lastOffset = this.updatedOffsetMap.get(record.getSymbol());
+			if(lastOffset == null 
+					|| lastOffset.lastFetchedDate == null
+					|| lastOffset.lastFetchedDate.isBefore(record.getLocalDate())) 
+			{
+				this.updatedOffsetMap.put(record.getSymbol(), createSymbolOffset(record));
+			}
+		});
+	}
+	
 	SymbolOffset getNextSymbolOffsetForPoll() {
 		
 		// I assume #poll() will be called as soon as a worker is ready to 
@@ -86,10 +114,20 @@ class SymbolOffsetProvider {
 	 * collection is sorted so that the first element has the latest
 	 * lastFetchedDate.
 	 */
-	List<SymbolOffset> getAllSymbolOffsetsSorted() {
+	synchronized List<SymbolOffset> getAllSymbolOffsetsSorted() {
 
-		Map<String, SymbolOffset> offsetMap = new HashMap<>();
+		if(this.updatedOffsetMap.isEmpty()) {
+			initializeOffsets();
+		}
+				
+		// sort
+		List<SymbolOffset> allOffsets = new LinkedList<>(this.updatedOffsetMap.values());
+		Collections.sort(allOffsets);
 		
+		return allOffsets;
+	}
+	
+	void initializeOffsets() {
 		// add the existing offsets
 		// partition map: { "symbol": "<symbol>" }
 		// offset map: { "lastFetchedDate": "<date as yyyy-MM-dd>" }
@@ -98,18 +136,13 @@ class SymbolOffsetProvider {
 		
 		partitionToOffsetsMap.keySet().forEach(partition -> {
 			SymbolOffset so = SymbolOffset.fromKafkaPartitionAndOffset(partition, partitionToOffsetsMap.get(partition));
-			offsetMap.put(so.symbol, so);
+			this.updatedOffsetMap.put(so.symbol, so);
 		});
 		
 		// add missing offsets
 		this.symbols.stream()
-		.filter(symbol -> !offsetMap.containsKey(symbol))
-		.forEach(symbol -> offsetMap.put(symbol, new SymbolOffset(symbol, null)));
-		
-		// sort
-		List<SymbolOffset> allOffsets = new LinkedList<>(offsetMap.values());
-		Collections.sort(allOffsets);
-		
-		return allOffsets;
+		.filter(symbol -> !this.updatedOffsetMap.containsKey(symbol))
+		.forEach(symbol -> this.updatedOffsetMap.put(symbol, new SymbolOffset(symbol, null)));
 	}
+	
 }

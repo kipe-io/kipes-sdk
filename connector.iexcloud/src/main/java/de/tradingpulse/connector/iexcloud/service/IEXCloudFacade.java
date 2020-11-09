@@ -55,7 +55,10 @@ public class IEXCloudFacade {
 		// We are just working on LocalDate which will lead to situations where
 		// we are going to fetch the same dates multiple times
 		
-		LocalDate fetchStartDate = lastFetchedDate == null? todayDate.minusYears(2) : lastFetchedDate.plusDays(1);
+		LOG.debug("{}/{}: evaluating need to fetch for lastFetchedDate {}", symbol, todayDate, lastFetchedDate);
+		
+		// TODO make first fetch range configurable
+		LocalDate fetchStartDate = lastFetchedDate == null? todayDate.minusDays(5) : lastFetchedDate.plusDays(1);
 		DayOfWeek fetchStartDay = fetchStartDate.getDayOfWeek();
 
 		// return an empty list if
@@ -64,6 +67,9 @@ public class IEXCloudFacade {
 		if(fetchStartDate.isEqual(todayDate)
 				|| fetchStartDate.isAfter(todayDate)
 				|| (fetchStartDay == SATURDAY) && fetchStartDate.until(todayDate, ChronoUnit.DAYS) <= 2) {
+			
+			LOG.debug("{}/{}: no need to fetch starting from Śat, {}", symbol, todayDate, fetchStartDate);
+			
 			return Collections.emptyList();
 		}
 		
@@ -72,6 +78,9 @@ public class IEXCloudFacade {
 		// - fetchStartDate is a Friday and today is Saturday, Sunday, or Monday
 		if(fetchStartDate.isEqual(todayDate.minusDays(1)) 
 				|| (fetchStartDay == FRIDAY) && fetchStartDate.until(todayDate, ChronoUnit.DAYS) <= 3) {
+
+			LOG.debug("{}/{}: fetch previous records for Fri, {}", symbol, todayDate, fetchStartDate);
+
 			return removeAlreadyFetchedDates(Arrays.asList(fetchOHLCVPrevious(symbol)), lastFetchedDate);
 		}
 		
@@ -79,8 +88,12 @@ public class IEXCloudFacade {
 		// that range and remove already fetched dates
 		Optional<IEXCloudRange> optRange = IEXCloudRange.findLeastExcessDaysRange(fetchStartDate);
 		if(optRange.isEmpty()) {
+			
+			LOG.warn("{}/{}: couldn't find a matching range for {}", symbol, todayDate, fetchStartDate);
 			return Collections.emptyList();
 		}
+		
+		LOG.debug("{}/{}: going to fetch with range {} for {}", symbol, todayDate, optRange.get(), fetchStartDate);
 		
 		return removeAlreadyFetchedDates(fetchOHLCVRange(symbol, optRange.get()), lastFetchedDate);
 	}
@@ -89,7 +102,7 @@ public class IEXCloudFacade {
 		
 		return records.stream()
 				.filter(Objects::nonNull)
-				.filter(record -> record.getLocalDate().isAfter(lastFetchedDate))
+				.filter(record -> lastFetchedDate == null? true : record.getLocalDate().isAfter(lastFetchedDate))
 				.collect(Collectors.toList());
 	}
 	

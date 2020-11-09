@@ -1,26 +1,25 @@
 package de.tradingpulse.connector.iexcloud;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.kafka.common.utils.AppInfoParser;
-import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.tradingpulse.connector.iexcloud.service.IEXCloudFacade;
 import de.tradingpulse.connector.iexcloud.service.IEXCloudOHLCVRecord;
 
 public class IEXCloudOHLCVTask extends SourceTask {
-
+	
+	private static final Logger LOG = LoggerFactory.getLogger(IEXCloudOHLCVTask.class);
+	
 	IEXCloudConnectorConfig config;
 	SymbolOffsetProvider symbolOffsetProvider;
 	IEXCloudFacade iexCloudFacade;
-	
-	SymbolOffset lastOffsetForPoll = null;
-	LocalDate lastFetchedDate = null;
 	
 	@Override
 	public String version() {
@@ -32,6 +31,8 @@ public class IEXCloudOHLCVTask extends SourceTask {
 		this.config = new IEXCloudConnectorConfig(props);
 		this.symbolOffsetProvider = createSymbolOffsetProvider();
 		this.iexCloudFacade = createIEXCloudFacade();
+		
+		LOG.info("IEXCloudOHLCVTask started with config {}", this.config);
 	}
 
 	private SymbolOffsetProvider createSymbolOffsetProvider() {
@@ -54,9 +55,28 @@ public class IEXCloudOHLCVTask extends SourceTask {
 	
 	@Override
 	public List<SourceRecord> poll() throws InterruptedException {
-		// if the last fetched SymbolOffset was null (had nothing to do) we
-		// wait iteratively until the next day based on the lastFetchedDate
 		
+		List<SourceRecord> sourceRecords = internalPoll();
+		if(sourceRecords == null) {
+			LOG.info("no records fetched for symbols {}, going to sleep({}). Consider to prolong '{}' if you see this message too often.", 
+					this.config.getSymbols(), 
+					this.config.getPollSleepMillis(),
+					IEXCloudConnectorConfig.CONFIG_KEY_POLL_SLEEP_MILLIS);
+
+			// let's wait as there is nothing to do right now
+			Thread.sleep(this.config.getPollSleepMillis());
+		
+		} else {
+			LOG.info("{} record(s) fetched for symbols {}", 
+					sourceRecords.size(), 
+					this.config.getSymbols());
+			
+		}
+
+		return sourceRecords;
+	}
+	
+	List<SourceRecord> internalPoll() {
 		SymbolOffset symbolOffset = this.symbolOffsetProvider.getNextSymbolOffsetForPoll();
 		
 		if(symbolOffset == null) {
@@ -75,10 +95,13 @@ public class IEXCloudOHLCVTask extends SourceTask {
 			// returning null following the specification
 			return null;
 		}
+		
+		this.symbolOffsetProvider.updateOffsets(records);
 
 		return parseSourceRecords(records);
+		
 	}
-
+	
 	private List<SourceRecord> parseSourceRecords(List<IEXCloudOHLCVRecord> records) {
 		return records.stream()
 				.map(record -> {
@@ -87,8 +110,8 @@ public class IEXCloudOHLCVTask extends SourceTask {
 							so.asKafkaConnectPartition(), 
 							so.asKafkaConnectOffset(), 
 							this.config.getTopic(), 
-							Schema.STRING_SCHEMA, 
-							record);
+							IEXCloudOHLCVRecord.SCHEMA, 
+							record.asStruct());
 							
 				})
 				.collect(Collectors.toList());
