@@ -17,6 +17,8 @@ public class IEXCloudOHLCVTask extends SourceTask {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(IEXCloudOHLCVTask.class);
 	
+	private static final int CONFIG_POLL_SLEEP_MS = 4000; // stop timeout at Worker.class is 5 secs
+	
 	IEXCloudConnectorConfig config;
 	SymbolOffsetProvider symbolOffsetProvider;
 	IEXCloudFacade iexCloudFacade;
@@ -44,7 +46,8 @@ public class IEXCloudOHLCVTask extends SourceTask {
 	private IEXCloudFacade createIEXCloudFacade() {
 		return new IEXCloudFacade(
 				this.config.getIexApiBaseUrl(), 
-				this.config.getIexApiToken());
+				this.config.getIexApiToken(),
+				this.config.getInitialTimerangeInDays());
 	}
 	
 	@Override
@@ -58,13 +61,8 @@ public class IEXCloudOHLCVTask extends SourceTask {
 		
 		List<SourceRecord> sourceRecords = internalPoll();
 		if(sourceRecords == null) {
-			LOG.info("no records fetched for symbols {}, going to sleep({}). Consider to prolong '{}' if you see this message too often.", 
-					this.config.getSymbols(), 
-					this.config.getPollSleepMillis(),
-					IEXCloudConnectorConfig.CONFIG_KEY_POLL_SLEEP_MILLIS);
-
 			// let's wait as there is nothing to do right now
-			Thread.sleep(this.config.getPollSleepMillis());
+			Thread.sleep(CONFIG_POLL_SLEEP_MS);
 		
 		} else {
 			LOG.info("{} record(s) fetched for symbols {}", 

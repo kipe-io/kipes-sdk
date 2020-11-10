@@ -198,7 +198,7 @@ class IEXCloudFacadeTest {
 	}
 
 	private IEXCloudFacade createFacade() {
-		return new IEXCloudFacade(API_TOKEN, iexCloudServiceMock);
+		return new IEXCloudFacade(API_TOKEN, 5, iexCloudServiceMock);
 	}
 	
 	

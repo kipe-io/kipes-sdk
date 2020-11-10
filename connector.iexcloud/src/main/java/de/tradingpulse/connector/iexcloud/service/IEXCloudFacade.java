@@ -26,10 +26,15 @@ public class IEXCloudFacade {
 	private static final Logger LOG = LoggerFactory.getLogger(IEXCloudFacade.class);
 	
 	private final Password apiToken;
+	private final int initialTimerangeInDays;
 	private final IEXCloudService iexCloudService;
 	
-	public IEXCloudFacade(final String baseUrl, final Password apiToken) {
-		this(apiToken, createIexCloudService(baseUrl));
+	public IEXCloudFacade(
+			final String baseUrl, 
+			final Password apiToken, 
+			final int initialTimerangeInDays )
+	{
+		this(apiToken, initialTimerangeInDays, createIexCloudService(baseUrl));
 	}
 	
 	private static IEXCloudService createIexCloudService(final String baseUrl) {
@@ -40,8 +45,13 @@ public class IEXCloudFacade {
 				.create(IEXCloudService.class);
 	}
 
-	IEXCloudFacade(final Password apiToken, IEXCloudService iexCloudService) {
+	IEXCloudFacade(
+			final Password apiToken,
+			final int initialTimerangeInDays,
+			IEXCloudService iexCloudService)
+	{
 		this.apiToken = apiToken;
+		this.initialTimerangeInDays = initialTimerangeInDays;
 		this.iexCloudService = iexCloudService;
 	}
 
@@ -58,7 +68,7 @@ public class IEXCloudFacade {
 		LOG.debug("{}/{}: evaluating need to fetch for lastFetchedDate {}", symbol, todayDate, lastFetchedDate);
 		
 		// TODO make first fetch range configurable
-		LocalDate fetchStartDate = lastFetchedDate == null? todayDate.minusDays(5) : lastFetchedDate.plusDays(1);
+		LocalDate fetchStartDate = lastFetchedDate == null? todayDate.minusDays(this.initialTimerangeInDays) : lastFetchedDate.plusDays(1);
 		DayOfWeek fetchStartDay = fetchStartDate.getDayOfWeek();
 
 		// return an empty list if
