@@ -63,12 +63,6 @@ public class IEXCloudOHLCVTask extends SourceTask {
 		if(sourceRecords == null) {
 			// let's wait as there is nothing to do right now
 			Thread.sleep(CONFIG_POLL_SLEEP_MS);
-		
-		} else {
-			LOG.info("{} record(s) fetched for symbols {}", 
-					sourceRecords.size(), 
-					this.config.getSymbols());
-			
 		}
 
 		return sourceRecords;
@@ -95,6 +89,11 @@ public class IEXCloudOHLCVTask extends SourceTask {
 		}
 		
 		this.symbolOffsetProvider.updateOffsets(records);
+
+		LOG.info("{} record(s) fetched for symbol '{}'", 
+				records.size(), 
+				records.get(0).getSymbol());
+		
 
 		return parseSourceRecords(records);
 		

@@ -66,9 +66,9 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 
 		// create dedup store
 		final String dedupStoreName = getProcessorStoreTopicName(topicName+"-dedup");
-		StoreBuilder<KeyValueStore<SymbolTimestampKey,SwingTradingScreenRecord>> dedupStoreBuilder =
+		StoreBuilder<KeyValueStore<String,SwingTradingScreenRecord>> dedupStoreBuilder =
 				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(dedupStoreName),
-						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class),
+						jsonSerdeRegistry.getSerde(String.class),
 						jsonSerdeRegistry.getSerde(SwingTradingScreenRecord.class));
 		builder.addStateStore(dedupStoreBuilder);
 		
@@ -116,19 +116,19 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 		// deduplicate by both impulse data ignoring timestamps
 		.transform(() -> new Transformer<SymbolTimestampKey, SwingTradingScreenRecord, KeyValue<SymbolTimestampKey, SwingTradingScreenRecord>>() {
 
-			private KeyValueStore<SymbolTimestampKey, SwingTradingScreenRecord> state;
+			private KeyValueStore<String, SwingTradingScreenRecord> state;
 			
 			@SuppressWarnings("unchecked")
 			public void init(ProcessorContext context) {
-				this.state = (KeyValueStore<SymbolTimestampKey, SwingTradingScreenRecord>)context.getStateStore(dedupStoreName);
+				this.state = (KeyValueStore<String, SwingTradingScreenRecord>)context.getStateStore(dedupStoreName);
 			}
 
 			@Override
 			public KeyValue<SymbolTimestampKey, SwingTradingScreenRecord> transform(SymbolTimestampKey key, SwingTradingScreenRecord value) {
-				SwingTradingScreenRecord oldValue = this.state.get(key);
-				this.state.put(key, value);
+				SwingTradingScreenRecord oldValue = this.state.get(key.getSymbol());
 				
 				if(oldValue == null) {
+					this.state.put(key.getSymbol(), value);
 					return new KeyValue<>(key, value);
 				}
 				
@@ -140,7 +140,13 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 				ImpulseRecord newSTImpulse = value.getShortRangeImpulseRecord();
 				boolean sameShortTimeRangeImpulse = oldSTImpulse.isSameImpulse(newSTImpulse);
 				
-				return sameLongTimeRangeImpulse && sameShortTimeRangeImpulse ? null : new KeyValue<>(key, value);
+				if(sameLongTimeRangeImpulse && sameShortTimeRangeImpulse) {
+					return null;
+				}
+				
+				this.state.put(key.getSymbol(), value);
+				
+				return new KeyValue<>(key, value);
 			}
 
 			@Override
