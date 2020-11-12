@@ -1,0 +1,39 @@
+version: "2"
+
+services:
+
+   stg-sourcedata:
+      image: ageworks/sourcedata.service
+      hostname: stg-sourcedata
+      container_name: stg-sourcedata
+   
+   stg-indicators:
+      image: ageworks/indicators.service
+      hostname: stg-indicators
+      container_name: stg-indicators
+      depends_on:
+         - stg-sourcedata
+         
+   stg-systems:
+      image: ageworks/systems.service
+      hostname: stg-systems
+      container_name: stg-systems
+      depends_on:
+         - stg-indicators
+   
+   stg-tradingscreens:
+      image: ageworks/tradingscreens.service
+      hostname: stg-tradingscreens
+      container_name: stg-tradingscreens
+      depends_on:
+         - stg-systems
+   
+   stg-connect:
+      image: ageworks/iexcloud
+      hostname: stg-connect
+      container_name: stg-connect
+      depends_on:
+         - stg-sourcedata
+      ports:
+         - "8083:8083"
+         

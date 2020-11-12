@@ -8,6 +8,8 @@ Repository for all tradingpulse micro-services.
 - Maven 3.6.3
 - access to confluent cloud, NOTE: this all was tested only with kafka@confluent
 - (bash, kafka cmdline tools for our commandline tools)
+- docker including post-installation steps 'docker as non-root', 'start on boot'
+- docker-compose
 
 ## Setup local kafka commandline config
 
@@ -92,14 +94,28 @@ Once you restart the stage service the topics will be recreated and the input re
 ### 6) Setup, run and verify the IEXCloud Connector
 
 - make sure you have access to iexcloud.io api
-- copy `connector.iexcloud/*.example.properties` to files without that `example` and fill with your settings
-- make sure the sourcedata stage topics are available (at least the topic referenced in your `iexcloudconnector.properties`)
+- copy `connector.iexcloud/standalone.*.example.properties` to files without that `example` and adjust with your settings
+- make sure the sourcedata stage topics are available (at least the topic referenced in your `standalone.iexcloudconnector.properties`)
 - run the connector:
 
-    $ connect-standalone.sh standalone.confluent.properties iexcloudconnector.properties
+    $ cd connector.iexcloud
+    $ connect-standalone.sh standalone.confluent.properties standalone.iexcloudconnector.properties
     
 - check that new records arrive at the referenced topic
 
+### 7) Run everything with docker-compose
 
+- copy `connector.iexcloud/distributed.*.example.*` files to files without the `example` part and adjust with your settings
+- make sure you have the right file names as they get referenced at the Dockerfile
 
+    $ mvn clean install
+    $ docker-compose up
+    
+- if you are running this for the first time you need to create the iexcloud connector by invoking
 
+    $ curl -X POST -H "Content-Type: application/json" -d @connector.iexcloud/distributed.iexcloudconnector.json http://127.0.0.1:8083/connectors
+    
+- if everything is fine you can check the current config and offsets at the topics
+    - `stg-connect-configs`
+    - `stg-connect-offsets`
+  

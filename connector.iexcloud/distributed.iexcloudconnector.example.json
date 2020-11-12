@@ -1,0 +1,13 @@
+{ 
+	"name": "iex-cloud-ohlcv",
+	"config": { 
+		"connector.class": "de.tradingpulse.connector.iexcloud.IEXCloudOHLCVConnector",
+		"key.converter": "org.apache.kafka.connect.json.JsonConverter",
+		"key.converter.schemas.enable": false,
+		"iex_api_base_url": "https://cloud.iexapis.com/v1/",
+		"iex_api_token": "<API_KEY>",
+		"initial_timerange_days": 1,
+		"symbols": "AAPL,AMZN,PYPL",
+		"topic": "stg-sourcedata-ohlcv_daily_raw"
+	}
+}

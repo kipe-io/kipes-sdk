@@ -106,8 +106,7 @@
 						</execution>
 					</executions>
 					<configuration>
-						<repository>spotify/foobar</repository>
-						<tag>${project.version}</tag>
+						<repository>ageworks/${project.artifactId}</repository>
 						<buildArgs>
 							<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
 						</buildArgs>
