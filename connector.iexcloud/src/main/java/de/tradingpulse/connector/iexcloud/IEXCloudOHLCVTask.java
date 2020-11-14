@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.tradingpulse.connector.iexcloud.service.IEXCloudFacade;
+import de.tradingpulse.connector.iexcloud.service.IEXCloudMetadata;
 import de.tradingpulse.connector.iexcloud.service.IEXCloudOHLCVRecord;
 
 public class IEXCloudOHLCVTask extends SourceTask {
@@ -22,6 +23,7 @@ public class IEXCloudOHLCVTask extends SourceTask {
 	IEXCloudConnectorConfig config;
 	SymbolOffsetProvider symbolOffsetProvider;
 	IEXCloudFacade iexCloudFacade;
+	boolean messagesUsed = false;
 	
 	@Override
 	public String version() {
@@ -47,6 +49,7 @@ public class IEXCloudOHLCVTask extends SourceTask {
 		return new IEXCloudFacade(
 				this.config.getIexApiBaseUrl(), 
 				this.config.getIexApiToken(),
+				this.config.getIexApiSecret(),
 				this.config.getInitialTimerangeInDays());
 	}
 	
@@ -62,10 +65,32 @@ public class IEXCloudOHLCVTask extends SourceTask {
 		List<SourceRecord> sourceRecords = internalPoll();
 		if(sourceRecords == null) {
 			// let's wait as there is nothing to do right now
+			// but before lets check how many messages we do have left
+			checkIEXCloudQuota();
 			Thread.sleep(CONFIG_POLL_SLEEP_MS);
 		}
 
 		return sourceRecords;
+	}
+	
+	void checkIEXCloudQuota() {
+		if(!this.messagesUsed) {
+			return;
+		}
+		
+		IEXCloudMetadata metadata = this.iexCloudFacade.fetchMetadata();
+		
+		if(metadata == null) {
+			return;
+		}
+		
+		LOG.info("{}/{} ({}%) IEXCloud messages used, {} messages left", 
+				metadata.getMessagesUsed(),
+				metadata.getMessageLimit(),
+				metadata.getUsedMessagesRatio()*100,
+				metadata.getMessagesLeft());
+		
+		this.messagesUsed = false;
 	}
 	
 	List<SourceRecord> internalPoll() {
@@ -88,6 +113,7 @@ public class IEXCloudOHLCVTask extends SourceTask {
 			return null;
 		}
 		
+		this.messagesUsed = true;
 		this.symbolOffsetProvider.updateOffsets(records);
 
 		LOG.info("{} record(s) fetched for symbol '{}'", 

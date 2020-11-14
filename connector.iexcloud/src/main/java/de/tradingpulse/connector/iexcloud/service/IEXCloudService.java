@@ -9,6 +9,9 @@ import retrofit2.http.Query;
 
 public interface IEXCloudService {
 
+	@GET("account/metadata")
+	Call<IEXCloudMetadata> fetchMetadata(@Query("token") String apiSecret);
+	
 	@GET("stock/{symbol}/previous")
 	Call<IEXCloudOHLCVRecord> fetchOHLCVPrevious(@Path("symbol") String symbol, @Query("token") String apiToken);
 

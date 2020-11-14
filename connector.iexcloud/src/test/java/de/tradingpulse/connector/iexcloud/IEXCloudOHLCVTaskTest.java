@@ -110,6 +110,7 @@ class IEXCloudOHLCVTaskTest {
 	private IEXCloudConnectorConfig createConfig() {
 		Map<String, String> props = new HashMap<>();
 		props.put(IEXCloudConnectorConfig.CONFIG_KEY_IEX_API_BASEURL, "url");
+		props.put(IEXCloudConnectorConfig.CONFIG_KEY_IEX_API_SECRET, "secret");
 		props.put(IEXCloudConnectorConfig.CONFIG_KEY_IEX_API_TOKEN, "token");
 		props.put(IEXCloudConnectorConfig.CONFIG_KEY_SYMBOLS, "s1, s2, s3");
 		props.put(IEXCloudConnectorConfig.CONFIG_KEY_TOPIC, "topic");

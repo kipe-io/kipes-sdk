@@ -26,15 +26,17 @@ public class IEXCloudFacade {
 	private static final Logger LOG = LoggerFactory.getLogger(IEXCloudFacade.class);
 	
 	private final Password apiToken;
+	private final Password apiSecret;
 	private final int initialTimerangeInDays;
 	private final IEXCloudService iexCloudService;
 	
 	public IEXCloudFacade(
 			final String baseUrl, 
 			final Password apiToken, 
+			final Password apiSecret,
 			final int initialTimerangeInDays )
 	{
-		this(apiToken, initialTimerangeInDays, createIexCloudService(baseUrl));
+		this(apiToken, apiSecret, initialTimerangeInDays, createIexCloudService(baseUrl));
 	}
 	
 	private static IEXCloudService createIexCloudService(final String baseUrl) {
@@ -47,14 +49,26 @@ public class IEXCloudFacade {
 
 	IEXCloudFacade(
 			final Password apiToken,
+			final Password apiSecret,
 			final int initialTimerangeInDays,
 			IEXCloudService iexCloudService)
 	{
 		this.apiToken = apiToken;
+		this.apiSecret = apiSecret;
 		this.initialTimerangeInDays = initialTimerangeInDays;
 		this.iexCloudService = iexCloudService;
 	}
 
+	public IEXCloudMetadata fetchMetadata() {
+		try {
+			return iexCloudService.fetchMetadata(this.apiSecret.value()).execute().body();
+		} catch (IOException e) {
+			LOG.error("exception during fetchMetadata, going to return null", e);
+			
+			return null;
+		}
+	}
+	
 	public List<IEXCloudOHLCVRecord> fetchOHLCVSince(String symbol, LocalDate lastFetchedDate) {
 		return internalFetchOHLCVSince(symbol, lastFetchedDate, LocalDate.now());
 	}
@@ -130,7 +144,7 @@ public class IEXCloudFacade {
 					.collect(Collectors.toList());
 		} catch (IOException e) {
 			LOG.error(
-					String.format("exception during fetchOHLCVRange for symbol '%s' and range '%s', returning empty list", symbol, range.getRange()),
+					String.format("exception during fetchOHLCVRange for symbol '%s' and range '%s', going to return empty list", symbol, range.getRange()),
 					e);
 			return Collections.emptyList();
 		}

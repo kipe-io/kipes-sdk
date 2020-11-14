@@ -17,6 +17,7 @@ import org.apache.kafka.connect.util.ConnectorUtils;
 class IEXCloudConnectorConfig extends AbstractConfig {
 
 	static final String CONFIG_KEY_IEX_API_BASEURL = "iex_api_base_url";
+	static final String CONFIG_KEY_IEX_API_SECRET = "iex_api_secret";
 	static final String CONFIG_KEY_IEX_API_TOKEN = "iex_api_token";
 	static final String CONFIG_KEY_INITIAL_TIMERANGE_DAYS = "initial_timerange_days";
 	static final String CONFIG_KEY_SYMBOLS = "symbols";
@@ -24,6 +25,7 @@ class IEXCloudConnectorConfig extends AbstractConfig {
 	
 	static final ConfigDef CONFIG_DEF = new ConfigDef()
 			.define(CONFIG_KEY_IEX_API_BASEURL, Type.STRING, Importance.HIGH, "IEXCloud API base url")
+			.define(CONFIG_KEY_IEX_API_SECRET, Type.PASSWORD, Importance.HIGH, "API SECRET for IEXCloud API")
 			.define(CONFIG_KEY_IEX_API_TOKEN, Type.PASSWORD, Importance.HIGH, "API Token for IEXCloud API")
 			.define(CONFIG_KEY_INITIAL_TIMERANGE_DAYS, Type.INT, 5, Importance.LOW, "When fetching a symbol for the first time, the timerange to use in days")
 			.define(CONFIG_KEY_SYMBOLS, Type.LIST, Importance.HIGH, "A list of symbols to fetch ohlcv data for")
@@ -37,6 +39,7 @@ class IEXCloudConnectorConfig extends AbstractConfig {
 
 	private void validateConfig() {
 		assertValid(CONFIG_KEY_IEX_API_BASEURL, getIexApiBaseUrl());
+		assertValid(CONFIG_KEY_IEX_API_SECRET, getIexApiSecret());
 		assertValid(CONFIG_KEY_IEX_API_TOKEN, getIexApiToken());
 		assertValid(CONFIG_KEY_SYMBOLS, getSymbols());
 		assertValid(CONFIG_KEY_TOPIC, getTopic());
@@ -59,6 +62,7 @@ class IEXCloudConnectorConfig extends AbstractConfig {
 		ConnectorUtils.groupPartitions(getSymbols(), maxTasks).forEach(someSymbols -> {
 			Map<String, String> taskConfig = new HashMap<>();
 			taskConfig.put(CONFIG_KEY_IEX_API_BASEURL, getIexApiBaseUrl());
+			taskConfig.put(CONFIG_KEY_IEX_API_SECRET, getIexApiSecret().value());
 			taskConfig.put(CONFIG_KEY_IEX_API_TOKEN, getIexApiToken().value());
 			taskConfig.put(CONFIG_KEY_INITIAL_TIMERANGE_DAYS, getInitialTimerangeInDays().toString());
 			taskConfig.put(CONFIG_KEY_SYMBOLS, someSymbols.stream().collect(Collectors.joining(",")));
@@ -72,6 +76,10 @@ class IEXCloudConnectorConfig extends AbstractConfig {
 		
 	String getIexApiBaseUrl() {
 		return getString(CONFIG_KEY_IEX_API_BASEURL);
+	}
+	
+	Password getIexApiSecret() {
+		return getPassword(CONFIG_KEY_IEX_API_SECRET);
 	}
 	
 	Password getIexApiToken() {
@@ -92,8 +100,9 @@ class IEXCloudConnectorConfig extends AbstractConfig {
 	
 	public String toString() {
 		return String.format(
-				"IEXCloudConnectorConfig[%s=%s, %s=%s, %s=%s, %s=%s, %s=%s]", 
+				"IEXCloudConnectorConfig[%s=%s, %s=%s, %s=%s, %s=%s, %s=%s, %s=%s]", 
 				CONFIG_KEY_IEX_API_BASEURL, getIexApiBaseUrl(),
+				CONFIG_KEY_IEX_API_SECRET, getIexApiSecret(),
 				CONFIG_KEY_IEX_API_TOKEN, getIexApiToken(),
 				CONFIG_KEY_INITIAL_TIMERANGE_DAYS, getInitialTimerangeInDays(),
 				CONFIG_KEY_SYMBOLS, getSymbols(),

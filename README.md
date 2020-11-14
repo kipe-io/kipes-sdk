@@ -111,9 +111,9 @@ Once you restart the stage service the topics will be recreated and the input re
     $ mvn clean install
     $ docker-compose up
     
-- if you are running this for the first time you need to create the iexcloud connector by invoking
+- if you are running this for the first time you need to create the iexcloud connector by invoking (same for config updates)
 
-    $ curl -X POST -H "Content-Type: application/json" -d @connector.iexcloud/distributed.iexcloudconnector.json http://127.0.0.1:8083/connectors
+    $ curl -X PUT -H "Content-Type: application/json" -d @connector.iexcloud/distributed.iexcloudconnector.json http://127.0.0.1:8083/connectors/iex-cloud-ohlcv/config
     
 - if everything is fine you can check the current config and offsets at the topics
     - `stg-connect-configs`

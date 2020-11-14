@@ -30,6 +30,7 @@ class IEXCloudFacadeTest {
 
 
 	private static final String SYMBOL = "symbol";
+	private static final Password API_SECRET = new Password("pass");
 	private static final Password API_TOKEN = new Password("pass");
 
 	@Mock private IEXCloudService iexCloudServiceMock;
@@ -198,7 +199,7 @@ class IEXCloudFacadeTest {
 	}
 
 	private IEXCloudFacade createFacade() {
-		return new IEXCloudFacade(API_TOKEN, 5, iexCloudServiceMock);
+		return new IEXCloudFacade(API_TOKEN, API_SECRET,5, iexCloudServiceMock);
 	}
 	
 	
