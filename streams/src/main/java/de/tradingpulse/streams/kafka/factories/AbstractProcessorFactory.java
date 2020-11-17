@@ -2,6 +2,10 @@ package de.tradingpulse.streams.kafka.factories;
 
 public abstract class AbstractProcessorFactory extends AbstractStreamFactory {
 	
+	/**
+	 * Returns the canonical topic name for processor store by appending 
+	 * '-processor-store' to the given tbaseTopicName
+	 */
 	protected static String getProcessorStoreTopicName(String baseTopicName) {
 		return baseTopicName+"-processor-store";
 	}

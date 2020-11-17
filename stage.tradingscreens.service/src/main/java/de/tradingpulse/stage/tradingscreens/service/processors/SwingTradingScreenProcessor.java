@@ -60,7 +60,11 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 		ensureTopics(shortTimeRangeReKeyedTopicName);
 		
 		// setup join parameters
-		final Duration storeRetentionPeriod = Duration.ofMinutes(10);
+		// TODO externalize retention period
+		// IDEA: (via AbstractStreamFactory.topics.XXX.retentionMs)
+		// the config depends on the overall retention period and the earliest
+		// day we fetch at the iexcloud connector. 
+		final Duration storeRetentionPeriod = Duration.ofMillis(this.retentionMs + 86400000L); // we add a day to have today access to the full retention time (record create ts is start of day)
 		final Duration windowSize = Duration.ofSeconds(0);
 		final boolean retainDuplicates = true; // topology creation will fail on false 
 
@@ -90,9 +94,6 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 									.build(),
 									
 						// window size can be small as we know the data is at minimum at minute intervals
-						// TODO: verify storeRetentionPeriod is suitable
-						// background: I assume we would need to have a retention period 
-						// for as long as the long time range is 
 						JoinWindows
 						.of(windowSize)
 						.grace(storeRetentionPeriod),

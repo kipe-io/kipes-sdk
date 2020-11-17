@@ -24,7 +24,7 @@ public class IEXCloudMetadata {
 			return null;
 		}
 		
-		return ((100 * this.messagesUsed) / (100 * this.messageLimit)) / 100.0;
+		return Math.round(this.messagesUsed * 1000.0 / this.messageLimit) / 1000.0;
 	}
 	
 	/**

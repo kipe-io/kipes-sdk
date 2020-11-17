@@ -1,7 +1,9 @@
 package de.tradingpulse.streams.kafka.factories;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -18,11 +20,16 @@ import io.micronaut.context.annotation.Value;
  */
 public abstract class AbstractStreamFactory {
 
+	
 	@Inject
 	private TopicManager topicManager;
 	
 	@Value("${kafka.replication.factor}")
 	private short replicationFactor;
+	
+	@Value("${kafka.retentionMs:61516800000}") // 2yrs: 1000L * 60 * 60 * 24 * 356 * 2
+	protected long retentionMs;
+	private static final String KAFKA_TOPIC_PROPERTY_RETENTION_MS = "retention.ms";
 	
 	// ------------------------------------------------------------------------
 	// init
@@ -54,11 +61,43 @@ public abstract class AbstractStreamFactory {
 	
 	protected void ensureTopics(String...topicNames) throws InterruptedException, ExecutionException {
 		Set<NewTopic> newTopics = Arrays.asList(topicNames).stream()
-				// TODO externalize numPartitions 
-				.map(topicName -> new NewTopic(topicName, 1, replicationFactor))
+				.map(this::createNewTopic)
 				.collect(Collectors.toSet());
 		
 		topicManager.ensureTopics(newTopics);
+	}
+	
+	protected NewTopic createNewTopic(String topicName) {
+		// TODO externalize config
+		//
+		// IDEA: use a default config map and configs per topic
+		// here:
+		//
+		//   @Value("${kafka.streamfactory.topics}")
+		//   @MapFormat(...)
+		//   private Map<String, ...> topicProperties;
+		//
+		//   ...
+		//     Map<String, ...> defaultTopicProperties = topicProperties.get("default");
+		//     Map<String, ...> specificTopicProperties = defaultTopicProperties.overrideWith(topicProperties.get(topicName));
+		//		
+		//
+		// at application.yml:
+		//
+		// kafka:
+		//     streamfactory:
+		//         topics:
+		//             default:
+		//                 prop1: value
+		//                 ...
+		//             topicName:
+		//                 prop1: value
+		
+		Map<String, String> topicProperties = new HashMap<>();
+		topicProperties.put(KAFKA_TOPIC_PROPERTY_RETENTION_MS, String.valueOf(retentionMs));
+		
+		return new NewTopic(topicName, 1, this.replicationFactor)
+				.configs(topicProperties);
 	}
 	
 	/**

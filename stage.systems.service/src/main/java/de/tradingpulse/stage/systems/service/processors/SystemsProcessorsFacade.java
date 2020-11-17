@@ -18,7 +18,7 @@ public class SystemsProcessorsFacade {
 	private static final Logger LOG = LoggerFactory.getLogger(SystemsProcessorsFacade.class);
 	
 	@Inject
-	private ImpulseIncrementalStreamProcessor impulseIncrementalStreamProcessor;
+	private ImpulseStreamProcessor impulseIncrementalStreamProcessor;
 
 	@PostConstruct
 	void postConstruct() {

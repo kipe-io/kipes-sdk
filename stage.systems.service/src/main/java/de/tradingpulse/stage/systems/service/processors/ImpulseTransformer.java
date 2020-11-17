@@ -6,6 +6,8 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
@@ -13,12 +15,14 @@ import de.tradingpulse.stage.systems.aggregates.ImpulseAggregate;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseSourceRecord;
 
-public class IncrementalImpulseTransformer implements Transformer<SymbolTimestampKey, ImpulseSourceRecord, KeyValue<SymbolTimestampKey, ImpulseRecord>> {
+public class ImpulseTransformer implements Transformer<SymbolTimestampKey, ImpulseSourceRecord, KeyValue<SymbolTimestampKey, ImpulseRecord>> {
 	
+	private static final Logger LOG = LoggerFactory.getLogger(ImpulseTransformer.class)
+			;
 	private final String storeName;
 	private KeyValueStore<String, IncrementalAggregate<ImpulseAggregate>> state;
 	
-	IncrementalImpulseTransformer(final String storeName) {
+	ImpulseTransformer(final String storeName) {
 		this.storeName = storeName;
 	}
 	
@@ -28,6 +32,8 @@ public class IncrementalImpulseTransformer implements Transformer<SymbolTimestam
 	}
 	
 	public KeyValue<SymbolTimestampKey, ImpulseRecord> transform(SymbolTimestampKey key, ImpulseSourceRecord value) {
+		
+		LOG.debug("transform {}\t{}", key, value);
 		
 		IncrementalAggregate<ImpulseAggregate> incrementalAggregate = Optional
 				.ofNullable(this.state.get(key.getSymbol()))

@@ -1,5 +1,6 @@
 package de.tradingpulse.connector.iexcloud;
 
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,7 +24,7 @@ public class IEXCloudOHLCVTask extends SourceTask {
 	IEXCloudConnectorConfig config;
 	SymbolOffsetProvider symbolOffsetProvider;
 	IEXCloudFacade iexCloudFacade;
-	boolean messagesUsed = false;
+	boolean messagesUsed = true;
 	
 	@Override
 	public String version() {
@@ -133,8 +134,12 @@ public class IEXCloudOHLCVTask extends SourceTask {
 							so.asKafkaConnectPartition(), 
 							so.asKafkaConnectOffset(), 
 							this.config.getTopic(), 
+							null, // partition
+							null, // key schema
+							null, // key object
 							IEXCloudOHLCVRecord.SCHEMA, 
-							record.asStruct());
+							record.asStruct(),
+							record.getLocalDate().atStartOfDay().toEpochSecond(ZoneOffset.UTC) * 1000);
 							
 				})
 				.collect(Collectors.toList());

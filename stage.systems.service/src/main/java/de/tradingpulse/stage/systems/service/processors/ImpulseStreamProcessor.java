@@ -30,7 +30,7 @@ import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 
 @Singleton
-class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
+class ImpulseStreamProcessor extends AbstractProcessorFactory {
 	
 	@Inject
 	private IndicatorsStreamsFacade indicatorsStreamsFacade;
@@ -66,7 +66,11 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 	) throws InterruptedException, ExecutionException {
 
 		// setup join parameters
-		final Duration storeRetentionPeriod = Duration.ofMinutes(10);
+		// TODO externalize retention period
+		// IDEA: (via AbstractStreamFactory.topics.XXX.retentionMs)
+		// the config depends on the overall retention period and the earliest
+		// day we fetch at the iexcloud connector. 
+		final Duration storeRetentionPeriod = Duration.ofMillis(this.retentionMs + 86400000L); // we add a day to have today access to the full retention time (record create ts is start of day)
 		final Duration windowSize = Duration.ofSeconds(0);
 		final boolean retainDuplicates = true; // topology creation will fail on false 
 
@@ -122,7 +126,7 @@ class ImpulseIncrementalStreamProcessor extends AbstractProcessorFactory {
 		
 		isrStream
 		// calculate the impulse data
-		.transform(() -> new IncrementalImpulseTransformer(transformerStoreName), transformerStoreName)
+		.transform(() -> new ImpulseTransformer(transformerStoreName), transformerStoreName)
 		// deduplicate per SymbolTimestampKey
 		.transform(() -> new Transformer<SymbolTimestampKey, ImpulseRecord, KeyValue<SymbolTimestampKey, ImpulseRecord>>() {
 
