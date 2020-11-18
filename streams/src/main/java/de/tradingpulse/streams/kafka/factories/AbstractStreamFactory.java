@@ -60,7 +60,7 @@ public abstract class AbstractStreamFactory {
 	}
 	
 	protected void ensureTopics(String...topicNames) throws InterruptedException, ExecutionException {
-		Set<NewTopic> newTopics = Arrays.asList(topicNames).stream()
+		Set<NewTopic> newTopics = Arrays.stream(topicNames)
 				.map(this::createNewTopic)
 				.collect(Collectors.toSet());
 		
