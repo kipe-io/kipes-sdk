@@ -11,6 +11,8 @@
 # -----------------------------------------------------------------------------
 # docker run \
 #     -d
+#     -p 8083:8083
+#     --network=tradingpulse
 #     ageworks/iexcloud
 #
 ###############################################################################
@@ -38,7 +40,7 @@ ENV KAFKA_CFG_PLUGIN_PATH /plugins
 ARG JAR_FILE
 ADD target/${JAR_FILE} ${KAFKA_CFG_PLUGIN_PATH}/connector.jar
 
-ADD distributed.docker.confluent.properties /connect.properties
+ADD distributed.docker.properties /connect.properties
 
 ###############################################################################
 # START

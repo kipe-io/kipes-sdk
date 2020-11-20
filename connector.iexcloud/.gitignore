@@ -6,3 +6,4 @@
 /iexcloudconnector.json
 /distributed.iexcloudconnector.json
 /standalone.iexcloudconnector.properties
+/distributed.docker.properties

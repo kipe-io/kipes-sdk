@@ -21,7 +21,20 @@
 		<micronaut.version>2.0.3</micronaut.version>
 		<release.version>11</release.version>
 		<retrofit.version>2.9.0</retrofit.version>
+		<micronaut.env>local</micronaut.env>
 	</properties>
+
+	<profiles>
+		<profile>
+			<id>local</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<micronaut.env>local</micronaut.env>
+			</properties>
+		</profile>
+	</profiles>
 
 	<repositories>
 		<repository>
@@ -209,6 +222,21 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
 					<version>3.9.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<configuration>
+						<executable>java</executable>
+						<arguments>
+							<argument>-classpath</argument>
+							<classpath />
+							<argument>-XX:TieredStopAtLevel=1</argument>
+							<argument>-Dcom.sun.management.jmxremote</argument>
+							<argument>-Dmicronaut.environments=${micronaut.env}</argument>
+							<argument>${exec.mainClass}</argument>
+						</arguments>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>

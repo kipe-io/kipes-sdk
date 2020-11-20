@@ -2,9 +2,9 @@
 
 #### GLOBAL VARS ##############################################################
 
-BOOTSTRAP_SERVER='pkc-lq8v7.eu-central-1.aws.confluent.cloud:9092'
+BOOTSTRAP_SERVER='127.0.0.1:9092'
 CACHE_FOLDER=/tmp/kafka-streams
-CONFIG_FILE=~/.kafka/client.config.confluent
+CONFIG_FILE=~/.kafka/client.config.local
 
 #### FUNCTIONS ################################################################
 

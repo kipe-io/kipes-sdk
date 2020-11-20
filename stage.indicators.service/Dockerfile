@@ -11,9 +11,9 @@
 # -----------------------------------------------------------------------------
 # docker run \
 #     -d
-#     -p 38900:38900
-#     -p 48900:48900
-#     -p 58900:58900
+#     -p 48200:48200
+#     -p 58200:58200
+#     --network=tradingpulse
 #     ageworks/indicators.service
 #
 ###############################################################################
@@ -26,13 +26,21 @@ FROM openjdk:16
 ###############################################################################
 
 # instance id used as base for port numbers
-ENV IID=8900
+ENV IID=8200
+
+# the application environment
+ENV MICRONAUT_ENV local
+
+# Kafka bootstrap servers
+ENV KAFKA_BOOTSTRAP_SERVERS kafka:29092
+# workaround for https://github.com/micronaut-projects/micronaut-kafka/issues/179
+ENV kafka.bootstrap.servers kafka:29092 
 
 # RMI host to be used when answering JMX connection requests
-ENV RMI_HOST=127.0.0.1 
+ENV RMI_HOST 127.0.0.1 
 
 # additional java options
-ENV JAVA_OPTS="-Djava.rmi.server.hostname=$RMI_HOST -Dcom.sun.management.jmxremote.port=4$IID -Dcom.sun.management.jmxremote.rmi.port=5$IID -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+ENV JAVA_OPTS -Djava.rmi.server.hostname=$RMI_HOST -Dcom.sun.management.jmxremote.port=4$IID -Dcom.sun.management.jmxremote.rmi.port=5$IID -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false
 
 ###############################################################################
 # SETUP
@@ -45,4 +53,4 @@ RUN sh -c 'touch /stage.jar'
 ###############################################################################
 # START
 ###############################################################################
-CMD exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /stage.jar
+CMD exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -Dmicronaut.environments=${MICRONAUT_ENV} -jar /stage.jar

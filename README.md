@@ -6,27 +6,23 @@ Repository for all tradingpulse micro-services.
 
 - Java 11
 - Maven 3.6.3
-- access to confluent cloud, NOTE: this all was tested only with kafka@confluent
-- (bash, kafka cmdline tools for our commandline tools)
+- bash, kafka cmdline tools
 - docker including post-installation steps 'docker as non-root', 'start on boot'
 - docker-compose
 
-## Setup local kafka commandline config
-
-Our helper tools and this README assumes you have a config file like the following one (adjust the options to match your setup):
-
-    $ cat ~/.kafka/client.config.confluent
-    bootstrap.servers=<URL:PORT>
-    ssl.endpoint.identification.algorithm=https
-    security.protocol=SASL_SSL
-    sasl.mechanism=PLAIN
-    sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="<API KEY>" password="<API SECRECT>";
-   
 ## Setup local environment
 
-- copy `stage.*.service/src/main/resources/application-confluent.example.yml` to `application.yml` and adjust the file to match your setup
+### 1) Get Kafka running locally
+
+Follow the steps outlined at `infrastructure/kafka/README.md`.
+
+### 2) Prepare all application-local.yml files
+
+- copy all `stage.*.service/src/main/resources/application-local.example.yml` to `application-local.yml` and adjust the files to match your setup
 
 ## Run Stage Services
+
+*Note: In the following sections we assume you are running a default kafka setup without further hardening like passwords etc.*
 
 ### 1) build everything local
 	
@@ -39,7 +35,7 @@ Our helper tools and this README assumes you have a config file like the followi
 
 ### 3) generate some test data
 
-    $ cat stage.sourcedata.service/exampledata/20200831_AAPL_1y.json | kafka-console-producer.sh --bootstrap-server <URL:PORT> --producer.config ~/.kafka/client.config.confluent --topic stg-sourcedata-ohlcv_daily_raw 
+    $ cat stage.sourcedata.service/exampledata/20200831_AAPL_1y.json | kafka-console-producer.sh --bootstrap-server 127.0.0.1:9092 --topic stg-sourcedata-ohlcv_daily_raw 
 
 ### 4) validate the sourcedata stage topics 
 
@@ -54,15 +50,15 @@ Our helper tools and this README assumes you have a config file like the followi
 
 - check the test records you have send to `stg-sourcedata-ohlcv_daily_raw` at point three.
 
-    $ kafka-console-consumer.sh --bootstrap-server <URL:PORT> --consumer.config ~/.kafka/client.config.confluent --topic stg-sourcedata-ohlcv_daily_raw --from-beginning --property print.key=true
+    $ kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic stg-sourcedata-ohlcv_daily_raw --from-beginning --property print.key=true
 	
 - check the normalized records at `stg-sourcedata-ohlcv_daily`
 
-    $ kafka-console-consumer.sh --bootstrap-server <URL:PORT> --consumer.config ~/.kafka/client.config.confluent --topic stg-sourcedata-ohlcv_daily --from-beginning --property print.key=true
+    $ kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic stg-sourcedata-ohlcv_daily --from-beginning --property print.key=true
 	
 - check the derived weekly records at `stg-sourcedata-ohlcv_weekly`
 
-    $ kafka-console-consumer.sh --bootstrap-server <URL:PORT> --consumer.config ~/.kafka/client.config.confluent --topic stg-sourcedata-ohlcv_weekly --from-beginning --property print.key=true
+    $ kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic stg-sourcedata-ohlcv_weekly --from-beginning --property print.key=true
 
 Please note an important concept here: all records are so-called incremental aggregates. The basic, atomic change to an asset would be a TICK. All other records are essentially aggregations of multiple TICKs. That's the reason we are handling two timestamps for each record: the key timestamp at which the change happened (the TICK timestamp), and the record's timerange timestamp at which the record's data describe the current (incremental) aggregation values.
 
@@ -75,6 +71,8 @@ There are currently these stages (in order):
 - `tradingscreens` - provides trading screen records and entry signals
 
 Run each of the stage services like in point two and verify by listing the topics and digging through the records. Make sure you run the services at least once orderly to have all topics filled.
+
+Finally, check whether you see entry signals as described at `stage.tradingscreens.service/README.md`
 
 ## Shutdown & Restart Stage Services
 
@@ -91,31 +89,30 @@ If you want a service to redo it's work, to re-process records there are multipl
 
 Once you restart the stage service the topics will be recreated and the input records get processed again. Note: the <STAGENAME> parameter is a regexp, actually. 
 
-### 6) Setup, run and verify the IEXCloud Connector
+### 6) Cleanup everything and prepare real data
 
-- make sure you have access to iexcloud.io api
-- copy `connector.iexcloud/standalone.*.example.properties` to files without that `example` and adjust with your settings
-- make sure the sourcedata stage topics are available (at least the topic referenced in your `standalone.iexcloudconnector.properties`)
-- run the connector:
+Since we added example data at step 3 and we now want to connect to a real data provider we need to cleanup all topics and reset the offsets. We are going to do this by simply deleting all topics.
 
-    $ cd connector.iexcloud
-    $ connect-standalone.sh standalone.confluent.properties standalone.iexcloudconnector.properties
-    
-- check that new records arrive at the referenced topic
+Make sure, all services are stopped.
 
-### 7) Run everything with docker-compose
+    $ ./delete-topics.sh stg-*
 
-- copy `connector.iexcloud/distributed.*.example.*` files to files without the `example` part and adjust with your settings
-- make sure you have the right file names as they get referenced at the Dockerfile
+At this point your Kafka cluster has no topics and data from this project left. 
+
+### 7) Setup, run and verify the IEXCloud Connector
+
+- Make sure you have access to iexcloud.io api.
+- Run the sourcedata stage service once to setup the topics (see step 2).
+
+The IEXCloud Connector is based on Kafka Connect, an application which can be enhanced by connectors (plugins). The IEXCloud Connector is such connector. Since we need to start Kafka Connect, the steps to get the connector working differ from the stage service.
+
+- Follow the steps outlined at `connector.iexcloud/README.md`
+
+### 8) Run everything with docker-compose
+
+- Make sure the Kafka service are already running (see `infrastructure/kafka/README.md`)
+- Make sure all other services are *not* running.
 
     $ mvn clean install
     $ docker-compose up
     
-- if you are running this for the first time you need to create the iexcloud connector by invoking (same for config updates)
-
-    $ curl -X PUT -H "Content-Type: application/json" -d @connector.iexcloud/distributed.iexcloudconnector.json http://127.0.0.1:8083/connectors/iex-cloud-ohlcv/config
-    
-- if everything is fine you can check the current config and offsets at the topics
-    - `stg-connect-configs`
-    - `stg-connect-offsets`
-  

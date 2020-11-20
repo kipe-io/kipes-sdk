@@ -1,6 +1,3 @@
-micronaut:
-  application.name: stg-systems
-
 kafka:
   bootstrap:
     servers: pkc-lq8v7.eu-central-1.aws.confluent.cloud:9092

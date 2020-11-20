@@ -1,5 +1,5 @@
 ###############################################################################
-# ageworks/iexcloud
+# ageworks/sourcedata.service
 # -----------------------------------------------------------------------------
 #
 # Build
@@ -11,10 +11,10 @@
 # -----------------------------------------------------------------------------
 # docker run \
 #     -d
-#     -p 8083:8083
-#     -p 48000:48000
-#     -p 58000:58000
-#     ageworks/iexcloud
+#     -p 48100:48100
+#     -p 58100:58100
+#     --network=tradingpulse
+#     ageworks/sourcedata.service
 #
 ###############################################################################
 
@@ -26,7 +26,15 @@ FROM openjdk:16
 ###############################################################################
 
 # instance id used as base for port numbers
-ENV IID 8000
+ENV IID 8100
+
+# the application environment
+ENV MICRONAUT_ENV local
+
+# Kafka bootstrap servers
+ENV KAFKA_BOOTSTRAP_SERVERS kafka:29092
+# workaround for https://github.com/micronaut-projects/micronaut-kafka/issues/179
+ENV kafka.bootstrap.servers kafka:29092 
 
 # RMI host to be used when answering JMX connection requests
 ENV RMI_HOST 127.0.0.1 
@@ -45,4 +53,4 @@ RUN sh -c 'touch /stage.jar'
 ###############################################################################
 # START
 ###############################################################################
-CMD exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /stage.jar
+CMD exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -Dmicronaut.environments=${MICRONAUT_ENV} -jar /stage.jar
