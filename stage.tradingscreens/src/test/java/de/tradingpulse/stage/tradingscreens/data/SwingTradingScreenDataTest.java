@@ -3,15 +3,16 @@ package de.tradingpulse.stage.tradingscreens.data;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
-import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.LONG_ENTRY;
-import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.SHORT_ENTRY;
-import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.LONG_EXIT;
-import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.LONG_WARNING;
-import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.SHORT_EXIT;
-import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.SHORT_WARNING;
+import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.ENTRY_LONG_MOMENTUM;
+import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.ENTRY_LONG_POTENTIAL;
+import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.ENTRY_SHORT_MOMENTUM;
+import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.ENTRY_SHORT_POTENTIAL;
+import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.EXIT_LONG;
+import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.EXIT_LONG_MOMENTUM;
+import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.EXIT_SHORT;
+import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.EXIT_SHORT_MOMENTUM;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.stream.Stream;
@@ -122,11 +123,10 @@ class SwingTradingScreenDataTest {
 				.shortRangeImpulseRecord(createImpulseData(shortRangeImpulseLast, shortRangeImpulseCurrent))
 				.build();
 		
-		try {
-			record.getExitSignal();
-			fail("UnsupportedOperationException expected");
-		} catch (UnsupportedOperationException e) {
-			// OK
+		if(exitSignal == null) {
+			assertTrue(record.getExitSignal().isEmpty());
+		} else {
+			assertEquals(exitSignal, record.getExitSignal().get());
 		}
 	}
 	
@@ -140,114 +140,114 @@ class SwingTradingScreenDataTest {
 	static Stream<Arguments> swingTradingScreenData() {
 		return Stream.of(
 				//			weekly				daily				screen
-				//			last	current		last	current		last	current	entry		exit
-				arguments(	SHORT,	SHORT,		SHORT,	SHORT,		SHORT,	SHORT,	null,		null),			// 1
-				arguments(	SHORT,	SHORT,		SHORT,	NEUTRAL,	SHORT,	SHORT,	null,		SHORT_WARNING),
-				arguments(	SHORT,	SHORT,		SHORT,	LONG,		SHORT,	SHORT,	null,		SHORT_EXIT),
+				//			last	current		last	current		last	current		entry					exit
+				arguments(	SHORT,	SHORT,		SHORT,	SHORT,		SHORT,	SHORT,		null,					null),					// 1
+				arguments(	SHORT,	SHORT,		SHORT,	NEUTRAL,	SHORT,	SHORT,		null,					EXIT_SHORT_MOMENTUM),
+				arguments(	SHORT,	SHORT,		SHORT,	LONG,		SHORT,	SHORT,		null,					EXIT_SHORT),
 				
-				arguments(	SHORT,	SHORT,		NEUTRAL,SHORT,		SHORT,	SHORT,	SHORT_ENTRY,null),			// 4
-				arguments(	SHORT,	SHORT,		NEUTRAL,NEUTRAL,	SHORT,	SHORT,	null,		null),
-				arguments(	SHORT,	SHORT,		NEUTRAL,LONG,		SHORT,	SHORT,	null,		SHORT_EXIT),	
+				arguments(	SHORT,	SHORT,		NEUTRAL,SHORT,		SHORT,	SHORT,		ENTRY_SHORT_MOMENTUM,	null),					// 4
+				arguments(	SHORT,	SHORT,		NEUTRAL,NEUTRAL,	SHORT,	SHORT,		null,					null),
+				arguments(	SHORT,	SHORT,		NEUTRAL,LONG,		SHORT,	SHORT,		null,					EXIT_SHORT),	
 				
-				arguments(	SHORT,	SHORT,		LONG,	SHORT,		SHORT,	SHORT,	SHORT_ENTRY,null),			// 7
-				arguments(	SHORT,	SHORT,		LONG,	NEUTRAL,	SHORT,	SHORT,	SHORT_ENTRY,null),
-				arguments(	SHORT,	SHORT,		LONG,	LONG,		SHORT,	SHORT,	null,		null),
+				arguments(	SHORT,	SHORT,		LONG,	SHORT,		SHORT,	SHORT,		ENTRY_SHORT_MOMENTUM,	null),					// 7
+				arguments(	SHORT,	SHORT,		LONG,	NEUTRAL,	SHORT,	SHORT,		ENTRY_SHORT_POTENTIAL,	null),
+				arguments(	SHORT,	SHORT,		LONG,	LONG,		SHORT,	SHORT,		null,					null),
 				
-				arguments(	SHORT,	NEUTRAL,	SHORT,	SHORT,		SHORT,	NEUTRAL,null,		SHORT_WARNING),	// 10
-				arguments(	SHORT,	NEUTRAL,	SHORT,	NEUTRAL,	SHORT,	NEUTRAL,LONG_ENTRY,	SHORT_WARNING),
-				arguments(	SHORT,	NEUTRAL,	SHORT,	LONG,		SHORT,	NEUTRAL,LONG_ENTRY,	SHORT_EXIT),
+				arguments(	SHORT,	NEUTRAL,	SHORT,	SHORT,		SHORT,	NEUTRAL,	null,					EXIT_SHORT_MOMENTUM),	// 10
+				arguments(	SHORT,	NEUTRAL,	SHORT,	NEUTRAL,	SHORT,	NEUTRAL,	ENTRY_LONG_POTENTIAL,	EXIT_SHORT_MOMENTUM),
+				arguments(	SHORT,	NEUTRAL,	SHORT,	LONG,		SHORT,	NEUTRAL,	ENTRY_LONG_POTENTIAL,	EXIT_SHORT),
 				
-				arguments(	SHORT,	NEUTRAL,	NEUTRAL,SHORT,		SHORT,	NEUTRAL,null,		null),			// 13
-				arguments(	SHORT,	NEUTRAL,	NEUTRAL,NEUTRAL,	SHORT,	NEUTRAL,LONG_ENTRY,	SHORT_WARNING),
-				arguments(	SHORT,	NEUTRAL,	NEUTRAL,LONG,		SHORT,	NEUTRAL,LONG_ENTRY,	SHORT_EXIT),
+				arguments(	SHORT,	NEUTRAL,	NEUTRAL,SHORT,		SHORT,	NEUTRAL,	null,					null),					// 13
+				arguments(	SHORT,	NEUTRAL,	NEUTRAL,NEUTRAL,	SHORT,	NEUTRAL,	ENTRY_LONG_POTENTIAL,	null),
+				arguments(	SHORT,	NEUTRAL,	NEUTRAL,LONG,		SHORT,	NEUTRAL,	ENTRY_LONG_POTENTIAL,	EXIT_SHORT),
 				
-				arguments(	SHORT,	NEUTRAL,	LONG,	SHORT,		SHORT,	NEUTRAL,null,		null),			// 16
-				arguments(	SHORT,	NEUTRAL,	LONG,	NEUTRAL,	SHORT,	NEUTRAL,null,		null),
-				arguments(	SHORT,	NEUTRAL,	LONG,	LONG,		SHORT,	NEUTRAL,LONG_ENTRY,	null),
+				arguments(	SHORT,	NEUTRAL,	LONG,	SHORT,		SHORT,	NEUTRAL,	null,					null),					// 16
+				arguments(	SHORT,	NEUTRAL,	LONG,	NEUTRAL,	SHORT,	NEUTRAL,	null,					null),
+				arguments(	SHORT,	NEUTRAL,	LONG,	LONG,		SHORT,	NEUTRAL,	ENTRY_LONG_POTENTIAL,	null),
 				
-				arguments(	SHORT,	LONG,		SHORT,	SHORT,		SHORT,	LONG,	null,		SHORT_EXIT),	// 19
-				arguments(	SHORT,	LONG,		SHORT,	NEUTRAL,	SHORT,	LONG,	LONG_ENTRY,	SHORT_EXIT),
-				arguments(	SHORT,	LONG,		SHORT,	LONG,		SHORT,	LONG,	LONG_ENTRY,	SHORT_EXIT),
+				arguments(	SHORT,	LONG,		SHORT,	SHORT,		SHORT,	LONG,		null,					EXIT_SHORT),			// 19
+				arguments(	SHORT,	LONG,		SHORT,	NEUTRAL,	SHORT,	LONG,		ENTRY_LONG_POTENTIAL,	EXIT_SHORT),
+				arguments(	SHORT,	LONG,		SHORT,	LONG,		SHORT,	LONG,		ENTRY_LONG_MOMENTUM,	EXIT_SHORT),
 				
-				arguments(	SHORT,	LONG,		NEUTRAL,SHORT,		SHORT,	LONG,	null,		null),
-				arguments(	SHORT,	LONG,		NEUTRAL,NEUTRAL,	SHORT,	LONG,	LONG_ENTRY,	SHORT_EXIT),	// 22
-				arguments(	SHORT,	LONG,		NEUTRAL,LONG,		SHORT,	LONG,	LONG_ENTRY,	SHORT_EXIT),
+				arguments(	SHORT,	LONG,		NEUTRAL,SHORT,		SHORT,	LONG,		null,					null),					// 22
+				arguments(	SHORT,	LONG,		NEUTRAL,NEUTRAL,	SHORT,	LONG,		ENTRY_LONG_POTENTIAL,	EXIT_SHORT),
+				arguments(	SHORT,	LONG,		NEUTRAL,LONG,		SHORT,	LONG,		ENTRY_LONG_MOMENTUM,	EXIT_SHORT),
 				
-				arguments(	SHORT,	LONG,		LONG,	SHORT,		SHORT,	LONG,	null,		null),			// 25
-				arguments(	SHORT,	LONG,		LONG,	NEUTRAL,	SHORT,	LONG,	null,		null),
-				arguments(	SHORT,	LONG,		LONG,	LONG,		SHORT,	LONG,	LONG_ENTRY,	null),
+				arguments(	SHORT,	LONG,		LONG,	SHORT,		SHORT,	LONG,		null,					null),					// 25
+				arguments(	SHORT,	LONG,		LONG,	NEUTRAL,	SHORT,	LONG,		null,					null),
+				arguments(	SHORT,	LONG,		LONG,	LONG,		SHORT,	LONG,		ENTRY_LONG_MOMENTUM,	null),
 				
-				arguments(	NEUTRAL,SHORT,		SHORT,	SHORT,		NEUTRAL,SHORT,	SHORT_ENTRY,null),			// 28
-				arguments(	NEUTRAL,SHORT,		SHORT,	NEUTRAL,	NEUTRAL,SHORT,	null,		null),
-				arguments(	NEUTRAL,SHORT,		SHORT,	LONG,		NEUTRAL,SHORT,	null,		null),
+				arguments(	NEUTRAL,SHORT,		SHORT,	SHORT,		NEUTRAL,SHORT,		ENTRY_SHORT_MOMENTUM,	null),					// 28
+				arguments(	NEUTRAL,SHORT,		SHORT,	NEUTRAL,	NEUTRAL,SHORT,		null,					null),
+				arguments(	NEUTRAL,SHORT,		SHORT,	LONG,		NEUTRAL,SHORT,		null,					null),
 				
-				arguments(	NEUTRAL,SHORT,		NEUTRAL,SHORT,		NEUTRAL,SHORT,	SHORT_ENTRY,LONG_EXIT),		// 31
-				arguments(	NEUTRAL,SHORT,		NEUTRAL,NEUTRAL,	NEUTRAL,SHORT,	SHORT_ENTRY,LONG_EXIT),
-				arguments(	NEUTRAL,SHORT,		NEUTRAL,LONG,		NEUTRAL,SHORT,	null,		null),
+				arguments(	NEUTRAL,SHORT,		NEUTRAL,SHORT,		NEUTRAL,SHORT,		ENTRY_SHORT_MOMENTUM,	EXIT_LONG),				// 31
+				arguments(	NEUTRAL,SHORT,		NEUTRAL,NEUTRAL,	NEUTRAL,SHORT,		ENTRY_SHORT_POTENTIAL,	EXIT_LONG),
+				arguments(	NEUTRAL,SHORT,		NEUTRAL,LONG,		NEUTRAL,SHORT,		null,					null),
 				
-				arguments(	NEUTRAL,SHORT,		LONG,	SHORT,		NEUTRAL,SHORT,	SHORT_ENTRY,LONG_EXIT),		// 34
-				arguments(	NEUTRAL,SHORT,		LONG,	NEUTRAL,	NEUTRAL,SHORT,	SHORT_ENTRY,LONG_EXIT),
-				arguments(	NEUTRAL,SHORT,		LONG,	LONG,		NEUTRAL,SHORT,	null,		LONG_EXIT),
+				arguments(	NEUTRAL,SHORT,		LONG,	SHORT,		NEUTRAL,SHORT,		ENTRY_SHORT_MOMENTUM,	EXIT_LONG),				// 34
+				arguments(	NEUTRAL,SHORT,		LONG,	NEUTRAL,	NEUTRAL,SHORT,		ENTRY_SHORT_POTENTIAL,	EXIT_LONG),
+				arguments(	NEUTRAL,SHORT,		LONG,	LONG,		NEUTRAL,SHORT,		null,					EXIT_LONG),
 				
-				arguments(	NEUTRAL,NEUTRAL,	SHORT,	SHORT,		NEUTRAL,NEUTRAL,null,		null),			// 37
-				arguments(	NEUTRAL,NEUTRAL,	SHORT,	NEUTRAL,	NEUTRAL,NEUTRAL,LONG_ENTRY,	SHORT_WARNING),
-				arguments(	NEUTRAL,NEUTRAL,	SHORT,	LONG,		NEUTRAL,NEUTRAL,LONG_ENTRY,	SHORT_EXIT),
+				arguments(	NEUTRAL,NEUTRAL,	SHORT,	SHORT,		NEUTRAL,NEUTRAL,	null,					null),					// 37
+				arguments(	NEUTRAL,NEUTRAL,	SHORT,	NEUTRAL,	NEUTRAL,NEUTRAL,	ENTRY_LONG_POTENTIAL,	null),
+				arguments(	NEUTRAL,NEUTRAL,	SHORT,	LONG,		NEUTRAL,NEUTRAL,	ENTRY_LONG_POTENTIAL,	EXIT_SHORT),
 				
-				arguments(	NEUTRAL,NEUTRAL,	NEUTRAL,SHORT,		NEUTRAL,NEUTRAL,SHORT_ENTRY,LONG_EXIT),		// 40
-				arguments(	NEUTRAL,NEUTRAL,	NEUTRAL,NEUTRAL,	NEUTRAL,NEUTRAL,null,		null),
-				arguments(	NEUTRAL,NEUTRAL,	NEUTRAL,LONG,		NEUTRAL,NEUTRAL,LONG_ENTRY,	SHORT_EXIT),
+				arguments(	NEUTRAL,NEUTRAL,	NEUTRAL,SHORT,		NEUTRAL,NEUTRAL,	ENTRY_SHORT_POTENTIAL,	EXIT_LONG),				// 40
+				arguments(	NEUTRAL,NEUTRAL,	NEUTRAL,NEUTRAL,	NEUTRAL,NEUTRAL,	null,					null),
+				arguments(	NEUTRAL,NEUTRAL,	NEUTRAL,LONG,		NEUTRAL,NEUTRAL,	ENTRY_LONG_POTENTIAL,	EXIT_SHORT),
 				
-				arguments(	NEUTRAL,NEUTRAL,	LONG,	SHORT,		NEUTRAL,NEUTRAL,SHORT_ENTRY,LONG_EXIT),		// 43
-				arguments(	NEUTRAL,NEUTRAL,	LONG,	NEUTRAL,	NEUTRAL,NEUTRAL,SHORT_ENTRY,LONG_WARNING),
-				arguments(	NEUTRAL,NEUTRAL,	LONG,	LONG,		NEUTRAL,NEUTRAL,null,		null),
+				arguments(	NEUTRAL,NEUTRAL,	LONG,	SHORT,		NEUTRAL,NEUTRAL,	ENTRY_SHORT_POTENTIAL,	EXIT_LONG),				// 43
+				arguments(	NEUTRAL,NEUTRAL,	LONG,	NEUTRAL,	NEUTRAL,NEUTRAL,	ENTRY_SHORT_POTENTIAL,	null),
+				arguments(	NEUTRAL,NEUTRAL,	LONG,	LONG,		NEUTRAL,NEUTRAL,	null,					null),
 				
-				arguments(	NEUTRAL,LONG,		SHORT,	SHORT,		NEUTRAL,LONG,	null,		SHORT_EXIT),	// 46
-				arguments(	NEUTRAL,LONG,		SHORT,	NEUTRAL,	NEUTRAL,LONG,	LONG_ENTRY,	SHORT_EXIT),
-				arguments(	NEUTRAL,LONG,		SHORT,	LONG,		NEUTRAL,LONG,	LONG_ENTRY,	SHORT_EXIT),
+				arguments(	NEUTRAL,LONG,		SHORT,	SHORT,		NEUTRAL,LONG,		null,					EXIT_SHORT),			// 46
+				arguments(	NEUTRAL,LONG,		SHORT,	NEUTRAL,	NEUTRAL,LONG,		ENTRY_LONG_POTENTIAL,	EXIT_SHORT),
+				arguments(	NEUTRAL,LONG,		SHORT,	LONG,		NEUTRAL,LONG,		ENTRY_LONG_MOMENTUM,	EXIT_SHORT),
 				
-				arguments(	NEUTRAL,LONG,		NEUTRAL,SHORT,		NEUTRAL,LONG,	null,		null),			// 49
-				arguments(	NEUTRAL,LONG,		NEUTRAL,NEUTRAL,	NEUTRAL,LONG,	LONG_ENTRY,	SHORT_EXIT),
-				arguments(	NEUTRAL,LONG,		NEUTRAL,LONG,		NEUTRAL,LONG,	LONG_ENTRY,	SHORT_EXIT),
+				arguments(	NEUTRAL,LONG,		NEUTRAL,SHORT,		NEUTRAL,LONG,		null,					null),					// 49
+				arguments(	NEUTRAL,LONG,		NEUTRAL,NEUTRAL,	NEUTRAL,LONG,		ENTRY_LONG_POTENTIAL,	EXIT_SHORT),
+				arguments(	NEUTRAL,LONG,		NEUTRAL,LONG,		NEUTRAL,LONG,		ENTRY_LONG_MOMENTUM,	EXIT_SHORT),
 				
-				arguments(	NEUTRAL,LONG,		LONG,	SHORT,		NEUTRAL,LONG,	null,		null),			// 52
-				arguments(	NEUTRAL,LONG,		LONG,	NEUTRAL,	NEUTRAL,LONG,	null,		null),
-				arguments(	NEUTRAL,LONG,		LONG,	LONG,		NEUTRAL,LONG,	LONG_ENTRY,	null),
+				arguments(	NEUTRAL,LONG,		LONG,	SHORT,		NEUTRAL,LONG,		null,					null),					// 52
+				arguments(	NEUTRAL,LONG,		LONG,	NEUTRAL,	NEUTRAL,LONG,		null,					null),
+				arguments(	NEUTRAL,LONG,		LONG,	LONG,		NEUTRAL,LONG,		ENTRY_LONG_MOMENTUM,	null),
 				
-				arguments(	LONG,	SHORT,		SHORT,	SHORT,		LONG,	SHORT,	SHORT_ENTRY,null),			// 55
-				arguments(	LONG,	SHORT,		SHORT,	NEUTRAL,	LONG,	SHORT,	null,		null),
-				arguments(	LONG,	SHORT,		SHORT,	LONG,		LONG,	SHORT,	null,		null),
+				arguments(	LONG,	SHORT,		SHORT,	SHORT,		LONG,	SHORT,		ENTRY_SHORT_MOMENTUM,	null),					// 55
+				arguments(	LONG,	SHORT,		SHORT,	NEUTRAL,	LONG,	SHORT,		null,					null),
+				arguments(	LONG,	SHORT,		SHORT,	LONG,		LONG,	SHORT,		null,					null),
 				
-				arguments(	LONG,	SHORT,		NEUTRAL,SHORT,		LONG,	SHORT,	SHORT_ENTRY,LONG_EXIT),		// 58
-				arguments(	LONG,	SHORT,		NEUTRAL,NEUTRAL,	LONG,	SHORT,	SHORT_ENTRY,LONG_EXIT),
-				arguments(	LONG,	SHORT,		NEUTRAL,LONG,		LONG,	SHORT,	null,		null),
+				arguments(	LONG,	SHORT,		NEUTRAL,SHORT,		LONG,	SHORT,		ENTRY_SHORT_MOMENTUM,	EXIT_LONG),				// 58
+				arguments(	LONG,	SHORT,		NEUTRAL,NEUTRAL,	LONG,	SHORT,		ENTRY_SHORT_POTENTIAL,	EXIT_LONG),
+				arguments(	LONG,	SHORT,		NEUTRAL,LONG,		LONG,	SHORT,		null,					null),
 				
-				arguments(	LONG,	SHORT,		LONG,	SHORT,		LONG,	SHORT,	SHORT_ENTRY,LONG_EXIT),		// 61
-				arguments(	LONG,	SHORT,		LONG,	NEUTRAL,	LONG,	SHORT,	SHORT_ENTRY,LONG_EXIT),
-				arguments(	LONG,	SHORT,		LONG,	LONG,		LONG,	SHORT,	null,		LONG_EXIT),
+				arguments(	LONG,	SHORT,		LONG,	SHORT,		LONG,	SHORT,		ENTRY_SHORT_MOMENTUM,	EXIT_LONG),				// 61
+				arguments(	LONG,	SHORT,		LONG,	NEUTRAL,	LONG,	SHORT,		ENTRY_SHORT_POTENTIAL,	EXIT_LONG),
+				arguments(	LONG,	SHORT,		LONG,	LONG,		LONG,	SHORT,		null,					EXIT_LONG),
 				
-				arguments(	LONG,	NEUTRAL,	SHORT,	SHORT,		LONG,	NEUTRAL,SHORT_ENTRY,null),			// 64
-				arguments(	LONG,	NEUTRAL,	SHORT,	NEUTRAL,	LONG,	NEUTRAL,null,		null),
-				arguments(	LONG,	NEUTRAL,	SHORT,	LONG,		LONG,	NEUTRAL,null,		null),
+				arguments(	LONG,	NEUTRAL,	SHORT,	SHORT,		LONG,	NEUTRAL,	ENTRY_SHORT_POTENTIAL,	null),					// 64
+				arguments(	LONG,	NEUTRAL,	SHORT,	NEUTRAL,	LONG,	NEUTRAL,	null,					null),
+				arguments(	LONG,	NEUTRAL,	SHORT,	LONG,		LONG,	NEUTRAL,	null,					null),
 				
-				arguments(	LONG,	NEUTRAL,	NEUTRAL,SHORT,		LONG,	NEUTRAL,SHORT_ENTRY,LONG_EXIT),		// 67
-				arguments(	LONG,	NEUTRAL,	NEUTRAL,NEUTRAL,	LONG,	NEUTRAL,SHORT_ENTRY,LONG_WARNING),
-				arguments(	LONG,	NEUTRAL,	NEUTRAL,LONG,		LONG,	NEUTRAL,null,		null),
+				arguments(	LONG,	NEUTRAL,	NEUTRAL,SHORT,		LONG,	NEUTRAL,	ENTRY_SHORT_POTENTIAL,	EXIT_LONG),				// 67
+				arguments(	LONG,	NEUTRAL,	NEUTRAL,NEUTRAL,	LONG,	NEUTRAL,	ENTRY_SHORT_POTENTIAL,	null),
+				arguments(	LONG,	NEUTRAL,	NEUTRAL,LONG,		LONG,	NEUTRAL,	null,					null),
 				
-				arguments(	LONG,	NEUTRAL,	LONG,	SHORT,		LONG,	NEUTRAL,SHORT_ENTRY,LONG_EXIT),		// 70
-				arguments(	LONG,	NEUTRAL,	LONG,	NEUTRAL,	LONG,	NEUTRAL,SHORT_ENTRY,LONG_WARNING),
-				arguments(	LONG,	NEUTRAL,	LONG,	LONG,		LONG,	NEUTRAL,null,		LONG_WARNING),
+				arguments(	LONG,	NEUTRAL,	LONG,	SHORT,		LONG,	NEUTRAL,	ENTRY_SHORT_POTENTIAL,	EXIT_LONG),				// 70
+				arguments(	LONG,	NEUTRAL,	LONG,	NEUTRAL,	LONG,	NEUTRAL,	ENTRY_SHORT_POTENTIAL,	EXIT_LONG_MOMENTUM),
+				arguments(	LONG,	NEUTRAL,	LONG,	LONG,		LONG,	NEUTRAL,	null,					EXIT_LONG_MOMENTUM),
 				
-				arguments(	LONG,	LONG,		SHORT,	SHORT,		LONG,	LONG,	null,		null),			// 73
-				arguments(	LONG,	LONG,		SHORT,	NEUTRAL,	LONG,	LONG,	LONG_ENTRY,	null),
-				arguments(	LONG,	LONG,		SHORT,	LONG,		LONG,	LONG,	LONG_ENTRY,	null),
+				arguments(	LONG,	LONG,		SHORT,	SHORT,		LONG,	LONG,		null,					null),					// 73
+				arguments(	LONG,	LONG,		SHORT,	NEUTRAL,	LONG,	LONG,		ENTRY_LONG_POTENTIAL,	null),
+				arguments(	LONG,	LONG,		SHORT,	LONG,		LONG,	LONG,		ENTRY_LONG_MOMENTUM,	null),
 				
-				arguments(	LONG,	LONG,		NEUTRAL,SHORT,		LONG,	LONG,	null,		LONG_EXIT),		// 76
-				arguments(	LONG,	LONG,		NEUTRAL,NEUTRAL,	LONG,	LONG,	null,		null),
-				arguments(	LONG,	LONG,		NEUTRAL,LONG,		LONG,	LONG,	LONG_ENTRY,	null),
+				arguments(	LONG,	LONG,		NEUTRAL,SHORT,		LONG,	LONG,		null,					EXIT_LONG),				// 76
+				arguments(	LONG,	LONG,		NEUTRAL,NEUTRAL,	LONG,	LONG,		null,					null),
+				arguments(	LONG,	LONG,		NEUTRAL,LONG,		LONG,	LONG,		ENTRY_LONG_MOMENTUM,	null),
 				
-				arguments(	LONG,	LONG,		LONG,	SHORT,		LONG,	LONG,	null,		LONG_EXIT),		// 79
-				arguments(	LONG,	LONG,		LONG,	NEUTRAL,	LONG,	LONG,	null,		LONG_WARNING),
-				arguments(	LONG,	LONG,		LONG,	LONG,		LONG,	LONG,	null,		null)
+				arguments(	LONG,	LONG,		LONG,	SHORT,		LONG,	LONG,		null,					EXIT_LONG),				// 79
+				arguments(	LONG,	LONG,		LONG,	NEUTRAL,	LONG,	LONG,		null,					EXIT_LONG_MOMENTUM),
+				arguments(	LONG,	LONG,		LONG,	LONG,		LONG,	LONG,		null,					null)
 			);
 	}
 }

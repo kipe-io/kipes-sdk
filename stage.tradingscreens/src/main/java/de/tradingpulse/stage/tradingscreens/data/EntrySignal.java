@@ -1,6 +1,8 @@
 package de.tradingpulse.stage.tradingscreens.data;
 
 public enum EntrySignal {
-	SHORT_ENTRY,
-	LONG_ENTRY
+	ENTRY_SHORT_MOMENTUM,
+	ENTRY_SHORT_POTENTIAL,
+	ENTRY_LONG_MOMENTUM,
+	ENTRY_LONG_POTENTIAL
 }
