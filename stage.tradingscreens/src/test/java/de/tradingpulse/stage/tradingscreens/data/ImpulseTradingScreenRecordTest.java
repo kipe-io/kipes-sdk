@@ -29,7 +29,7 @@ import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 
-class SwingTradingScreenDataTest {
+class ImpulseTradingScreenRecordTest {
 
 	@Test
 	void test_serde() throws JsonProcessingException {
@@ -47,7 +47,7 @@ class SwingTradingScreenDataTest {
 		ImpulseRecord	lID	= createImpulseData(SHORT, NEUTRAL);
 		lID.setKey(lTs);
 		
-		SwingTradingScreenRecord record = SwingTradingScreenRecord.builder()
+		ImpulseTradingScreenRecord record = ImpulseTradingScreenRecord.builder()
 				.key(sTs)
 				.longRangeImpulseRecord(lID)
 				.shortRangeImpulseRecord(sID)
@@ -55,7 +55,7 @@ class SwingTradingScreenDataTest {
 		
 		ObjectMapper mapper = new ObjectMapper();
 		String json = mapper.writeValueAsString(record);
-		SwingTradingScreenRecord serdeData = mapper.readValue(json, SwingTradingScreenRecord.class);
+		ImpulseTradingScreenRecord serdeData = mapper.readValue(json, ImpulseTradingScreenRecord.class);
 		
 		assertEquals(record, serdeData);
 	}
@@ -72,7 +72,7 @@ class SwingTradingScreenDataTest {
 			EntrySignal entrySignal,
 			ExitSignal exitSignal
 	) {
-		SwingTradingScreenRecord record = SwingTradingScreenRecord.builder()
+		ImpulseTradingScreenRecord record = ImpulseTradingScreenRecord.builder()
 				.longRangeImpulseRecord(createImpulseData(longRangeImpulseLast, longRangeImpulseCurrent))
 				.shortRangeImpulseRecord(createImpulseData(shortRangeImpulseLast, shortRangeImpulseCurrent))
 				.build();
@@ -93,7 +93,7 @@ class SwingTradingScreenDataTest {
 			EntrySignal entrySignal,
 			ExitSignal exitSignal
 	) {
-		SwingTradingScreenRecord record = SwingTradingScreenRecord.builder()
+		ImpulseTradingScreenRecord record = ImpulseTradingScreenRecord.builder()
 				.longRangeImpulseRecord(createImpulseData(longRangeImpulseLast, longRangeImpulseCurrent))
 				.shortRangeImpulseRecord(createImpulseData(shortRangeImpulseLast, shortRangeImpulseCurrent))
 				.build();
@@ -118,7 +118,7 @@ class SwingTradingScreenDataTest {
 			EntrySignal entrySignal,
 			ExitSignal exitSignal
 	) {
-		SwingTradingScreenRecord record = SwingTradingScreenRecord.builder()
+		ImpulseTradingScreenRecord record = ImpulseTradingScreenRecord.builder()
 				.longRangeImpulseRecord(createImpulseData(longRangeImpulseLast, longRangeImpulseCurrent))
 				.shortRangeImpulseRecord(createImpulseData(shortRangeImpulseLast, shortRangeImpulseCurrent))
 				.build();

@@ -6,7 +6,7 @@ Repository for all tradingpulse micro-services.
 
 - Java 11
 - Maven 3.6.3
-- bash, kafka cmdline tools
+- bash, kafka cmdline tools, jq
 - docker including post-installation steps 'docker as non-root', 'start on boot'
 - docker-compose
 

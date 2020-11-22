@@ -18,7 +18,10 @@ public class TradingScreensProcessorsFacade {
 	private static final Logger LOG = LoggerFactory.getLogger(TradingScreensProcessorsFacade.class);
 	
 	@Inject
-	private SwingTradingScreenProcessor impulseIncrementalStreamProcessor;
+	private ImpulseTradingScreenProcessor impulseIncrementalStreamProcessor;
+	
+	@Inject
+	private SignalsProcessor signalsProcessor;
 
 	@PostConstruct
 	void postConstruct() {

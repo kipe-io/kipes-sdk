@@ -20,14 +20,14 @@ import org.apache.kafka.streams.state.Stores;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
-import de.tradingpulse.stage.tradingscreens.data.SwingTradingScreenRecord;
+import de.tradingpulse.stage.tradingscreens.data.ImpulseTradingScreenRecord;
 import de.tradingpulse.stage.tradingscreens.streams.TradingScreensStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 
 @Singleton
-class SwingTradingScreenProcessor extends AbstractProcessorFactory {
+class ImpulseTradingScreenProcessor extends AbstractProcessorFactory {
 		
 	@Inject
 	private SystemsStreamsFacade systemsStreamsFacade;
@@ -43,13 +43,13 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 
 	@Override
 	protected void initProcessors() throws Exception {
-		createSwingTradingScreenStream(
-				tradingScreensStreamsFacade.getSwingTradingScreenStreamName(), 
+		createImpulseTradingScreenStream(
+				tradingScreensStreamsFacade.getImpulseTradingScreenStreamName(), 
 				systemsStreamsFacade.getImpulseDailyStream(), 
 				systemsStreamsFacade.getImpulseWeeklyStream());
 	}
 
-	private void createSwingTradingScreenStream(
+	private void createImpulseTradingScreenStream(
 			String topicName,
 			KStream<SymbolTimestampKey, ImpulseRecord> shortTimeRangeStream,
 			KStream<SymbolTimestampKey, ImpulseRecord> longTimeRangeStream
@@ -70,14 +70,14 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 
 		// create dedup store
 		final String dedupStoreName = getProcessorStoreTopicName(topicName+"-dedup");
-		StoreBuilder<KeyValueStore<String,SwingTradingScreenRecord>> dedupStoreBuilder =
+		StoreBuilder<KeyValueStore<String,ImpulseTradingScreenRecord>> dedupStoreBuilder =
 				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(dedupStoreName),
 						jsonSerdeRegistry.getSerde(String.class),
-						jsonSerdeRegistry.getSerde(SwingTradingScreenRecord.class));
+						jsonSerdeRegistry.getSerde(ImpulseTradingScreenRecord.class));
 		builder.addStateStore(dedupStoreBuilder);
 		
 		// create topology
-		KStream<SymbolTimestampKey, SwingTradingScreenRecord> stsrStream = 
+		KStream<SymbolTimestampKey, ImpulseTradingScreenRecord> stsrStream = 
 				shortTimeRangeStream
 		
 				// join daily and weekly impulse
@@ -86,7 +86,7 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 						longTimeRangeStream,
 						
 						// join logic below delivers swing trading screen data
-						(shortTimeRangeImpulseRecord, longTimeRangeImpulseRecord) -> SwingTradingScreenRecord.builder()
+						(shortTimeRangeImpulseRecord, longTimeRangeImpulseRecord) -> ImpulseTradingScreenRecord.builder()
 									.key(shortTimeRangeImpulseRecord.getKey())
 									.timeRange(shortTimeRangeImpulseRecord.getTimeRange())
 									.shortRangeImpulseRecord(shortTimeRangeImpulseRecord)
@@ -115,18 +115,18 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 		
 		stsrStream
 		// deduplicate by both impulse data ignoring timestamps
-		.transform(() -> new Transformer<SymbolTimestampKey, SwingTradingScreenRecord, KeyValue<SymbolTimestampKey, SwingTradingScreenRecord>>() {
+		.transform(() -> new Transformer<SymbolTimestampKey, ImpulseTradingScreenRecord, KeyValue<SymbolTimestampKey, ImpulseTradingScreenRecord>>() {
 
-			private KeyValueStore<String, SwingTradingScreenRecord> state;
+			private KeyValueStore<String, ImpulseTradingScreenRecord> state;
 			
 			@SuppressWarnings("unchecked")
 			public void init(ProcessorContext context) {
-				this.state = (KeyValueStore<String, SwingTradingScreenRecord>)context.getStateStore(dedupStoreName);
+				this.state = (KeyValueStore<String, ImpulseTradingScreenRecord>)context.getStateStore(dedupStoreName);
 			}
 
 			@Override
-			public KeyValue<SymbolTimestampKey, SwingTradingScreenRecord> transform(SymbolTimestampKey key, SwingTradingScreenRecord value) {
-				SwingTradingScreenRecord oldValue = this.state.get(key.getSymbol());
+			public KeyValue<SymbolTimestampKey, ImpulseTradingScreenRecord> transform(SymbolTimestampKey key, ImpulseTradingScreenRecord value) {
+				ImpulseTradingScreenRecord oldValue = this.state.get(key.getSymbol());
 				
 				if(oldValue == null) {
 					this.state.put(key.getSymbol(), value);
@@ -159,7 +159,7 @@ class SwingTradingScreenProcessor extends AbstractProcessorFactory {
 		
 		.to(topicName, Produced.with(
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-				jsonSerdeRegistry.getSerde(SwingTradingScreenRecord.class)));
+				jsonSerdeRegistry.getSerde(ImpulseTradingScreenRecord.class)));
 		
 	}
 }

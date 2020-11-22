@@ -31,7 +31,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class SwingTradingScreenRecord extends AbstractIncrementalAggregateRecord {
+public class ImpulseTradingScreenRecord extends AbstractIncrementalAggregateRecord {
 
 	private ImpulseRecord longRangeImpulseRecord;
 	private	ImpulseRecord shortRangeImpulseRecord;
