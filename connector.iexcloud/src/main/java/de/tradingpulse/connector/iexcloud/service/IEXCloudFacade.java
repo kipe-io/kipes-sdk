@@ -18,6 +18,7 @@ import org.apache.kafka.common.config.types.Password;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
@@ -69,12 +70,12 @@ public class IEXCloudFacade {
 		}
 	}
 	
-	public List<IEXCloudOHLCVRecord> fetchOHLCVSince(String symbol, LocalDate lastFetchedDate) {
+	public List<IEXCloudOHLCVRecord> fetchOHLCVSince(String symbol, LocalDate lastFetchedDate) throws NoRecordsProvidedException {
 		return internalFetchOHLCVSince(symbol, lastFetchedDate, LocalDate.now());
 	}
 	
 	// method exists only for testing purposes
-	List<IEXCloudOHLCVRecord> internalFetchOHLCVSince(String symbol, LocalDate lastFetchedDate, LocalDate todayDate) {
+	List<IEXCloudOHLCVRecord> internalFetchOHLCVSince(String symbol, LocalDate lastFetchedDate, LocalDate todayDate) throws NoRecordsProvidedException {
 		// TODO a smarter implementation would consider the exchange's timezone the symbol is traded at
 		// We are just working on LocalDate which will lead to situations where
 		// we are going to fetch the same dates multiple times
@@ -130,10 +131,28 @@ public class IEXCloudFacade {
 				.collect(Collectors.toList());
 	}
 	
-	List<IEXCloudOHLCVRecord> fetchOHLCVRange(String symbol, IEXCloudRange range) {
+	List<IEXCloudOHLCVRecord> fetchOHLCVRange(String symbol, IEXCloudRange range) throws NoRecordsProvidedException {
 		try {
-			return iexCloudService.fetchOHLCVRange(symbol, range.getRange(), this.apiToken.value())
-					.execute()
+			return fetchAdaptiveOHLCVRange(symbol, range);
+		} catch (IOException e) {
+			LOG.error(
+					String.format("exception during fetchOHLCVRange for symbol '%s' and range '%s', going to return empty list", symbol, range.getRange()),
+					e);
+			return Collections.emptyList();
+		}
+	}
+	
+	private List<IEXCloudOHLCVRecord> fetchAdaptiveOHLCVRange(String symbol, IEXCloudRange range) throws IOException, NoRecordsProvidedException {
+		List<IEXCloudOHLCVRecord> records;
+		IEXCloudRange currentRange = range;
+		
+		do {
+			// TODO: check for HTTP errors
+			Response<List<IEXCloudOHLCVRecord>> response = 
+					iexCloudService.fetchOHLCVRange(symbol, currentRange.getRange(), this.apiToken.value())
+					.execute();
+			
+			records = response
 					.body()
 					.stream()
 					.map(record ->  {
@@ -142,12 +161,23 @@ public class IEXCloudFacade {
 						return record;
 					})
 					.collect(Collectors.toList());
-		} catch (IOException e) {
-			LOG.error(
-					String.format("exception during fetchOHLCVRange for symbol '%s' and range '%s', going to return empty list", symbol, range.getRange()),
-					e);
-			return Collections.emptyList();
+			
+			// There are cases where IEXCloud doesn't return records when the
+			// range is to large. As a workaround we decrease the range until
+			// we get some data back.
+			if(records.isEmpty()) {
+				LOG.debug("{}: no records received for range {}, response code was: {}:\"{}\"", symbol, currentRange, response.code(), response.message());
+				LOG.warn("{}: no records received for range {}, going to decrease range to {}", symbol, currentRange, currentRange.getNextSmallerRange());
+				currentRange = currentRange.getNextSmallerRange();
+			}
+			
+		} while(records.isEmpty() && currentRange != null);
+		
+		if(records.isEmpty() && currentRange == null) {
+			throw new NoRecordsProvidedException(symbol, range);
 		}
+		
+		return records;
 	}
 	
 	IEXCloudOHLCVRecord fetchOHLCVPrevious(String symbol) {

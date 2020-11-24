@@ -1,6 +1,7 @@
 package de.tradingpulse.connector.iexcloud.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -52,7 +53,7 @@ class IEXCloudFacadeTest {
 	// ------------------------------------------------------------------------
 
 	@Test
-	void test_internalFetchOHLCVSince__lastFetchedDate_yesterday_or_later_returns_empty_list() {
+	void test_internalFetchOHLCVSince__lastFetchedDate_yesterday_or_later_returns_empty_list() throws NoRecordsProvidedException {
 		LocalDate today = LocalDate.now();
 		
 		IEXCloudFacade facade = createFacade();
@@ -62,7 +63,7 @@ class IEXCloudFacadeTest {
 	}
 	
 	@Test
-	void test_internalFetchOHLCVSince__lastFetchedDate_Friday_on_following_Sun_Mon_returns_empty_list() {
+	void test_internalFetchOHLCVSince__lastFetchedDate_Friday_on_following_Sun_Mon_returns_empty_list() throws NoRecordsProvidedException {
 		LocalDate friday = createDate("2020-10-23");
 		assertEquals(DayOfWeek.FRIDAY, friday.getDayOfWeek());
 		
@@ -87,7 +88,7 @@ class IEXCloudFacadeTest {
 	}
 	
 	@Test
-	void test_internalFetchOHLCVSince__lastFetchedDate_Thursday_on_following_Sun_Mon_returns_empty_list() {
+	void test_internalFetchOHLCVSince__lastFetchedDate_Thursday_on_following_Sun_Mon_returns_empty_list() throws NoRecordsProvidedException {
 		LocalDate friday = createDate("2020-10-23");
 		assertEquals(DayOfWeek.FRIDAY, friday.getDayOfWeek());
 		
@@ -100,7 +101,7 @@ class IEXCloudFacadeTest {
 	}
 	
 	@Test
-	void test_internalFetchOHLCVSince__one_workingday_difference_fetches_previous_day() {
+	void test_internalFetchOHLCVSince__one_workingday_difference_fetches_previous_day() throws NoRecordsProvidedException {
 		LocalDate thursday = createDate("2020-10-22");
 		assertEquals(DayOfWeek.THURSDAY, thursday.getDayOfWeek());
 		
@@ -133,6 +134,20 @@ class IEXCloudFacadeTest {
 		facade.internalFetchOHLCVSince(SYMBOL, thursday, saturday.plusDays(7));
 		// verification via mock interaction
 		
+	}
+	
+	@Test
+	void test_internalFetchOHLCVSince__throws_NoRecordsProvidedException__when_service_returns_empty_list() {
+		LocalDate monday = createDate("2020-10-26");
+		assertEquals(DayOfWeek.MONDAY, monday.getDayOfWeek());
+		
+		LocalDate friday = monday.plusDays(4);
+		assertEquals(DayOfWeek.FRIDAY, friday.getDayOfWeek());
+		
+		IEXCloudFacade facade = createFacade();
+		
+		expectRangeCallWithNoRecords();
+		assertThrows(NoRecordsProvidedException.class, () -> facade.internalFetchOHLCVSince(SYMBOL, monday, friday));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -171,9 +186,17 @@ class IEXCloudFacadeTest {
 	// ------------------------------------------------------------------------
 	
 	private void expectRangeCall() {
+		expectRangeCall(Arrays.asList(createRecord("1970-01-01")));
+	}
+	
+	private void expectRangeCallWithNoRecords() {
+		expectRangeCall(Collections.emptyList());
+	}
+	
+	private void expectRangeCall(List<IEXCloudOHLCVRecord> returnedRecords) {
 		try {
 			when(iexCloudServiceMock.fetchOHLCVRange(any(), any(), any())).thenReturn(rangeCallMock);
-			when(rangeCallMock.execute()).thenReturn(Response.success(Collections.emptyList()));
+			when(rangeCallMock.execute()).thenReturn(Response.success(returnedRecords));
 		} catch (IOException e) {
 			// won't happen
 		}

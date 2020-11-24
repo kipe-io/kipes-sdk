@@ -15,6 +15,17 @@ public enum IEXCloudRange {
 	M1(1, MONTHS, "1m"),
 	D5(5, DAYS, "5d");
 	
+	static {
+		MAX.nextSmallerRange = Y5;
+		Y5.nextSmallerRange = Y2;
+		Y2.nextSmallerRange = Y1;
+		Y1.nextSmallerRange = M6;
+		M6.nextSmallerRange = M3;
+		M3.nextSmallerRange = M1;
+		M1.nextSmallerRange = D5;
+		D5.nextSmallerRange = null;
+	}
+	
 	/**
 	 * Returns the {@link IEXCloudRange} which covers the dateInPast and has the
 	 * least excess days. 
@@ -46,6 +57,7 @@ public enum IEXCloudRange {
 	private final long unitsCovered;
 	private final TemporalUnit unit;
 	private final String range;
+	private IEXCloudRange nextSmallerRange;
 	
 	private IEXCloudRange(long unitsCovered, TemporalUnit unit, String range) {
 		this.unitsCovered = unitsCovered;
@@ -55,6 +67,14 @@ public enum IEXCloudRange {
 	
 	public String getRange() {
 		return this.range;
+	}
+	
+	/**
+	 * Returns the next smaller range. Will return null if there isn't a smaller
+	 * range. 
+	 */
+	public IEXCloudRange getNextSmallerRange() {
+		return this.nextSmallerRange;
 	}
 	
 	/**

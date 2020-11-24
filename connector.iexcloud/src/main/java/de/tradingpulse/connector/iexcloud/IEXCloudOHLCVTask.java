@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import de.tradingpulse.connector.iexcloud.service.IEXCloudFacade;
 import de.tradingpulse.connector.iexcloud.service.IEXCloudMetadata;
 import de.tradingpulse.connector.iexcloud.service.IEXCloudOHLCVRecord;
+import de.tradingpulse.connector.iexcloud.service.NoRecordsProvidedException;
 
 public class IEXCloudOHLCVTask extends SourceTask {
 	
@@ -104,12 +105,24 @@ public class IEXCloudOHLCVTask extends SourceTask {
 			return null;
 		}
 
-		List<IEXCloudOHLCVRecord> records = this.iexCloudFacade
-				.fetchOHLCVSince(
-						symbolOffset.symbol, 
-						symbolOffset.lastFetchedDate);
+		List<IEXCloudOHLCVRecord> records;
+		try {
+			records = this.iexCloudFacade
+					.fetchOHLCVSince(
+							symbolOffset.symbol, 
+							symbolOffset.lastFetchedDate);
+		} catch (NoRecordsProvidedException e) {
+			LOG.error(e.getMessage());
+			LOG.warn("{}: removing symbol from config. This is not permanent.", e.getSymbol());
+			this.symbolOffsetProvider.removeSymbolFromConfig(e.getSymbol());
+			
+			return null;
+		}
 		
 		if(records.isEmpty()) {
+			// We don't need to fetch already known information. In this case
+			// an empty list is returned.
+			
 			// returning null following the specification
 			return null;
 		}

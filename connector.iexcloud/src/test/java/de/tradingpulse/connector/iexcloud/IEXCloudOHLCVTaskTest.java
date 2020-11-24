@@ -21,6 +21,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.tradingpulse.connector.iexcloud.service.IEXCloudFacade;
 import de.tradingpulse.connector.iexcloud.service.IEXCloudOHLCVRecord;
+import de.tradingpulse.connector.iexcloud.service.IEXCloudRange;
+import de.tradingpulse.connector.iexcloud.service.NoRecordsProvidedException;
 
 @ExtendWith(MockitoExtension.class)
 class IEXCloudOHLCVTaskTest {
@@ -55,7 +57,7 @@ class IEXCloudOHLCVTaskTest {
 	
 	@Test
 	void test_internalPoll__on_offset_call_facade_when_empty_response__return_null()
-	throws InterruptedException
+	throws InterruptedException, NoRecordsProvidedException
 	{
 		IEXCloudOHLCVTask task = createTask();
 		
@@ -68,7 +70,7 @@ class IEXCloudOHLCVTaskTest {
 	
 	@Test
 	void test_internalPoll__on_offset_call_facade_when_response__return_list()
-	throws InterruptedException
+	throws InterruptedException, NoRecordsProvidedException
 	{
 		IEXCloudOHLCVTask task = createTask();
 		
@@ -78,6 +80,19 @@ class IEXCloudOHLCVTaskTest {
 		
 		assertNotNull(task.internalPoll());
 		// verification happens at #afterEach
+	}
+	
+	@Test
+	void test_internalPoll__removes_symbol_on_NoRecordsProvidedException() throws NoRecordsProvidedException {
+		IEXCloudOHLCVTask task = createTask();
+		
+		when(symbolOffsetProviderMock.getNextSymbolOffsetForPoll()).thenReturn(createSymbolOffset());
+		when(iexCloudFacadeMock.fetchOHLCVSince(any(), any())).thenThrow(new NoRecordsProvidedException("symbol", IEXCloudRange.MAX));
+		doNothing().when(symbolOffsetProviderMock).removeSymbolFromConfig("symbol");
+		
+		assertNull(task.internalPoll());
+		// verification happens at #afterEach
+		
 	}
 	
 	// ------------------------------------------------------------------------

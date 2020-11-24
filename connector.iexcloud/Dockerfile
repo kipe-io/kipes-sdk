@@ -24,7 +24,10 @@ FROM openjdk:16
 RUN curl -o /tmp/kafka.tgz https://downloads.apache.org/kafka/2.6.0/kafka_2.13-2.6.0.tgz && \
     tar xzf /tmp/kafka.tgz -C /opt/ && \
     rm -f /tmp/kafka.tgz
-ENV PATH="/opt/kafka_2.13-2.6.0/bin:$PATH"
+    
+ENV KAFKA_BASE /opt/kafka_2.13-2.6.0
+
+ENV PATH="${KAFKA_BASE}/bin:${PATH}"
 
 ###############################################################################
 # PARAMETERS
@@ -39,6 +42,8 @@ ENV KAFKA_CFG_PLUGIN_PATH /plugins
 
 ARG JAR_FILE
 ADD target/${JAR_FILE} ${KAFKA_CFG_PLUGIN_PATH}/connector.jar
+
+ADD target/classes/log4j.properties ${KAFKA_BASE}/config/connect-log4j.properties
 
 ADD distributed.docker.properties /connect.properties
 

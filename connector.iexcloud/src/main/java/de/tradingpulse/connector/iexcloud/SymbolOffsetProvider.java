@@ -51,7 +51,7 @@ class SymbolOffsetProvider {
 	// ------------------------------------------------------------------------
 
 	SymbolOffsetProvider(List<String> symbols, OffsetStorageReader offsetStorageReader) {
-		this.symbols = symbols;
+		this.symbols = new LinkedList<>(symbols);
 		this.partitions = createKafkaPartitionsFrom(symbols);
 		this.offsetStorageReader = offsetStorageReader;
 	}
@@ -86,7 +86,12 @@ class SymbolOffsetProvider {
 		});
 	}
 	
-	SymbolOffset getNextSymbolOffsetForPoll() {
+	synchronized void removeSymbolFromConfig(String symbol) {
+		this.symbols.remove(symbol);
+		this.updatedOffsetMap.clear();
+	}
+	
+	synchronized SymbolOffset getNextSymbolOffsetForPoll() {
 		
 		// I assume #poll() will be called as soon as a worker is ready to 
 		// execute this. Furthermore I assume, this will happen quite often.
