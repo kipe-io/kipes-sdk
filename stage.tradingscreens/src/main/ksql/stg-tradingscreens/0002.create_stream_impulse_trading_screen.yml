@@ -1,0 +1,37 @@
+ksql:
+    CREATE STREAM impulse_trading_screen (
+        topic_key VARCHAR KEY,
+        key STRUCT<symbol VARCHAR, timestamp BIGINT>,
+        timeRange VARCHAR,
+        timeRangeTimestamp BIGINT,
+        lastTradingDirection VARCHAR,
+        tradingDirection VARCHAR,
+        entrySignal VARCHAR,
+        exitSignal VARCHAR,
+        longRangeImpulseRecord STRUCT<
+            key VARCHAR,
+            timeRange VARCHAR,
+            timeRangeTimestamp BIGINT,
+            lastTradingDirection VARCHAR,
+            changeTradingDirection VARCHAR,
+            tradingDirection VARCHAR
+        >,
+        shortRangeImpulseRecord STRUCT<
+            key VARCHAR,
+            timeRange VARCHAR,
+            timeRangeTimestamp BIGINT,
+            lastTradingDirection VARCHAR,
+            changeTradingDirection VARCHAR,
+            tradingDirection VARCHAR
+        >
+    ) WITH (
+        KAFKA_TOPIC = 'stg-tradingscreens-impulse_trading_screen',
+        VALUE_FORMAT = 'JSON'
+    );
+streamsProperties:
+   auto.offset.reset: earliest
+   
+rollback:
+    ksql:
+        DROP STREAM impulse_trading_screen;
+    

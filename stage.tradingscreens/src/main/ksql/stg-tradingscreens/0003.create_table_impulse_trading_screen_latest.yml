@@ -1,0 +1,21 @@
+ksql:
+    CREATE TABLE impulse_trading_screen_latest
+    WITH (
+        KAFKA_TOPIC = 'ksql-impulse_trading_screen_latest',
+        VALUE_FORMAT = 'JSON',
+        PARTITIONS = 1,
+        REPLICAS = 1
+    ) AS 
+    SELECT
+      key->symbol, 
+      MAX(key->timestamp) AS latest_ts 
+    FROM impulse_momentum_signals
+    GROUP BY key->symbol
+    EMIT CHANGES;
+streamsProperties:
+   auto.offset.reset: earliest
+   
+rollback:
+    ksql:
+        DROP TABLE impulse_trading_screen_latest DELETE TOPIC;
+    

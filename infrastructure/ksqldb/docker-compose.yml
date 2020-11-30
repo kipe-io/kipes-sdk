@@ -1,0 +1,35 @@
+version: '3'
+
+networks:
+  default:
+    external:
+      name: tradingpulse
+
+services:
+
+  ksqldb:
+    image: confluentinc/ksqldb-server:0.13.0
+    hostname: ksqldb
+    container_name: ksqldb
+    ports:
+      - "8088:8088"
+    #volumes:
+    #  - "./extensions/:/opt/ksqldb/extensions"
+    environment:
+      KSQL_LISTENERS: http://0.0.0.0:8088
+      KSQL_BOOTSTRAP_SERVERS: kafka:29092
+      KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 1
+      KSQL_KSQL_SINK_REPLICAS: 1
+      KSQL_KSQL_STREAMS_REPLICATION_FACTOR: 1
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 1
+      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
+      KSQL_KSQL_EXTENSION_DIR: "/opt/ksqldb/extensions"
+
+  ksqldb-cli:
+    image: confluentinc/ksqldb-cli:0.13.0
+    container_name: ksqldb-cli
+    depends_on:
+      - ksqldb
+    entrypoint: /bin/sh
+    tty: true

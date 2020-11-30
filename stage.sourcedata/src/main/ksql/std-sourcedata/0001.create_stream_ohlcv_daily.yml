@@ -1,0 +1,22 @@
+ksql:
+    CREATE STREAM ohlcv_daily (
+        topic_key VARCHAR KEY,
+        key STRUCT<symbol VARCHAR, timestamp BIGINT>,
+        timeRange VARCHAR,
+        timeRangeTimestamp BIGINT,
+        open DOUBLE,
+        high DOUBLE,
+        low DOUBLE,
+        close DOUBLE,
+        volume BIGINT
+    ) WITH (
+        KAFKA_TOPIC = 'stg-sourcedata-ohlcv_daily',
+        VALUE_FORMAT = 'JSON'
+    );
+streamsProperties:
+   auto.offset.reset: earliest
+   
+rollback:
+    ksql:
+        DROP STREAM ohlcv_daily;
+    

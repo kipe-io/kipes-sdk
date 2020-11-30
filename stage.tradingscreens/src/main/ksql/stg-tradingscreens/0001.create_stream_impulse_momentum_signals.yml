@@ -1,0 +1,19 @@
+ksql:
+    CREATE STREAM impulse_momentum_signals (
+        topic_key VARCHAR KEY,
+        key STRUCT<symbol VARCHAR, timestamp BIGINT>,
+        timeRange VARCHAR,
+        timeRangeTimestamp BIGINT,
+        entry VARCHAR,
+        exit VARCHAR
+    ) WITH (
+        KAFKA_TOPIC = 'stg-tradingscreens-impulse_momentum_signals',
+        VALUE_FORMAT = 'JSON'
+    );
+streamsProperties:
+   auto.offset.reset: earliest
+   
+rollback:
+    ksql:
+        DROP STREAM impulse_momentum_signals;
+    
