@@ -1,6 +1,6 @@
 # Stage connector - stg-connect
 
-## Preconditions
+## Prerequisites
 
 - ideally, start from `../README.md`
 - kafka is running locally (see `../infrastructure/kafka/README.md`)

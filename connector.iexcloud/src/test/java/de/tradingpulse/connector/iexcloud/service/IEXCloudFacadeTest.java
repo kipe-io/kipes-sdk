@@ -53,7 +53,7 @@ class IEXCloudFacadeTest {
 	// ------------------------------------------------------------------------
 
 	@Test
-	void test_internalFetchOHLCVSince__lastFetchedDate_yesterday_or_later_returns_empty_list() throws NoRecordsProvidedException {
+	void test_internalFetchOHLCVSince__lastFetchedDate_yesterday_or_later_returns_empty_list() throws IEXCloudException {
 		LocalDate today = LocalDate.now();
 		
 		IEXCloudFacade facade = createFacade();
@@ -63,7 +63,7 @@ class IEXCloudFacadeTest {
 	}
 	
 	@Test
-	void test_internalFetchOHLCVSince__lastFetchedDate_Friday_on_following_Sun_Mon_returns_empty_list() throws NoRecordsProvidedException {
+	void test_internalFetchOHLCVSince__lastFetchedDate_Friday_on_following_Sun_Mon_returns_empty_list() throws IEXCloudException {
 		LocalDate friday = createDate("2020-10-23");
 		assertEquals(DayOfWeek.FRIDAY, friday.getDayOfWeek());
 		
@@ -77,18 +77,18 @@ class IEXCloudFacadeTest {
 		assertTrue(facade.internalFetchOHLCVSince(SYMBOL, friday, sunday.plusDays(1)).isEmpty());
 		
 		// but when calling from Tuesday there will be a real call
-		expectRangeCall();
+		expectRangeCall("2020-10-26");
 		facade.internalFetchOHLCVSince(SYMBOL, friday, sunday.plusDays(2));
 		// verification via mock interaction
 		
 		// and when calling from next Sunday there will be also a real call
-		expectRangeCall();
+		expectRangeCall("2020-10-26");
 		facade.internalFetchOHLCVSince(SYMBOL, friday, sunday.plusDays(7));
 		// verification via mock interaction
 	}
 	
 	@Test
-	void test_internalFetchOHLCVSince__lastFetchedDate_Thursday_on_following_Sun_Mon_returns_empty_list() throws NoRecordsProvidedException {
+	void test_internalFetchOHLCVSince__lastFetchedDate_Thursday_on_following_Sun_Mon_returns_empty_list() throws IEXCloudException {
 		LocalDate friday = createDate("2020-10-23");
 		assertEquals(DayOfWeek.FRIDAY, friday.getDayOfWeek());
 		
@@ -101,7 +101,7 @@ class IEXCloudFacadeTest {
 	}
 	
 	@Test
-	void test_internalFetchOHLCVSince__one_workingday_difference_fetches_previous_day() throws NoRecordsProvidedException {
+	void test_internalFetchOHLCVSince__one_workingday_difference_fetches_previous_day() throws IEXCloudException {
 		LocalDate thursday = createDate("2020-10-22");
 		assertEquals(DayOfWeek.THURSDAY, thursday.getDayOfWeek());
 		
@@ -125,12 +125,12 @@ class IEXCloudFacadeTest {
 		// verification via mock interaction
 		
 		// but when calling from Tuesday there will be a range call
-		expectRangeCall();
+		expectRangeCall("2020-10-24");
 		facade.internalFetchOHLCVSince(SYMBOL, thursday, saturday.plusDays(3));
 		// verification via mock interaction
 		
 		// likewise saturday a week later
-		expectRangeCall();
+		expectRangeCall("2020-10-24");
 		facade.internalFetchOHLCVSince(SYMBOL, thursday, saturday.plusDays(7));
 		// verification via mock interaction
 		
@@ -150,6 +150,20 @@ class IEXCloudFacadeTest {
 		assertThrows(NoRecordsProvidedException.class, () -> facade.internalFetchOHLCVSince(SYMBOL, monday, friday));
 	}
 	
+	@Test
+	void test_internalFetchOHLCVSince__throws_NoRecordsProvidedException__when_service_returns_old_records() {
+		LocalDate monday = createDate("2020-10-26");
+		assertEquals(DayOfWeek.MONDAY, monday.getDayOfWeek());
+		
+		LocalDate friday = monday.plusDays(4);
+		assertEquals(DayOfWeek.FRIDAY, friday.getDayOfWeek());
+		
+		IEXCloudFacade facade = createFacade();
+		
+		expectRangeCall("2020-10-26");
+		assertThrows(NoRecordsProvidedException.class, () -> facade.internalFetchOHLCVSince(SYMBOL, monday, friday));
+	}
+
 	// ------------------------------------------------------------------------
 	// test_removeAlreadyFetchedDates
 	// ------------------------------------------------------------------------
@@ -185,8 +199,8 @@ class IEXCloudFacadeTest {
 	// utils
 	// ------------------------------------------------------------------------
 	
-	private void expectRangeCall() {
-		expectRangeCall(Arrays.asList(createRecord("1970-01-01")));
+	private void expectRangeCall(String date) {
+		expectRangeCall(Arrays.asList(createRecord(date)));
 	}
 	
 	private void expectRangeCallWithNoRecords() {

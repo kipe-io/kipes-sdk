@@ -70,12 +70,16 @@ public class IEXCloudFacade {
 		}
 	}
 	
-	public List<IEXCloudOHLCVRecord> fetchOHLCVSince(String symbol, LocalDate lastFetchedDate) throws NoRecordsProvidedException {
+	public List<IEXCloudOHLCVRecord> fetchOHLCVSince(String symbol, LocalDate lastFetchedDate)
+	throws IEXCloudException
+	{
 		return internalFetchOHLCVSince(symbol, lastFetchedDate, LocalDate.now());
 	}
 	
 	// method exists only for testing purposes
-	List<IEXCloudOHLCVRecord> internalFetchOHLCVSince(String symbol, LocalDate lastFetchedDate, LocalDate todayDate) throws NoRecordsProvidedException {
+	List<IEXCloudOHLCVRecord> internalFetchOHLCVSince(String symbol, LocalDate lastFetchedDate, LocalDate todayDate)
+	throws IEXCloudException 
+	{
 		// TODO a smarter implementation would consider the exchange's timezone the symbol is traded at
 		// We are just working on LocalDate which will lead to situations where
 		// we are going to fetch the same dates multiple times
@@ -93,7 +97,7 @@ public class IEXCloudFacade {
 				|| fetchStartDate.isAfter(todayDate)
 				|| (fetchStartDay == SATURDAY) && fetchStartDate.until(todayDate, ChronoUnit.DAYS) <= 2) {
 			
-			LOG.debug("{}/{}: no need to fetch starting from Śat, {}", symbol, todayDate, fetchStartDate);
+			LOG.debug("{}/{}: no need to fetch starting from Sat, {}", symbol, todayDate, fetchStartDate);
 			
 			return Collections.emptyList();
 		}
@@ -119,8 +123,22 @@ public class IEXCloudFacade {
 		}
 		
 		LOG.debug("{}/{}: going to fetch with range {} for {}", symbol, todayDate, optRange.get(), fetchStartDate);
+		List<IEXCloudOHLCVRecord> fetchedRecords = fetchOHLCVRange(symbol, optRange.get());
+		List<IEXCloudOHLCVRecord> filteredRecords = removeAlreadyFetchedDates(fetchedRecords, lastFetchedDate);
 		
-		return removeAlreadyFetchedDates(fetchOHLCVRange(symbol, optRange.get()), lastFetchedDate);
+		LOG.debug("{}/{}: fetched {} new records out of {} overall fetched", symbol, todayDate, filteredRecords.size(), fetchedRecords.size());
+		if(filteredRecords.size() == 0) {
+			// In case companies get removed from the stock market the old data
+			// is still available. However, since it makes no sense to fetch
+			// that symbol further, we need to remove the symbol.
+			
+			// FIXME/TODO: Edge case: closed exchanges for public holidays
+			// The logic would potentially remove all affected symbols. 
+			// current workaround: restart the service.
+			throw new NoRecordsProvidedException(symbol);
+		}
+		
+		return filteredRecords;
 	}
 
 	List<IEXCloudOHLCVRecord> removeAlreadyFetchedDates(List<IEXCloudOHLCVRecord> records, LocalDate lastFetchedDate) {
@@ -131,26 +149,36 @@ public class IEXCloudFacade {
 				.collect(Collectors.toList());
 	}
 	
-	List<IEXCloudOHLCVRecord> fetchOHLCVRange(String symbol, IEXCloudRange range) throws NoRecordsProvidedException {
+	List<IEXCloudOHLCVRecord> fetchOHLCVRange(String symbol, IEXCloudRange range) throws IEXCloudException {
 		try {
 			return fetchAdaptiveOHLCVRange(symbol, range);
 		} catch (IOException e) {
 			LOG.error(
-					String.format("exception during fetchOHLCVRange for symbol '%s' and range '%s', going to return empty list", symbol, range.getRange()),
+					String.format("IOException during fetchOHLCVRange for symbol '%s' and range '%s', going to return empty list", symbol, range.getRange()),
 					e);
 			return Collections.emptyList();
 		}
 	}
 	
-	private List<IEXCloudOHLCVRecord> fetchAdaptiveOHLCVRange(String symbol, IEXCloudRange range) throws IOException, NoRecordsProvidedException {
+	private List<IEXCloudOHLCVRecord> fetchAdaptiveOHLCVRange(String symbol, IEXCloudRange range) throws IOException, IEXCloudException {
 		List<IEXCloudOHLCVRecord> records;
 		IEXCloudRange currentRange = range;
 		
 		do {
-			// TODO: check for HTTP errors
 			Response<List<IEXCloudOHLCVRecord>> response = 
 					iexCloudService.fetchOHLCVRange(symbol, currentRange.getRange(), this.apiToken.value())
 					.execute();
+			
+			if(!response.isSuccessful()) {
+				LOG.error(
+						"{}: couldn't fetch records for range {}, response code was: {}:\"{}\"", 
+						symbol, 
+						currentRange, 
+						response.code(), 
+						response.message());
+				
+				throw new FetchException(symbol, currentRange, response);
+			}
 			
 			records = response
 					.body()
@@ -174,9 +202,11 @@ public class IEXCloudFacade {
 		} while(records.isEmpty() && currentRange != null);
 		
 		if(records.isEmpty() && currentRange == null) {
+			// There was no data at all. We should remove the symbol. 
 			throw new NoRecordsProvidedException(symbol, range);
 		}
 		
+		LOG.debug("{}: {} records received for range {}", symbol, records.size(), currentRange);
 		return records;
 	}
 	

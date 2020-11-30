@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import de.tradingpulse.connector.iexcloud.service.IEXCloudException;
 import de.tradingpulse.connector.iexcloud.service.IEXCloudFacade;
 import de.tradingpulse.connector.iexcloud.service.IEXCloudOHLCVRecord;
 import de.tradingpulse.connector.iexcloud.service.IEXCloudRange;
@@ -45,23 +46,23 @@ class IEXCloudOHLCVTaskTest {
 	// ------------------------------------------------------------------------
 	
 	@Test
-	void test_internalPoll__on_offset_null__return_null()
+	void test_internalPoll__on_empty_offsets__return_null()
 	throws InterruptedException
 	{
 		IEXCloudOHLCVTask task = createTask();
 		
-		when(symbolOffsetProviderMock.getNextSymbolOffsetForPoll()).thenReturn(null);
+		when(symbolOffsetProviderMock.getAllSymbolOffsetsSorted()).thenReturn(Collections.emptyList());
 		
 		assertNull(task.internalPoll());
 	}
 	
 	@Test
 	void test_internalPoll__on_offset_call_facade_when_empty_response__return_null()
-	throws InterruptedException, NoRecordsProvidedException
+	throws InterruptedException, IEXCloudException
 	{
 		IEXCloudOHLCVTask task = createTask();
 		
-		when(symbolOffsetProviderMock.getNextSymbolOffsetForPoll()).thenReturn(createSymbolOffset());
+		when(symbolOffsetProviderMock.getAllSymbolOffsetsSorted()).thenReturn(Arrays.asList(createSymbolOffset()));
 		when(iexCloudFacadeMock.fetchOHLCVSince(any(), any())).thenReturn(Collections.emptyList());
 
 		assertNull(task.internalPoll());
@@ -70,11 +71,11 @@ class IEXCloudOHLCVTaskTest {
 	
 	@Test
 	void test_internalPoll__on_offset_call_facade_when_response__return_list()
-	throws InterruptedException, NoRecordsProvidedException
+	throws InterruptedException, IEXCloudException
 	{
 		IEXCloudOHLCVTask task = createTask();
 		
-		when(symbolOffsetProviderMock.getNextSymbolOffsetForPoll()).thenReturn(createSymbolOffset());
+		when(symbolOffsetProviderMock.getAllSymbolOffsetsSorted()).thenReturn(Arrays.asList(createSymbolOffset()));
 		when(iexCloudFacadeMock.fetchOHLCVSince(any(), any())).thenReturn(Arrays.asList(createRecord()));
 		doNothing().when(symbolOffsetProviderMock).updateOffsets(any());
 		
@@ -83,16 +84,30 @@ class IEXCloudOHLCVTaskTest {
 	}
 	
 	@Test
-	void test_internalPoll__removes_symbol_on_NoRecordsProvidedException() throws NoRecordsProvidedException {
+	void test_internalPoll__removes_symbol_on_NoRecordsProvidedException() throws IEXCloudException {
 		IEXCloudOHLCVTask task = createTask();
 		
-		when(symbolOffsetProviderMock.getNextSymbolOffsetForPoll()).thenReturn(createSymbolOffset());
+		when(symbolOffsetProviderMock.getAllSymbolOffsetsSorted()).thenReturn(Arrays.asList(createSymbolOffset()));
 		when(iexCloudFacadeMock.fetchOHLCVSince(any(), any())).thenThrow(new NoRecordsProvidedException("symbol", IEXCloudRange.MAX));
 		doNothing().when(symbolOffsetProviderMock).removeSymbolFromConfig("symbol");
 		
 		assertNull(task.internalPoll());
 		// verification happens at #afterEach
 		
+	}
+	
+	@Test
+	void test_internalPoll__iterates_over_all_offsets() throws IEXCloudException {
+		IEXCloudOHLCVTask task = createTask();
+		
+		when(symbolOffsetProviderMock.getAllSymbolOffsetsSorted()).thenReturn(Arrays.asList(createSymbolOffset(), createSymbolOffset()));
+		when(iexCloudFacadeMock.fetchOHLCVSince(any(), any()))
+		.thenReturn(Collections.emptyList())
+		.thenReturn(Arrays.asList(createRecord()));
+		doNothing().when(symbolOffsetProviderMock).updateOffsets(any());
+		
+		assertNotNull(task.internalPoll());
+		// verification happens at #afterEach
 	}
 	
 	// ------------------------------------------------------------------------

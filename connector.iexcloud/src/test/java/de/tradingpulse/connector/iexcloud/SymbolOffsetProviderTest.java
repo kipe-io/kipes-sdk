@@ -1,13 +1,16 @@
 package de.tradingpulse.connector.iexcloud;
 
+import static de.tradingpulse.connector.iexcloud.SymbolOffsetProvider.createKafkaPartitionsFrom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,67 +35,6 @@ class SymbolOffsetProviderTest {
 	void afterEach() {
 		verifyNoMoreInteractions(
 				offsetStorageReaderMock);
-	}
-
-	// ------------------------------------------------------------------------
-	// test_getNextSymbolOffsetForPoll
-	// ------------------------------------------------------------------------
-	
-	@Test
-	void test_getNextSymbolOffsetForPoll__no_offsets_returns_first() {
-		
-		SymbolOffsetProvider provider = createProvider();
-		
-		when(offsetStorageReaderMock.offsets(provider.partitions))
-		.thenReturn(createPartitionToOffsetMap(
-				new String[] {}, 
-				new String[] {}));
-		
-		assertEquals("s1", provider.getNextSymbolOffsetForPoll().symbol);
-	}
-	
-	@Test
-	void test_getNextSymbolOffsetForPoll__some_offsets_returns_latest() {
-		
-		SymbolOffsetProvider provider = createProvider();
-		
-		when(offsetStorageReaderMock.offsets(provider.partitions))
-		.thenReturn(createPartitionToOffsetMap(
-				new String[] {"s1", "s3" }, 
-				new String[] {"2020-01-01", "2020-01-03"}));
-		
-		assertEquals("s3", provider.getNextSymbolOffsetForPoll().symbol);
-	}
-	
-	@Test
-	void test_getNextSymbolOffsetForPoll__yesterday_offsets_get_ignored() {
-		// TODO when we are just seconds to the new day we should wait until the next day
-		String yesterday = LocalDate.now().minusDays(1).format(TimeUtils.FORMATTER_YYYY_MM_DD);
-		String dayBeforeYesterday = LocalDate.now().minusDays(2).format(TimeUtils.FORMATTER_YYYY_MM_DD);
-		
-		SymbolOffsetProvider provider = createProvider();
-		
-		when(offsetStorageReaderMock.offsets(provider.partitions))
-		.thenReturn(createPartitionToOffsetMap(
-				new String[] {"s1", "s2", "s3" }, 
-				new String[] {yesterday, dayBeforeYesterday, yesterday}));
-		
-		assertEquals("s2", provider.getNextSymbolOffsetForPoll().symbol);
-	}
-	
-	@Test
-	void test_getNextSymbolOffsetForPoll__all_uptodate_returns_null() {
-		// TODO when we are just seconds to the new day we should wait until the next day
-		String yesterday = LocalDate.now().minusDays(1).format(TimeUtils.FORMATTER_YYYY_MM_DD);
-		
-		SymbolOffsetProvider provider = createProvider();
-		
-		when(offsetStorageReaderMock.offsets(provider.partitions))
-		.thenReturn(createPartitionToOffsetMap(
-				new String[] {"s1", "s2", "s3" }, 
-				new String[] {yesterday, yesterday, yesterday}));
-		
-		assertNull(provider.getNextSymbolOffsetForPoll());
 	}
 	
 	// ------------------------------------------------------------------------
@@ -197,7 +139,40 @@ class SymbolOffsetProviderTest {
 		assertEquals("s2", allOffsets.get(2).symbol);
 		
 	}
+	
+	@Test
+	void test_getAllSymbolOffsets__returns_all_without_the_removed_symbol() {
+		
+		SymbolOffsetProvider provider = createProvider();
+		
+		when(offsetStorageReaderMock.offsets(provider.partitions))
+		.thenReturn(createPartitionToOffsetMap(
+				new String[] {"s1", "s3"}, 
+				new String[] {"2020-01-01", "2020-01-03"}));
+		
+		provider.removeSymbolFromConfig("s2");
+		List<SymbolOffset> allOffsets = provider.getAllSymbolOffsetsSorted();
+		
+		assertEquals(2, allOffsets.size());
+		assertEquals("s3", allOffsets.get(0).symbol);
+		assertEquals("s1", allOffsets.get(1).symbol);
+		
+	}
+	
+	@Test
+	void test_initializeOffsets__osrMock_is_called_with_the_correct_partitions() {
+		
+		SymbolOffsetProvider provider = createProvider();
 
+		provider.removeSymbolFromConfig("s2");
+		
+		when(offsetStorageReaderMock.offsets(eq(createKafkaPartitionsFrom(Arrays.asList("s1", "s3")))))
+		.thenReturn(createPartitionToOffsetMap(
+				new String[] {"s1", "s3"}, 
+				new String[] {"2020-01-01", "2020-01-03"}));
+		
+		provider.initializeOffsets();
+	}
 	
 	// ------------------------------------------------------------------------
 	// utils
