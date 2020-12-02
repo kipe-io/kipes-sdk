@@ -1,5 +1,7 @@
 package de.tradingpulse.stage.indicators.service.processors;
 
+import java.util.concurrent.ExecutionException;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -13,14 +15,14 @@ import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
-import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
+import de.tradingpulse.stages.indicators.recordtypes.SSTOCRecord;
 import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 
 @Singleton
-class MACDIncrementalProcessor extends AbstractProcessorFactory {
+public class SSTOCProcessor extends AbstractProcessorFactory {
 
 	@Inject
 	private SourceDataStreamsFacade sourceDataStreamsFacade;
@@ -33,32 +35,28 @@ class MACDIncrementalProcessor extends AbstractProcessorFactory {
 	
 	@Inject
 	private JsonSerdeRegistry jsonSerdeRegistry;
-
-	@Override
-	protected void initProcessors() throws Exception {
-		// MACD daily 12,26,9
-		initMACDHistogramStream(
-				indicatorsStreamsFacade.getMacd12269DailyStreamName(), 
-				12, 26, 9, 
-				sourceDataStreamsFacade.getOhlcvDailyStream(), 
-				builder);
-		// MACD weekly incremental 12,26,9
-		initMACDHistogramStream(
-				indicatorsStreamsFacade.getMacd12269WeeklyStreamName(), 
-				12, 26, 9, 
-				sourceDataStreamsFacade.getOhlcvWeeklyStream(), 
-				builder);
-	}
 	
-	void initMACDHistogramStream(
-			final String topicName,
-			final int fastPeriod,
-			final int slowPeriod,
-			final int signalPeriod,
-			final KStream<SymbolTimestampKey, OHLCVRecord> sourceStream, 
-			final ConfiguredStreamBuilder builder
-	) {
+	@Override
+	protected void initProcessors() throws InterruptedException, ExecutionException {
+		// SSTOC(5,5,3) daily
+		initSSTOCStream(
+				indicatorsStreamsFacade.getSstoc553DailyStreamName(),
+				5,5,3,
+				sourceDataStreamsFacade.getOhlcvDailyStream());
 		
+		// SSTOC(5,5,3) weekly
+		initSSTOCStream(
+				indicatorsStreamsFacade.getSstoc553WeeklyStreamName(),
+				5,5,3,
+				sourceDataStreamsFacade.getOhlcvWeeklyStream());
+		
+	}
+
+	void initSSTOCStream(
+			String topicName, 
+			int n, int p1, int p2,
+			KStream<SymbolTimestampKey, OHLCVRecord> sourceStream)
+	{
 		final String storeName = getProcessorStoreTopicName(topicName);
 		// create store
 		@SuppressWarnings("rawtypes")
@@ -73,10 +71,10 @@ class MACDIncrementalProcessor extends AbstractProcessorFactory {
 		
 		// create topology
 		sourceStream.transform(
-				() -> new IncrementalMACDTransformer(storeName, fastPeriod, slowPeriod, signalPeriod), 
+				() -> new SSTOCTransformer(storeName, n, p1, p2), 
 				storeName)
 		.to(topicName, Produced.with(
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-				jsonSerdeRegistry.getSerde(MACDHistogramRecord.class)));
+				jsonSerdeRegistry.getSerde(SSTOCRecord.class)));
 	}
 }

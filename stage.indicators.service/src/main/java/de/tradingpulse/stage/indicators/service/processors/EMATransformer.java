@@ -15,15 +15,15 @@ import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stages.indicators.aggregates.EMAAggregate;
 import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 
-class IncrementalEMATransformer implements Transformer<SymbolTimestampKey, OHLCVRecord, KeyValue<SymbolTimestampKey, DoubleRecord>> {
+class EMATransformer implements Transformer<SymbolTimestampKey, OHLCVRecord, KeyValue<SymbolTimestampKey, DoubleRecord>> {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(IncrementalEMATransformer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(EMATransformer.class);
 	
 	private final String storeName;
 	private final int numObservations;
 	private KeyValueStore<String, IncrementalAggregate<EMAAggregate>> state;
 	
-	IncrementalEMATransformer(
+	EMATransformer(
 			final String storeName,
 			final int numObservations)
 	{

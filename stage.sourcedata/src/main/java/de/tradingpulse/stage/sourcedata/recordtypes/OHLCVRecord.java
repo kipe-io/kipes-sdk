@@ -3,6 +3,7 @@ package de.tradingpulse.stage.sourcedata.recordtypes;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 
+import de.tradingpulse.common.stream.aggregates.DeepCloneable;
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TimeRange;
@@ -18,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class OHLCVRecord extends AbstractIncrementalAggregateRecord {
+public class OHLCVRecord extends AbstractIncrementalAggregateRecord implements DeepCloneable<OHLCVRecord>{
 	
 	public static final OHLCVRecord from(OHLCVRawRecord rawData) {
 		return builder()
@@ -49,6 +50,18 @@ public class OHLCVRecord extends AbstractIncrementalAggregateRecord {
     private Double low;
     private Double close;
     private Long volume;
+
+	@Override
+	public OHLCVRecord deepClone() {
+		return builder()
+				.open(this.open)
+				.high(this.high)
+				.low(this.low)
+				.close(this.close)
+				.volume(this.volume)
+				.build()
+				.cloneValuesFrom(this);
+	}
     
     /**
      * Aggregates this object with the other and returns a new OHLCVData with

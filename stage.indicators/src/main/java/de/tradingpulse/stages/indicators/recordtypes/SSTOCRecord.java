@@ -14,14 +14,11 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class MACDHistogramRecord extends AbstractIncrementalAggregateRecord {
+public class SSTOCRecord extends AbstractIncrementalAggregateRecord {
 
-	private Double macd;
-	private Double mChange;
-	
-	private Double signal;
+	private Double fast;
+	private Double fChange;
+	private Double slow;
 	private Double sChange;
-	
-	private Double histogram;
-	private Double hChange;
+
 }

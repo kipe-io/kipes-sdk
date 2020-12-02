@@ -22,7 +22,7 @@ import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 
 @Singleton
-class EMAIncrementalProcessor extends AbstractProcessorFactory {
+class EMAProcessor extends AbstractProcessorFactory {
 
 	@Inject
 	private SourceDataStreamsFacade sourceDataStreamsFacade;
@@ -39,31 +39,31 @@ class EMAIncrementalProcessor extends AbstractProcessorFactory {
 	@Override
 	protected void initProcessors() throws InterruptedException, ExecutionException {
 		// EMA(13) daily
-		initEMAIncrementalStream(
+		initEMAStream(
 				indicatorsStreamsFacade.getEma13DailyStreamName(), 
 				13, 
 				sourceDataStreamsFacade.getOhlcvDailyStream());
 		
 		// EMA(26) daily
-		initEMAIncrementalStream(
+		initEMAStream(
 				indicatorsStreamsFacade.getEma26DailyStreamName(), 
 				26, 
 				sourceDataStreamsFacade.getOhlcvDailyStream());
 		
 		// EMA(13) weekly incremental
-		initEMAIncrementalStream(
+		initEMAStream(
 				indicatorsStreamsFacade.getEma13WeeklyStreamName(), 
 				13, 
 				sourceDataStreamsFacade.getOhlcvWeeklyStream());
 		
 		// EMA(26) weekly incremental
-		initEMAIncrementalStream(
+		initEMAStream(
 				indicatorsStreamsFacade.getEma26WeeklyStreamName(), 
 				26, 
 				sourceDataStreamsFacade.getOhlcvWeeklyStream());
 	}
 	
-	void initEMAIncrementalStream(
+	void initEMAStream(
 			final String topicName,
 			final int numObservations,
 			final KStream<SymbolTimestampKey, OHLCVRecord> sourceStream 
@@ -82,7 +82,7 @@ class EMAIncrementalProcessor extends AbstractProcessorFactory {
 		
 		// create topology
 		sourceStream.transform(
-				() -> new IncrementalEMATransformer(storeName, numObservations),
+				() -> new EMATransformer(storeName, numObservations),
 				storeName)
 		.to(topicName, Produced.with(
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 

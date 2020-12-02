@@ -104,7 +104,7 @@ class SymbolOffsetProvider {
 				
 				LOG.debug("{}: updating lastFetchedDate from {} to {}", 
 						offset.symbol,
-						oldOffset.lastFetchedDate,
+						oldOffset == null? "null" : oldOffset.lastFetchedDate,
 						offset.lastFetchedDate);
 				
 				this.updatedOffsetMap.put(offset.symbol, offset);

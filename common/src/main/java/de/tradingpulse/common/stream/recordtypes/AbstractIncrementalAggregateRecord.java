@@ -54,4 +54,11 @@ public abstract class AbstractIncrementalAggregateRecord {
 		return timeRange.getStartOfTimeRangeFor(key.getTimestamp());
 	}
 
+	@SuppressWarnings("unchecked")
+	protected <T extends AbstractIncrementalAggregateRecord> T cloneValuesFrom(T original) {
+		this.key = original.getKey() == null? null : original.getKey().deepClone();
+		this.timeRange = original.getTimeRange();
+		
+		return (T)this;
+	}
 }

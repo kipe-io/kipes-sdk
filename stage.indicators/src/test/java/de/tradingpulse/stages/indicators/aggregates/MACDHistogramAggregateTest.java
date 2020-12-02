@@ -1,4 +1,4 @@
-package de.tradingpulse.stage.indicators.aggregates;
+package de.tradingpulse.stages.indicators.aggregates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

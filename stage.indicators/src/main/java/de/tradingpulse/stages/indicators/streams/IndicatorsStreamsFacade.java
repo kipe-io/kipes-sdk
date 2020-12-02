@@ -9,6 +9,7 @@ import org.apache.kafka.streams.kstream.KStream;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
+import de.tradingpulse.stages.indicators.recordtypes.SSTOCRecord;
 import lombok.Getter;
 
 @Singleton
@@ -29,6 +30,10 @@ public class IndicatorsStreamsFacade {
 	private KStream<SymbolTimestampKey, MACDHistogramRecord> macd12269DailyStream;
 	private final String macd12269DailyStreamName = MACDStreams.TOPIC_MACD_12_26_9_DAILY;
 
+	@Inject @Named(SSTOCStreams.TOPIC_SSTOC_5_5_3_DAILY)
+	private KStream<SymbolTimestampKey, SSTOCRecord> sstoc553DailyStream;
+	private final String sstoc553DailyStreamName = SSTOCStreams.TOPIC_SSTOC_5_5_3_DAILY;
+	
 	// weekly incremental streams ---------------------------------------------
 
 	@Inject @Named(EMAStreams.TOPIC_EMA_13_WEEKLY)
@@ -42,5 +47,9 @@ public class IndicatorsStreamsFacade {
 	@Inject @Named(MACDStreams.TOPIC_MACD_12_26_9_WEEKLY)
 	private KStream<SymbolTimestampKey, MACDHistogramRecord> macd12269WeeklyStream;
 	private final String macd12269WeeklyStreamName = MACDStreams.TOPIC_MACD_12_26_9_WEEKLY;
+
+	@Inject @Named(SSTOCStreams.TOPIC_SSTOC_5_5_3_WEEKLY)
+	private KStream<SymbolTimestampKey, SSTOCRecord> sstoc553WeeklyStream;
+	private final String sstoc553WeeklyStreamName = SSTOCStreams.TOPIC_SSTOC_5_5_3_WEEKLY;
 	
 }

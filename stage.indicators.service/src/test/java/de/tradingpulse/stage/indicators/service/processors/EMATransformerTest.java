@@ -26,7 +26,7 @@ import de.tradingpulse.stages.indicators.aggregates.EMAAggregate;
 import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 
 @ExtendWith(MockitoExtension.class)
-class IncrementalEMATransformerTest {
+class EMATransformerTest {
 
 	private static final String STORE_NAME = "storeName";
 	private static final String SYMBOL = "symbol";
@@ -52,7 +52,7 @@ class IncrementalEMATransformerTest {
 	void test_usecase_weekly() {
 		// test for correct incremental calculation
 		
-		IncrementalEMATransformer t = createIncrementalEMATransformer(13);
+		EMATransformer t = createIncrementalEMATransformer(13);
 		IncrementalAggregate<EMAAggregate> incAgg = new IncrementalAggregate<>();
 		
 		when(stateMock.get(SYMBOL)).thenReturn(incAgg);
@@ -230,7 +230,7 @@ class IncrementalEMATransformerTest {
 	void test_init__store_was_aquired_with_correct_name() {
 		// validation happens at #afterEach()
 		
-		IncrementalEMATransformer t = new IncrementalEMATransformer(STORE_NAME, 1);
+		EMATransformer t = new EMATransformer(STORE_NAME, 1);
 		
 		when(processorCtxMock.getStateStore(STORE_NAME)).thenReturn(stateMock);
 		
@@ -243,7 +243,7 @@ class IncrementalEMATransformerTest {
 
 	@Test
 	void test_transform__ema_2_first_value_is_null() {
-		IncrementalEMATransformer t = createIncrementalEMATransformer(2);
+		EMATransformer t = createIncrementalEMATransformer(2);
 
 		when(stateMock.get(SYMBOL)).thenReturn(null);
 
@@ -258,7 +258,7 @@ class IncrementalEMATransformerTest {
 	
 	@Test
 	void test_transform__ema_2_without_increments() {
-		IncrementalEMATransformer t = createIncrementalEMATransformer(2);
+		EMATransformer t = createIncrementalEMATransformer(2);
 		IncrementalAggregate<EMAAggregate> incAgg = new IncrementalAggregate<>();
 				
 		when(stateMock.get(SYMBOL)).thenReturn(incAgg);
@@ -307,7 +307,7 @@ class IncrementalEMATransformerTest {
 	
 	@Test
 	void test_transform__ema_2_with_increments_on_first_timestamp() {
-		IncrementalEMATransformer t = createIncrementalEMATransformer(2);
+		EMATransformer t = createIncrementalEMATransformer(2);
 		IncrementalAggregate<EMAAggregate> incAgg = new IncrementalAggregate<>();
 				
 		when(stateMock.get(SYMBOL)).thenReturn(incAgg);
@@ -356,7 +356,7 @@ class IncrementalEMATransformerTest {
 	
 	@Test
 	void test_transform__ema_2_with_increments_on_second_timestamp() {
-		IncrementalEMATransformer t = createIncrementalEMATransformer(2);
+		EMATransformer t = createIncrementalEMATransformer(2);
 		IncrementalAggregate<EMAAggregate> incAgg = new IncrementalAggregate<>();
 				
 		when(stateMock.get(SYMBOL)).thenReturn(incAgg);
@@ -406,7 +406,7 @@ class IncrementalEMATransformerTest {
 	
 	@Test
 	void test_transform__ema_2_with_multiple_increments_on_third_timestamp() {
-		IncrementalEMATransformer t = createIncrementalEMATransformer(2);
+		EMATransformer t = createIncrementalEMATransformer(2);
 		IncrementalAggregate<EMAAggregate> incAgg = new IncrementalAggregate<>();
 				
 		when(stateMock.get(SYMBOL)).thenReturn(incAgg);
@@ -468,17 +468,17 @@ class IncrementalEMATransformerTest {
 	// utilities
 	// -------------------------------------------------------------------------
 	
-	private DoubleRecord addWeeklyRecord(IncrementalEMATransformer t, long timestamp, double close) {
+	private DoubleRecord addWeeklyRecord(EMATransformer t, long timestamp, double close) {
 		
 		return addRecord(t, timestamp, TimeRange.WEEK, close);
 	}
 	
-	private DoubleRecord addRecord(IncrementalEMATransformer t, long timestamp, double close) {
+	private DoubleRecord addRecord(EMATransformer t, long timestamp, double close) {
 		
 		return addRecord(t, timestamp, TimeRange.MILLISECOND, close);
 	}
 	
-	private DoubleRecord addRecord(IncrementalEMATransformer t, long timestamp, TimeRange timeRange, double close) {
+	private DoubleRecord addRecord(EMATransformer t, long timestamp, TimeRange timeRange, double close) {
 		SymbolTimestampKey key = createKey(timestamp);
 		OHLCVRecord value = createValue(key, timeRange, close);
 		
@@ -487,8 +487,8 @@ class IncrementalEMATransformerTest {
 		return keyValue == null? null : keyValue.value;
 	}
 
-	private IncrementalEMATransformer createIncrementalEMATransformer(int numObservations) {
-		IncrementalEMATransformer t = new IncrementalEMATransformer(STORE_NAME, numObservations);
+	private EMATransformer createIncrementalEMATransformer(int numObservations) {
+		EMATransformer t = new EMATransformer(STORE_NAME, numObservations);
 		
 		when(processorCtxMock.getStateStore(STORE_NAME)).thenReturn(stateMock);
 		

@@ -18,10 +18,13 @@ public class IndicatorProcessorsFacade {
 	private static final Logger LOG = LoggerFactory.getLogger(IndicatorProcessorsFacade.class);
 	
 	@Inject
-	private EMAIncrementalProcessor emaIncrementalProcessor;
+	private EMAProcessor emaIncrementalProcessor;
 	
 	@Inject
-	private MACDIncrementalProcessor macdIncrementalProcessor;
+	private MACDProcessor macdIncrementalProcessor;
+	
+	@Inject
+	private SSTOCProcessor sstocProcessor;
 	
 	@PostConstruct
 	void postConstruct() {

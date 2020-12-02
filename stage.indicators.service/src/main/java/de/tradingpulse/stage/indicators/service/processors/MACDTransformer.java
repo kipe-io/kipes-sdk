@@ -6,6 +6,8 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
@@ -13,7 +15,9 @@ import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stages.indicators.aggregates.MACDHistogramAggregate;
 import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 
-class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLCVRecord, KeyValue<SymbolTimestampKey, MACDHistogramRecord>> {
+class MACDTransformer implements Transformer<SymbolTimestampKey, OHLCVRecord, KeyValue<SymbolTimestampKey, MACDHistogramRecord>> {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(MACDTransformer.class);
 	
 	private final String storeName;
 	private final int fastPeriod;
@@ -21,7 +25,7 @@ class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLC
 	private final int signalPeriod;
 	private KeyValueStore<String, IncrementalAggregate<MACDHistogramAggregate>> state;
 	
-	IncrementalMACDTransformer(
+	MACDTransformer(
 			final String storeName,
 			final int fastPeriod,
 			final int slowPeriod,
@@ -50,7 +54,12 @@ class IncrementalMACDTransformer implements Transformer<SymbolTimestampKey, OHLC
 		
 		MACDHistogramRecord macdHistogramRecord = macdAggregate.aggregate(value.getClose());
 
-		incrementalAggregate.setAggregate(value.getTimeRangeTimestamp(), macdAggregate);
+		boolean stored = incrementalAggregate.setAggregate(value.getTimeRangeTimestamp(), macdAggregate);
+		
+		if(! stored ) {
+			LOG.warn("transform@{}: out of order {}, must not be earlier than {}. Value ignored.", this.storeName, value, incrementalAggregate.getStableTimestamp());
+		}
+		
 		this.state.put(key.getSymbol(), incrementalAggregate);
 		
 		if(macdHistogramRecord == null) {
