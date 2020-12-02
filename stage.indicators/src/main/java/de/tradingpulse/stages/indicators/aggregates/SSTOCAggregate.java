@@ -102,9 +102,9 @@ public class SSTOCAggregate implements OHLCVRecordAggregate<SSTOCRecord, SSTOCAg
 				.key(record.getKey())
 				.timeRange(record.getTimeRange())
 				.fast(this.fastStochastic)
-				.fChange(oldFastStochastic == null? null : oldFastStochastic.doubleValue() - this.fastStochastic.doubleValue())
+				.fChange(oldFastStochastic == null? null : this.fastStochastic.doubleValue() - oldFastStochastic.doubleValue())
 				.slow(this.slowStochastic)
-				.sChange(oldSlowStochastic == null? null : oldSlowStochastic.doubleValue() - this.slowStochastic.doubleValue())
+				.sChange(oldSlowStochastic == null? null : this.slowStochastic.doubleValue() - oldSlowStochastic.doubleValue())
 				.build();
 	}
 
