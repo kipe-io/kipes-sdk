@@ -1,13 +1,16 @@
 package de.tradingpulse.connector.iexcloud;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 import de.tradingpulse.common.utils.TimeUtils;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+@Data
 @EqualsAndHashCode
 @ToString
 class SymbolOffset implements Comparable<SymbolOffset> {
@@ -61,14 +64,35 @@ class SymbolOffset implements Comparable<SymbolOffset> {
 	// instance
 	// ------------------------------------------------------------------------
 
-	final String symbol;
-	final LocalDate lastFetchedDate;
+	private final String symbol;
+	private LocalDateTime lastFetchAttemptDateTime;
+	private final LocalDate lastFetchedDate;
 	
 	SymbolOffset(String symbol, LocalDate lastFetchedDate){
 		this.symbol = symbol;
 		this.lastFetchedDate = lastFetchedDate;
 	}
 	
+	/**
+	 * Returns whether {@link #lastFetchedDate} is before the given date.
+	 */
+	public boolean isLastFetchedDateBefore(LocalDate date) {
+		return lastFetchedDate == null || lastFetchedDate.isBefore(date);
+	}
+	
+	/**
+	 * Returns whether {@link #lastFetchAttemptDateTime} is before the given
+	 * dateTime.
+	 */
+	public boolean isLastFetchAttemptBefore(LocalDateTime dateTime) {
+		return lastFetchAttemptDateTime == null || lastFetchAttemptDateTime.isBefore(dateTime);
+	}
+	
+	/**
+	 * Compares this object to another SymbolOffset by firstly comparing the 
+	 * {@link #lastFetchedDate} and then the {@link #symbol}. The comparision
+	 * ignores the {@link #lastFetchAttemptDateTime}.
+	 */
 	@Override
 	public int compareTo(SymbolOffset o) {
 		int lastFetchDateCompare = compare(this.lastFetchedDate, o == null? null : o.lastFetchedDate);

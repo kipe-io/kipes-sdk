@@ -115,4 +115,10 @@ The IEXCloud Connector is based on Kafka Connect, an application which can be en
 
     $ mvn clean install
     $ docker-compose up
-    
+
+## Monitoring Lag
+
+If you don't change the log levels you won't see any indication how much of the data has been processed. The easiest way to get an idea of what is going on is to check the consumers lag via `kafka-consumer-groups.sh`. Put a `watch` in front and you have a simple monitoring:
+
+    $ watch -n 1 kafka-consumer-groups.sh --bootstrap-server 127.0.0.1:9092 --describe --all-groups
+

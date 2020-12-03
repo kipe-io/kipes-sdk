@@ -1,5 +1,6 @@
 package de.tradingpulse.connector.iexcloud;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,11 +47,13 @@ class SymbolOffsetProvider {
 	// ------------------------------------------------------------------------
 
 	final List<String> symbols;
+	/** [ { "symbol":"AAPL" }, { "symbol":"AMZN" }, ... ] */
 	final Set<Map<String, String>> partitions = new HashSet<>();
-	// delivers initial offsets
+	/** delivers initial offsets */
 	final OffsetStorageReader offsetStorageReader;
-	// stores in-flight offsets
+	/** stores in-flight offsets (symbol -> symbolOffset) */
 	final Map<String, SymbolOffset> updatedOffsetMap = new HashMap<>();
+	
 	// ------------------------------------------------------------------------
 	// constructors
 	// ------------------------------------------------------------------------
@@ -64,11 +67,22 @@ class SymbolOffsetProvider {
 	// methods
 	// ------------------------------------------------------------------------
 
-	synchronized void updateOffsets(List<IEXCloudOHLCVRecord> records) {
+	void udpateLastFetchAttempt(String symbol, LocalDateTime now) {
+		SymbolOffset offset = this.updatedOffsetMap.get(symbol);
+		
+		if(offset == null) {
+			// offset has been removed before, ignore
+			return;
+		}
+		
+		offset.setLastFetchAttemptDateTime(now);
+	}
+
+	void updateOffsets(List<IEXCloudOHLCVRecord> records) {
 		if(records == null) {
 			return;
 		}
-
+		
 		// Note that referencing the latest offset only in memory. This comes
 		// with a lot of potential issues. Most notably: When these are stored
 		// here the records haven't even been tried to move to Kafka. So it is
@@ -80,11 +94,11 @@ class SymbolOffsetProvider {
 		// for a proper solution. 
 
 		findLatestOffsets(records).forEach(offset -> {
-			SymbolOffset oldOffset = this.updatedOffsetMap.get(offset.symbol);
+			SymbolOffset oldOffset = this.updatedOffsetMap.get(offset.getSymbol());
 			
 			if(	oldOffset != null 
-				&& oldOffset.lastFetchedDate != null
-				&& !oldOffset.lastFetchedDate.isBefore(offset.lastFetchedDate)) {
+				&& oldOffset.getLastFetchedDate() != null
+				&& !oldOffset.getLastFetchedDate().isBefore(offset.getLastFetchedDate())) {
 				// In case companies get removed from the stock market the old
 				// data is still available. However, since it makes no sense to
 				// fetch that data further, we remove the symbol.
@@ -94,23 +108,21 @@ class SymbolOffsetProvider {
 				// current workaround: restart the service.
 				LOG.warn(
 						"{}: no later offset fetched than already seen. old: {}, new: {}. Going to remove this symbol. This is not permanent, consider to remove it from the config", 
-						offset.symbol,
-						oldOffset.lastFetchedDate,
-						offset.lastFetchedDate);
+						offset.getSymbol(),
+						oldOffset.getLastFetchedDate(),
+						offset.getLastFetchedDate());
 				
-				removeSymbolFromConfig(offset.symbol);
+				removeSymbolFromConfig(offset.getSymbol());
 				
 			} else {
 				
 				LOG.debug("{}: updating lastFetchedDate from {} to {}", 
-						offset.symbol,
-						oldOffset == null? "null" : oldOffset.lastFetchedDate,
-						offset.lastFetchedDate);
+						offset.getSymbol(),
+						oldOffset == null? "null" : oldOffset.getLastFetchedDate(),
+						offset.getLastFetchedDate());
 				
-				this.updatedOffsetMap.put(offset.symbol, offset);
+				this.updatedOffsetMap.put(offset.getSymbol(), offset);
 			}
-			
-			
 		});
 	}
 	
@@ -120,7 +132,7 @@ class SymbolOffsetProvider {
 		records.forEach(record -> {
 			SymbolOffset lastOffset = latestOffsetMap.get(record.getSymbol());
 			if(	lastOffset == null 
-				|| lastOffset.lastFetchedDate.isBefore(record.getLocalDate())) 
+				|| lastOffset.getLastFetchedDate().isBefore(record.getLocalDate())) 
 			{
 				latestOffsetMap.put(record.getSymbol(), createSymbolOffset(record));
 			}
@@ -131,13 +143,13 @@ class SymbolOffsetProvider {
 	
 	synchronized void removeSymbolFromConfig(String symbol) {
 		this.symbols.remove(symbol);
-		this.partitions.clear();
-		this.updatedOffsetMap.clear();
+		this.updatedOffsetMap.remove(symbol);		
+		this.partitions.removeIf(map -> map.containsValue(symbol));
 	}
 	
 	/**
 	 * Returns a set of SymbolOffsets for all configured symbols. The returned
-	 * collection is sorted so that the first element has the latest
+	 * collection is sorted so that the first element has the most up-to-date
 	 * lastFetchedDate.
 	 */
 	synchronized List<SymbolOffset> getAllSymbolOffsetsSorted() {
@@ -167,8 +179,8 @@ class SymbolOffsetProvider {
 				offsetStorageReader.offsets(this.partitions);
 		
 		partitionToOffsetsMap.keySet().forEach(partition -> {
-			SymbolOffset so = SymbolOffset.fromKafkaPartitionAndOffset(partition, partitionToOffsetsMap.get(partition));
-			this.updatedOffsetMap.put(so.symbol, so);
+			SymbolOffset offset = SymbolOffset.fromKafkaPartitionAndOffset(partition, partitionToOffsetsMap.get(partition));
+			this.updatedOffsetMap.put(offset.getSymbol(), offset);
 		});
 		
 		// add missing offsets

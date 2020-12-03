@@ -2,6 +2,7 @@ package de.tradingpulse.connector.iexcloud;
 
 import static de.tradingpulse.connector.iexcloud.SymbolOffsetProvider.createKafkaPartitionsFrom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -57,11 +58,11 @@ class SymbolOffsetProviderTest {
 		assertEquals(3, allOffsets.size());
 		
 		// and all offsets must have null as lastFetchedDate
-		allOffsets.forEach((offset) -> assertNull(offset.lastFetchedDate));
+		allOffsets.forEach((offset) -> assertNull(offset.getLastFetchedDate()));
 		
 		// and all symbols must be included
 		assertTrue(allOffsets.stream()
-		.map((offset) -> {return offset.symbol; })
+		.map((offset) -> {return offset.getSymbol(); })
 		.collect(Collectors.toSet())
 		.containsAll(provider.symbols));
 	}
@@ -83,16 +84,16 @@ class SymbolOffsetProviderTest {
 		
 		// and all offsets must have null as lastFetchedDate
 		allOffsets.forEach((offset) -> {
-			if(offset.symbol.equals("s1")) {
-				assertNotNull(offset.lastFetchedDate);
+			if(offset.getSymbol().equals("s1")) {
+				assertNotNull(offset.getLastFetchedDate());
 			} else {
-				assertNull(offset.lastFetchedDate);
+				assertNull(offset.getLastFetchedDate());
 			}
 		});
 		
 		// and all symbols must be included
 		assertTrue(allOffsets.stream()
-		.map((offset) -> {return offset.symbol; })
+		.map((offset) -> {return offset.getSymbol(); })
 		.collect(Collectors.toSet())
 		.containsAll(provider.symbols));
 	}
@@ -113,11 +114,11 @@ class SymbolOffsetProviderTest {
 		assertEquals(3, allOffsets.size());
 		
 		// and all offsets must have null as lastFetchedDate
-		allOffsets.forEach((offset) -> assertNotNull(offset.lastFetchedDate));
+		allOffsets.forEach((offset) -> assertNotNull(offset.getLastFetchedDate()));
 		
 		// and all symbols must be included
 		assertTrue(allOffsets.stream()
-		.map((offset) -> {return offset.symbol; })
+		.map((offset) -> {return offset.getSymbol(); })
 		.collect(Collectors.toSet())
 		.containsAll(provider.symbols));
 	}
@@ -134,9 +135,9 @@ class SymbolOffsetProviderTest {
 		
 		List<SymbolOffset> allOffsets = provider.getAllSymbolOffsetsSorted();
 		
-		assertEquals("s3", allOffsets.get(0).symbol);
-		assertEquals("s1", allOffsets.get(1).symbol);
-		assertEquals("s2", allOffsets.get(2).symbol);
+		assertEquals("s3", allOffsets.get(0).getSymbol());
+		assertEquals("s1", allOffsets.get(1).getSymbol());
+		assertEquals("s2", allOffsets.get(2).getSymbol());
 		
 	}
 	
@@ -154,11 +155,45 @@ class SymbolOffsetProviderTest {
 		List<SymbolOffset> allOffsets = provider.getAllSymbolOffsetsSorted();
 		
 		assertEquals(2, allOffsets.size());
-		assertEquals("s3", allOffsets.get(0).symbol);
-		assertEquals("s1", allOffsets.get(1).symbol);
+		assertEquals("s3", allOffsets.get(0).getSymbol());
+		assertEquals("s1", allOffsets.get(1).getSymbol());
 		
 	}
 	
+	// ------------------------------------------------------------------------
+	// test_removeSymbolFromConfig
+	// ------------------------------------------------------------------------
+	
+	@Test
+	void test_removeSymbolFromConfig_removes_that_symbol() {
+		// given
+		SymbolOffsetProvider provider = createProvider();
+		
+		when(offsetStorageReaderMock.offsets(provider.partitions))
+		.thenReturn(createPartitionToOffsetMap(
+				new String[] {}, 
+				new String[] {}));
+		
+		provider.initializeOffsets();
+
+		// when
+		provider.removeSymbolFromConfig("s2");
+
+		// then
+		assertEquals(2, provider.symbols.size());
+		assertFalse(provider.symbols.contains("s2"));
+		
+		assertEquals(2, provider.updatedOffsetMap.size());
+		assertFalse(provider.updatedOffsetMap.containsKey("s2"));
+		
+		assertEquals(2, provider.partitions.size());
+		assertTrue(provider.partitions.stream().filter(map -> map.containsValue("s2")).collect(Collectors.toList()).isEmpty());
+	}
+	
+	// ------------------------------------------------------------------------
+	// test_initializeOffsets
+	// ------------------------------------------------------------------------
+		
 	@Test
 	void test_initializeOffsets__osrMock_is_called_with_the_correct_partitions() {
 		

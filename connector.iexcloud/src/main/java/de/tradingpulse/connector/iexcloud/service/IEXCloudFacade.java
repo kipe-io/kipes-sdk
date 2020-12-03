@@ -71,14 +71,14 @@ public class IEXCloudFacade {
 	}
 	
 	public List<IEXCloudOHLCVRecord> fetchOHLCVSince(String symbol, LocalDate lastFetchedDate)
-	throws IEXCloudException
+	throws FetchException, NoRecordsProvidedException
 	{
 		return internalFetchOHLCVSince(symbol, lastFetchedDate, LocalDate.now());
 	}
 	
 	// method exists only for testing purposes
 	List<IEXCloudOHLCVRecord> internalFetchOHLCVSince(String symbol, LocalDate lastFetchedDate, LocalDate todayDate)
-	throws IEXCloudException 
+	throws FetchException, NoRecordsProvidedException 
 	{
 		// TODO a smarter implementation would consider the exchange's timezone the symbol is traded at
 		// We are just working on LocalDate which will lead to situations where
@@ -97,7 +97,7 @@ public class IEXCloudFacade {
 				|| fetchStartDate.isAfter(todayDate)
 				|| (fetchStartDay == SATURDAY) && fetchStartDate.until(todayDate, ChronoUnit.DAYS) <= 2) {
 			
-			LOG.debug("{}/{}: no need to fetch starting from Sat, {}", symbol, todayDate, fetchStartDate);
+			LOG.debug("{}/{}: no need to fetch {}", symbol, todayDate, fetchStartDate);
 			
 			return Collections.emptyList();
 		}
@@ -108,9 +108,14 @@ public class IEXCloudFacade {
 		if(fetchStartDate.isEqual(todayDate.minusDays(1)) 
 				|| (fetchStartDay == FRIDAY) && fetchStartDate.until(todayDate, ChronoUnit.DAYS) <= 3) {
 
-			LOG.debug("{}/{}: fetch previous records for Fri, {}", symbol, todayDate, fetchStartDate);
+			LOG.debug("{}/{}: going to fetch previous trading date {}", symbol, todayDate, fetchStartDate);
+			
+			List<IEXCloudOHLCVRecord> fetchedRecords = Arrays.asList(fetchOHLCVPrevious(symbol));
+			List<IEXCloudOHLCVRecord> filteredRecords = removeAlreadyFetchedDates(fetchedRecords, lastFetchedDate);
+			
+			LOG.debug("{}/{}: found {} new from {} fetched records", symbol, todayDate, filteredRecords.size(), fetchedRecords.size());
 
-			return removeAlreadyFetchedDates(Arrays.asList(fetchOHLCVPrevious(symbol)), lastFetchedDate);
+			return filteredRecords;
 		}
 		
 		// in all other cases get the range with least excess days and fetch
@@ -126,8 +131,8 @@ public class IEXCloudFacade {
 		List<IEXCloudOHLCVRecord> fetchedRecords = fetchOHLCVRange(symbol, optRange.get());
 		List<IEXCloudOHLCVRecord> filteredRecords = removeAlreadyFetchedDates(fetchedRecords, lastFetchedDate);
 		
-		LOG.debug("{}/{}: fetched {} new records out of {} overall fetched", symbol, todayDate, filteredRecords.size(), fetchedRecords.size());
-		if(filteredRecords.size() == 0) {
+		LOG.debug("{}/{}: found {} new from {} fetched records", symbol, todayDate, filteredRecords.size(), fetchedRecords.size());
+		if(filteredRecords.isEmpty()) {
 			// In case companies get removed from the stock market the old data
 			// is still available. However, since it makes no sense to fetch
 			// that symbol further, we need to remove the symbol.
@@ -145,11 +150,13 @@ public class IEXCloudFacade {
 		
 		return records.stream()
 				.filter(Objects::nonNull)
-				.filter(record -> lastFetchedDate == null? true : record.getLocalDate().isAfter(lastFetchedDate))
+				.filter(record -> lastFetchedDate == null || record.getLocalDate().isAfter(lastFetchedDate))
 				.collect(Collectors.toList());
 	}
 	
-	List<IEXCloudOHLCVRecord> fetchOHLCVRange(String symbol, IEXCloudRange range) throws IEXCloudException {
+	List<IEXCloudOHLCVRecord> fetchOHLCVRange(String symbol, IEXCloudRange range)
+	throws FetchException, NoRecordsProvidedException
+	{
 		try {
 			return fetchAdaptiveOHLCVRange(symbol, range);
 		} catch (IOException e) {
@@ -160,7 +167,9 @@ public class IEXCloudFacade {
 		}
 	}
 	
-	private List<IEXCloudOHLCVRecord> fetchAdaptiveOHLCVRange(String symbol, IEXCloudRange range) throws IOException, IEXCloudException {
+	private List<IEXCloudOHLCVRecord> fetchAdaptiveOHLCVRange(String symbol, IEXCloudRange range)
+	throws IOException, FetchException, NoRecordsProvidedException
+	{
 		List<IEXCloudOHLCVRecord> records;
 		IEXCloudRange currentRange = range;
 		

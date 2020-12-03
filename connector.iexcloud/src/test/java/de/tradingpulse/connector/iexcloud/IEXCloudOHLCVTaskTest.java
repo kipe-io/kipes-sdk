@@ -3,7 +3,10 @@ package de.tradingpulse.connector.iexcloud;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -64,6 +67,7 @@ class IEXCloudOHLCVTaskTest {
 		
 		when(symbolOffsetProviderMock.getAllSymbolOffsetsSorted()).thenReturn(Arrays.asList(createSymbolOffset()));
 		when(iexCloudFacadeMock.fetchOHLCVSince(any(), any())).thenReturn(Collections.emptyList());
+		doNothing().when(symbolOffsetProviderMock).udpateLastFetchAttempt(eq("symbol"), notNull());
 
 		assertNull(task.internalPoll());
 		// verification happens at #afterEach
@@ -77,6 +81,7 @@ class IEXCloudOHLCVTaskTest {
 		
 		when(symbolOffsetProviderMock.getAllSymbolOffsetsSorted()).thenReturn(Arrays.asList(createSymbolOffset()));
 		when(iexCloudFacadeMock.fetchOHLCVSince(any(), any())).thenReturn(Arrays.asList(createRecord()));
+		doNothing().when(symbolOffsetProviderMock).udpateLastFetchAttempt(eq("symbol"), notNull());
 		doNothing().when(symbolOffsetProviderMock).updateOffsets(any());
 		
 		assertNotNull(task.internalPoll());
@@ -90,6 +95,7 @@ class IEXCloudOHLCVTaskTest {
 		when(symbolOffsetProviderMock.getAllSymbolOffsetsSorted()).thenReturn(Arrays.asList(createSymbolOffset()));
 		when(iexCloudFacadeMock.fetchOHLCVSince(any(), any())).thenThrow(new NoRecordsProvidedException("symbol", IEXCloudRange.MAX));
 		doNothing().when(symbolOffsetProviderMock).removeSymbolFromConfig("symbol");
+		doNothing().when(symbolOffsetProviderMock).udpateLastFetchAttempt(eq("symbol"), notNull());
 		
 		assertNull(task.internalPoll());
 		// verification happens at #afterEach
@@ -104,9 +110,35 @@ class IEXCloudOHLCVTaskTest {
 		when(iexCloudFacadeMock.fetchOHLCVSince(any(), any()))
 		.thenReturn(Collections.emptyList())
 		.thenReturn(Arrays.asList(createRecord()));
+		doNothing().when(symbolOffsetProviderMock).udpateLastFetchAttempt(eq("symbol"), notNull());
 		doNothing().when(symbolOffsetProviderMock).updateOffsets(any());
 		
 		assertNotNull(task.internalPoll());
+		// verification happens at #afterEach
+	}
+	
+	@Test
+	void test_internalPoll__skips_up_to_date_offsets() throws IEXCloudException {
+		IEXCloudOHLCVTask task = createTask();
+
+		SymbolOffset offsetMock = mock(SymbolOffset.class);
+		when(offsetMock.isLastFetchedDateBefore(any())).thenReturn(false);
+		when(symbolOffsetProviderMock.getAllSymbolOffsetsSorted()).thenReturn(Arrays.asList(offsetMock));
+		
+		assertNull(task.internalPoll());
+		// verification happens at #afterEach
+	}
+	
+	@Test
+	void test_internalPoll__skips_just_fetched_offsets() throws IEXCloudException {
+		IEXCloudOHLCVTask task = createTask();
+
+		SymbolOffset offsetMock = mock(SymbolOffset.class);
+		when(offsetMock.isLastFetchedDateBefore(any())).thenReturn(true);
+		when(offsetMock.isLastFetchAttemptBefore(any())).thenReturn(false);
+		when(symbolOffsetProviderMock.getAllSymbolOffsetsSorted()).thenReturn(Arrays.asList(offsetMock));
+		
+		assertNull(task.internalPoll());
 		// verification happens at #afterEach
 	}
 	
@@ -133,7 +165,7 @@ class IEXCloudOHLCVTaskTest {
 		task.config = createConfig();
 		task.symbolOffsetProvider = symbolOffsetProviderMock;
 		task.iexCloudFacade = iexCloudFacadeMock;
-		
+		task.stopped = false;
 		return task;
 	}
 	
