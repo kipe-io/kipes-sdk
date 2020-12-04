@@ -145,13 +145,10 @@ public class IEXCloudOHLCVTask extends SourceTask {
 			// - previous endpoint is not yet updated
 			if(offset.isLastFetchedDateBefore(yesterday) && offset.isLastFetchAttemptBefore(retryDateTime))	{
 				records = internalPoll(offset);
+				LOG.info("fetched {} of {}: {}", i, offsets.size(), offset.getSymbol());
 				this.symbolOffsetProvider.udpateLastFetchAttempt(offset.getSymbol(), now);
 			}
 			
-		}
-		
-		if(i == offsets.size()) {
-			LOG.info("finished checking/fetching {} symbols", i);
 		}
 		
 		return records;
