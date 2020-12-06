@@ -81,12 +81,12 @@ public class IEXCloudOHLCVTask extends SourceTask {
 		// TODO: the chain of methods here grows untestable, simplify
 		// I think we should establish some sub-components to encapsulate every
 		// part of the logic so that they can be test/mocked in isolation
-		
-		checkIEXCloudQuota();
 
 		List<SourceRecord> sourceRecords = this.overQuota? null: internalPoll();
 		
 		if(sourceRecords == null && !stopped) {
+			checkIEXCloudQuota();
+			
 			// let's wait as there is nothing to do right now
 			Thread.sleep(CONFIG_POLL_SLEEP_MS);
 		}
