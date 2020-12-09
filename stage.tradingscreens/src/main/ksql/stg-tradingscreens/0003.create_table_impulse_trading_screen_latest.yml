@@ -7,10 +7,11 @@ ksql:
         REPLICAS = 1
     ) AS 
     SELECT
-      key->symbol, 
-      MAX(key->timestamp) AS latest_ts 
+      'LATEST' AS ts_name,
+      LATEST_BY_OFFSET(key->timestamp) AS latest_ts,
+      LATEST_BY_OFFSET(TIMESTAMPTOSTRING(key->timestamp, 'yyyy-MM-dd')) as latest_date
     FROM impulse_momentum_signals
-    GROUP BY key->symbol
+    GROUP BY 'LATEST'
     EMIT CHANGES;
 streamsProperties:
    auto.offset.reset: earliest
