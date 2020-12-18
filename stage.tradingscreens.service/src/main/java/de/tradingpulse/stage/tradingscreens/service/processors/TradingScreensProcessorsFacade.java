@@ -21,7 +21,7 @@ public class TradingScreensProcessorsFacade {
 	private ImpulseTradingScreenProcessor impulseIncrementalStreamProcessor;
 	
 	@Inject
-	private SignalsProcessor signalsProcessor;
+	private ImpulseSignalsProcessor signalsProcessor;
 
 	@PostConstruct
 	void postConstruct() {

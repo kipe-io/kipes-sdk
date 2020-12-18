@@ -1,4 +1,4 @@
-package de.tradingpulse.stage.tradingscreens.data;
+package de.tradingpulse.stage.tradingscreens.recordtypes;
 
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class SignalRecord extends AbstractIncrementalAggregateRecord {
+public class ImpulseSignalRecord extends AbstractIncrementalAggregateRecord {
 
 	private EntrySignal entry;
 	private ExitSignal exit;

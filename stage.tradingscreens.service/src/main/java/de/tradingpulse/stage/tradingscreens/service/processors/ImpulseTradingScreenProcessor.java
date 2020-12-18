@@ -20,7 +20,7 @@ import org.apache.kafka.streams.state.Stores;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
-import de.tradingpulse.stage.tradingscreens.data.ImpulseTradingScreenRecord;
+import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
 import de.tradingpulse.stage.tradingscreens.streams.TradingScreensStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
@@ -54,10 +54,6 @@ class ImpulseTradingScreenProcessor extends AbstractProcessorFactory {
 			KStream<SymbolTimestampKey, ImpulseRecord> shortTimeRangeStream,
 			KStream<SymbolTimestampKey, ImpulseRecord> longTimeRangeStream
 	) throws InterruptedException, ExecutionException {
-		
-		// setup shortTimeRange re-keyed topic
-		String shortTimeRangeReKeyedTopicName = topicName + "-shortterm-impulse-rekeyed";
-		ensureTopics(shortTimeRangeReKeyedTopicName);
 		
 		// setup join parameters
 		// TODO externalize retention period

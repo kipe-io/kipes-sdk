@@ -1,21 +1,30 @@
-package de.tradingpulse.stage.tradingscreens.data;
+package de.tradingpulse.stage.tradingscreens.recordtypes;
 
-import static de.tradingpulse.stage.tradingscreens.data.SwingSignalType.MARKET_TURN_POTENTIAL;
-import static de.tradingpulse.stage.tradingscreens.data.SwingSignalType.MOMENTUM;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
+import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
+import static de.tradingpulse.stage.tradingscreens.recordtypes.SwingSignalType.MARKET_TURN_POTENTIAL;
+
+import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 
 public enum EntrySignal {
-	ENTRY_SHORT_MOMENTUM(MOMENTUM),
-	ENTRY_SHORT_POTENTIAL(MARKET_TURN_POTENTIAL),
-	ENTRY_LONG_MOMENTUM(MOMENTUM),
-	ENTRY_LONG_POTENTIAL(MARKET_TURN_POTENTIAL);
+	ENTRY_SHORT_MOMENTUM(SHORT, null),
+	ENTRY_SHORT_POTENTIAL(SHORT, MARKET_TURN_POTENTIAL),
+	ENTRY_LONG_MOMENTUM(LONG, null),
+	ENTRY_LONG_POTENTIAL(LONG, MARKET_TURN_POTENTIAL);
 	
+	private final TradingDirection tradingDirection;
 	private final SwingSignalType swingSignalType;
 	
-	private EntrySignal(SwingSignalType swingSignalType) {
+	private EntrySignal(TradingDirection tradingDirection, SwingSignalType swingSignalType) {
+		this.tradingDirection = tradingDirection;
 		this.swingSignalType = swingSignalType;
 	}
 	
+	public boolean is(TradingDirection tradingDirection) {
+		return this.tradingDirection == tradingDirection;
+	}
+	
 	public boolean is(SwingSignalType swingSignalType) {
-		return this.swingSignalType == swingSignalType;
+		return this.swingSignalType == null || this.swingSignalType == swingSignalType;
 	}
 }

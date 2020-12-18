@@ -74,14 +74,14 @@ class OHLCVDailyProcessor extends AbstractProcessorFactory {
 				OHLCVRecord firstRecord = this.state.get(key);
 				if(firstRecord == null) {
 					this.state.put(key, value);
-					return new KeyValue<SymbolTimestampKey, OHLCVRecord>(key, value);
+					return new KeyValue<>(key, value);
 				}
 				return null;
 			}
 
 			@Override
 			public void close() {
-				// nothing to do;
+				// nothing to do
 			}
 		}, dedupStoreName)
 		// push to sink

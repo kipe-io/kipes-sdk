@@ -5,14 +5,14 @@ import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.processor.ProcessorContext;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
-import de.tradingpulse.stage.tradingscreens.data.EntrySignal;
-import de.tradingpulse.stage.tradingscreens.data.ExitSignal;
-import de.tradingpulse.stage.tradingscreens.data.ImpulseTradingScreenRecord;
-import de.tradingpulse.stage.tradingscreens.data.SignalRecord;
-import de.tradingpulse.stage.tradingscreens.data.SwingSignalType;
+import de.tradingpulse.stage.tradingscreens.recordtypes.EntrySignal;
+import de.tradingpulse.stage.tradingscreens.recordtypes.ExitSignal;
+import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
+import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseSignalRecord;
+import de.tradingpulse.stage.tradingscreens.recordtypes.SwingSignalType;
 
 class ImpulseTradingScreenTransformer 
-implements Transformer<SymbolTimestampKey, ImpulseTradingScreenRecord, KeyValue<SymbolTimestampKey, SignalRecord>> {
+implements Transformer<SymbolTimestampKey, ImpulseTradingScreenRecord, KeyValue<SymbolTimestampKey, ImpulseSignalRecord>> {
 
 	private final SwingSignalType swingSignalType;
 	
@@ -26,7 +26,7 @@ implements Transformer<SymbolTimestampKey, ImpulseTradingScreenRecord, KeyValue<
 	}
 
 	@Override
-	public KeyValue<SymbolTimestampKey, SignalRecord> transform(
+	public KeyValue<SymbolTimestampKey, ImpulseSignalRecord> transform(
 			SymbolTimestampKey key,
 			ImpulseTradingScreenRecord value)
 	{
@@ -50,7 +50,7 @@ implements Transformer<SymbolTimestampKey, ImpulseTradingScreenRecord, KeyValue<
 			return null;
 		}
 		
-		return new KeyValue<>(key, SignalRecord.builder()
+		return new KeyValue<>(key, ImpulseSignalRecord.builder()
 				.key(value.getKey())
 				.timeRange(value.getTimeRange())
 				.entry(entry)

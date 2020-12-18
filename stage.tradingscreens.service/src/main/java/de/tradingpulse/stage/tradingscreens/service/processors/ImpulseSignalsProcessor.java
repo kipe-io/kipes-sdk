@@ -6,14 +6,14 @@ import javax.inject.Singleton;
 import org.apache.kafka.streams.kstream.Produced;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
-import de.tradingpulse.stage.tradingscreens.data.SignalRecord;
-import de.tradingpulse.stage.tradingscreens.data.SwingSignalType;
+import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseSignalRecord;
+import de.tradingpulse.stage.tradingscreens.recordtypes.SwingSignalType;
 import de.tradingpulse.stage.tradingscreens.streams.TradingScreensStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 
 @Singleton
-public class SignalsProcessor extends AbstractProcessorFactory {
+public class ImpulseSignalsProcessor extends AbstractProcessorFactory {
 	
 	@Inject
 	private TradingScreensStreamsFacade tradingScreensStreamsFacade;
@@ -23,16 +23,16 @@ public class SignalsProcessor extends AbstractProcessorFactory {
 
 	@Override
 	protected void initProcessors() throws Exception {
-		createSignalsStream(
+		createImpulseSignalStream(
 				tradingScreensStreamsFacade.getImpulseMomentumSignalsStreamName(),
 				SwingSignalType.MOMENTUM);
 		
-		createSignalsStream(
+		createImpulseSignalStream(
 				tradingScreensStreamsFacade.getImpulsePotentialSignalsStreamName(),
 				SwingSignalType.MARKET_TURN_POTENTIAL);
 	}
 	
-	private void createSignalsStream(
+	private void createImpulseSignalStream(
 			String topicName,
 			SwingSignalType swingSignalType)
 	{
@@ -40,6 +40,6 @@ public class SignalsProcessor extends AbstractProcessorFactory {
 		.transform(() -> new ImpulseTradingScreenTransformer(swingSignalType))
 		.to(topicName, Produced.with(
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-				jsonSerdeRegistry.getSerde(SignalRecord.class)));
+				jsonSerdeRegistry.getSerde(ImpulseSignalRecord.class)));
 	}
 }

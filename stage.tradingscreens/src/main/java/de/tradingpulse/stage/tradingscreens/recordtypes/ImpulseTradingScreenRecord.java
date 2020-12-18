@@ -1,16 +1,16 @@
-package de.tradingpulse.stage.tradingscreens.data;
+package de.tradingpulse.stage.tradingscreens.recordtypes;
 
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
-import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.ENTRY_LONG_MOMENTUM;
-import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.ENTRY_LONG_POTENTIAL;
-import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.ENTRY_SHORT_MOMENTUM;
-import static de.tradingpulse.stage.tradingscreens.data.EntrySignal.ENTRY_SHORT_POTENTIAL;
-import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.EXIT_LONG;
-import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.EXIT_LONG_MOMENTUM;
-import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.EXIT_SHORT;
-import static de.tradingpulse.stage.tradingscreens.data.ExitSignal.EXIT_SHORT_MOMENTUM;
+import static de.tradingpulse.stage.tradingscreens.recordtypes.EntrySignal.ENTRY_LONG_MOMENTUM;
+import static de.tradingpulse.stage.tradingscreens.recordtypes.EntrySignal.ENTRY_LONG_POTENTIAL;
+import static de.tradingpulse.stage.tradingscreens.recordtypes.EntrySignal.ENTRY_SHORT_MOMENTUM;
+import static de.tradingpulse.stage.tradingscreens.recordtypes.EntrySignal.ENTRY_SHORT_POTENTIAL;
+import static de.tradingpulse.stage.tradingscreens.recordtypes.ExitSignal.EXIT_LONG;
+import static de.tradingpulse.stage.tradingscreens.recordtypes.ExitSignal.EXIT_LONG_MOMENTUM;
+import static de.tradingpulse.stage.tradingscreens.recordtypes.ExitSignal.EXIT_SHORT;
+import static de.tradingpulse.stage.tradingscreens.recordtypes.ExitSignal.EXIT_SHORT_MOMENTUM;
 
 import java.util.Optional;
 

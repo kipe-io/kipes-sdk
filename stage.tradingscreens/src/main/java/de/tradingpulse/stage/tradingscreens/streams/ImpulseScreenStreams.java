@@ -10,8 +10,8 @@ import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.tradingscreens.TradingScreensStageConstants;
-import de.tradingpulse.stage.tradingscreens.data.ImpulseTradingScreenRecord;
-import de.tradingpulse.stage.tradingscreens.data.SignalRecord;
+import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
+import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseSignalRecord;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
@@ -49,23 +49,23 @@ class ImpulseScreenStreams extends AbstractStreamFactory {
 	
 	@Singleton
 	@Named(TOPIC_IMPULSE_MOMENTUM_SIGNALS)
-	KStream<SymbolTimestampKey, SignalRecord> impulseMomentumSignalsStream(final ConfiguredStreamBuilder builder) {
+	KStream<SymbolTimestampKey, ImpulseSignalRecord> impulseMomentumSignalsStream(final ConfiguredStreamBuilder builder) {
 		
 		return builder
 				.stream(TOPIC_IMPULSE_MOMENTUM_SIGNALS, Consumed.with(
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-						jsonSerdeRegistry.getSerde(SignalRecord.class))
+						jsonSerdeRegistry.getSerde(ImpulseSignalRecord.class))
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
 	}
 	
 	@Singleton
 	@Named(TOPIC_IMPULSE_POTENTIAL_SIGNALS)
-	KStream<SymbolTimestampKey, SignalRecord> impulsePotentialSignalsStream(final ConfiguredStreamBuilder builder) {
+	KStream<SymbolTimestampKey, ImpulseSignalRecord> impulsePotentialSignalsStream(final ConfiguredStreamBuilder builder) {
 		
 		return builder
 				.stream(TOPIC_IMPULSE_POTENTIAL_SIGNALS, Consumed.with(
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-						jsonSerdeRegistry.getSerde(SignalRecord.class))
+						jsonSerdeRegistry.getSerde(ImpulseSignalRecord.class))
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
 	}
 
