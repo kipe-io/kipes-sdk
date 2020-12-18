@@ -1,7 +1,8 @@
 package de.tradingpulse.stage.tradingscreens.service.processors;
 
+import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
+
 import java.time.Duration;
-import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -52,9 +53,8 @@ class ImpulseTradingScreenProcessor extends AbstractProcessorFactory {
 	private void createImpulseTradingScreenStream(
 			String topicName,
 			KStream<SymbolTimestampKey, ImpulseRecord> shortTimeRangeStream,
-			KStream<SymbolTimestampKey, ImpulseRecord> longTimeRangeStream
-	) throws InterruptedException, ExecutionException {
-		
+			KStream<SymbolTimestampKey, ImpulseRecord> longTimeRangeStream) 
+	{
 		// setup join parameters
 		// TODO externalize retention period
 		// IDEA: (via AbstractStreamFactory.topics.XXX.retentionMs)

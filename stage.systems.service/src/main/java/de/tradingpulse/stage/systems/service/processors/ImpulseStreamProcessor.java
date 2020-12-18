@@ -1,5 +1,7 @@
 package de.tradingpulse.stage.systems.service.processors;
 
+import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
+
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 
@@ -62,9 +64,8 @@ class ImpulseStreamProcessor extends AbstractProcessorFactory {
 	private void createImpulseStream(
 			final String topicName,
 			final KStream<SymbolTimestampKey, DoubleRecord> emaStream,
-			final KStream<SymbolTimestampKey, MACDHistogramRecord> macdStream 
-	) throws InterruptedException, ExecutionException {
-
+			final KStream<SymbolTimestampKey, MACDHistogramRecord> macdStream) 
+	{
 		// setup join parameters
 		// TODO externalize retention period
 		// IDEA: (via AbstractStreamFactory.topics.XXX.retentionMs)

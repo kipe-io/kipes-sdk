@@ -1,5 +1,7 @@
 package de.tradingpulse.stage.indicators.service.processors;
 
+import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
+
 import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;

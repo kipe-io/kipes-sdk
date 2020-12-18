@@ -1,5 +1,7 @@
 package de.tradingpulse.stage.sourcedata.service.processors;
 
+import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
