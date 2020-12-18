@@ -55,6 +55,8 @@
 		<module>stage.systems.service</module>
 		<module>stage.tradingscreens</module>
 		<module>stage.tradingscreens.service</module>
+		<module>stage.backtest</module>
+		<module>stage.backtest.service</module>
 		<module>connector.iexcloud</module>
 	</modules>
 
