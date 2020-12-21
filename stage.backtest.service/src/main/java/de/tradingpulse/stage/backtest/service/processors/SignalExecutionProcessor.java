@@ -109,7 +109,7 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 		.<OHLCVRecord, SignalExecutionRecord>join(
 				rekeyedOhlcvStream, 
 				jsonSerdeRegistry.getSerde(OHLCVRecord.class))
-
+			
 			.withWindowSizeAfter(Duration.ofDays(7))
 			.withRetentionPeriod(Duration.ofMillis(this.retentionMs + 86400000L)) // we add a day to have today access to the full retention time (record create ts is start of day)
 			.as(
