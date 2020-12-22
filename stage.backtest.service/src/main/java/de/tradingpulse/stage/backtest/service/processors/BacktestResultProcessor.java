@@ -5,9 +5,11 @@ import javax.inject.Singleton;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.backtest.recordtypes.SignalExecutionRecord;
+import de.tradingpulse.stage.backtest.recordtypes.SignalType;
 import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
+import de.tradingpulse.streams.recordtypes.TransactionRecord;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 
@@ -24,6 +26,7 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 	private JsonSerdeRegistry jsonSerdeRegistry;
 
 	@Override
+	@SuppressWarnings("unchecked")
 	protected void initProcessors() throws Exception {
 		// --------------------------------------------------------------------
 		// from
@@ -31,8 +34,8 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 		// transaction
 		//		startswith signalRecord.signalType.type = ENTRY
 		//  	endswith signalRecord.signalType.type = EXIT
-		//  	on key.symbol
-		//  	as TransactionRecord<SignalExecutionRecord>
+		//  	on key.symbol and signalRecord.strategyKey
+		//  	as TransactionRecord<SignalExecutionRecord, String>
 		// map
 		//		delta = records[-1].ohlcvRecord.close - record[0].ohlcvRecord.open
 		//		as BacktestResultRecord
@@ -46,10 +49,22 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 				backtestStreamsFacade.getSignalExecutionDailyStream(), 
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
 				jsonSerdeRegistry.getSerde(SignalExecutionRecord.class))
-		.<SignalExecutionRecord>transaction()
-			.groupBy(groupKeyFunction, groupKeySerde)
-			.startsWith(startsWithPredicate)
-			.endsWith(endsWithPredicate)
-			.collect();
+		
+		.<SignalExecutionRecord, String> transaction()
+			.groupBy(
+					(key, value) ->
+						value.getKey().getSymbol() + "-" + value.getSignalRecord().getStrategyKey(), 
+					jsonSerdeRegistry.getSerde(String.class))
+			.startsWith(
+					(key, value) ->
+						value.getSignalRecord().getSignalType().is(SignalType.Type.ENTRY))
+			.endsWith(
+					(key, value) ->
+						value.getSignalRecord().getSignalType().is(SignalType.Type.EXIT))
+			.as(
+					jsonSerdeRegistry.getSerde(
+							(Class<TransactionRecord<SignalExecutionRecord, String>>)
+							(Class<?>) TransactionRecord.class));
+		
 	}
 }
