@@ -17,23 +17,28 @@ import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
-import de.tradingpulse.streams.kafka.factories.JsonSerdeFactory;
 import de.tradingpulse.streams.recordtypes.TransactionRecord;
 
 /**
  * Builder to setup a stream of transactions as found in the input stream.<br>
  * <br>
- * A transaction is a sequence of input records grouped by a same key and 
- * starting and ending with records identified by {@link BiPredicate}s.  
+ * A transaction is a sequence of input records starting and ending with 
+ * records identified by {@link BiPredicate}s. You can further group records by
+ * specifying a groupByFunction.  
  * 
  * TODO: describe the exact behavior
+ * TODO add tests
  * 
  * @param <K> the key type
  * @param <V> the input value type
+ * @param <GK> the groupKey type
  */
-public class TransactionBuilder<K,V extends AbstractIncrementalAggregateRecord> 
-extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V>>
+public class TransactionBuilder<K,V extends AbstractIncrementalAggregateRecord, GK> 
+extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 {
+	private BiFunction<K,V, GK> groupKeyFunction;
+	private Serde<GK> groupKeySerde;
+	
 	private BiPredicate<K, V> startsWithPredicate;
 	private BiPredicate<K, V> endsWithPredicate;
 	
@@ -47,6 +52,21 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V>>
 	}
 	
 	/**
+	 * Configures a GroupKeyFunction to group incoming records. 
+	 * 
+	 * @param groupKeyFunction the function to calculate the GroupKey
+	 * @param groupKeySerde the serde for the GroupKey
+	 * @return
+	 * 	this builder
+	 */
+	public TransactionBuilder<K,V, GK> groupBy(BiFunction<K,V, GK> groupKeyFunction, Serde<GK> groupKeySerde) {
+		this.groupKeyFunction = groupKeyFunction;
+		this.groupKeySerde = groupKeySerde;
+		
+		return this;
+	}
+	
+	/**
 	 * Configures the {@link BiPredicate} function to identify records starting 
 	 * a transaction.
 	 * 
@@ -55,7 +75,7 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V>>
 	 * @return
 	 * 	this builder
 	 */
-	public TransactionBuilder<K,V> startsWith(BiPredicate<K, V> startsWithPredicate) {
+	public TransactionBuilder<K,V, GK> startsWith(BiPredicate<K, V> startsWithPredicate) {
 		this.startsWithPredicate = startsWithPredicate;
 		return this;
 	}
@@ -69,24 +89,9 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V>>
 	 * @return
 	 * 	this builder
 	 */
-	public TransactionBuilder<K,V> endsWith(BiPredicate<K, V> endsWithPredicate) {
+	public TransactionBuilder<K,V, GK> endsWith(BiPredicate<K, V> endsWithPredicate) {
 		this.endsWithPredicate = endsWithPredicate;
 		return this;
-	}
-	
-	/**
-	 * Configures a GroupKeyFunction to group incoming records. If there is no
-	 * GroupKeyFunction configured (null) then all incoming records are member
-	 * of a single group.
-	 * 
-	 * @param <GK> the GroupKey's type
-	 * @param groupKeyFunction the function to calculate the GroupKey
-	 * @param groupKeySerde the serde for the GroupKey
-	 * @return
-	 * 	this builder
-	 */
-	public <GK> TransactionBuilder<K,V> groupBy(BiFunction<K,V, GK> groupKeyFunction, Serde<GK> groupKeySerde) {
-		return null;
 	}
 	
 	/**
@@ -96,21 +101,19 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V>>
 	 * @return
 	 * 	a new TopologyBuilder
 	 */
-	public TopologyBuilder<K, TransactionRecord<V>> collect() {
+	public TopologyBuilder<K, TransactionRecord<V, GK>> as(Serde<TransactionRecord<V, GK>> resultValueSerde) {
 		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");		
+		Objects.requireNonNull(this.groupKeyFunction, "groupKeyFunction");
+		Objects.requireNonNull(this.groupKeySerde, "groupKeySerde");
 		Objects.requireNonNull(this.startsWithPredicate, "startsWithPredicate");
 		Objects.requireNonNull(this.endsWithPredicate, "endsWithPredicate");
 		
 		final String stateStoreName = getProcessorStoreTopicName(getTopicsBaseName()+"-transaction");
 		
-		@SuppressWarnings("unchecked")
-		final Serde<TransactionRecord<V>> serde = JsonSerdeFactory.getJsonSerde(
-				(Class<TransactionRecord<V>>)(Class<?>)TransactionRecord.class);
-		
-		StoreBuilder<KeyValueStore<K, TransactionRecord<V>>> dedupStoreBuilder =
+		StoreBuilder<KeyValueStore<GK, TransactionRecord<V, GK>>> dedupStoreBuilder =
 				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(stateStoreName),
-						this.keySerde,
-						serde);
+						this.groupKeySerde,
+						resultValueSerde);
 		this.streamsBuilder.addStateStore(dedupStoreBuilder);
 		
 		
@@ -118,34 +121,38 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V>>
 				this.stream
 				.transform(
 						() -> new TransactionTransformer<>(
-								stateStoreName, 
+								stateStoreName,
+								this.groupKeyFunction,
 								this.startsWithPredicate,
 								this.endsWithPredicate),
 						stateStoreName), 
 				this.keySerde, 
-				serde);
+				resultValueSerde);
 	}
 	
 	// ------------------------------------------------------------------------
 	// TransactionTransformer
 	// ------------------------------------------------------------------------
 
-	static class TransactionTransformer <K,V extends AbstractIncrementalAggregateRecord> 
-	implements Transformer<K,V, KeyValue<K, TransactionRecord<V>>>
+	static class TransactionTransformer <K,V extends AbstractIncrementalAggregateRecord, GK> 
+	implements Transformer<K,V, KeyValue<K, TransactionRecord<V, GK>>>
 	{
 
 		private final String stateStoreName;
+		private final BiFunction<K,V, GK> groupKeyFunction;
 		private final BiPredicate<K, V> startsWithPredicate;
 		private final BiPredicate<K, V> endsWithPredicate;
 		
-		private KeyValueStore<K,TransactionRecord<V>> stateStore;
+		private KeyValueStore<GK,TransactionRecord<V, GK>> stateStore;
 		
 		TransactionTransformer(
 				String stateStoreName, 
+				BiFunction<K,V, GK> groupKeyFunction,
 				BiPredicate<K, V> startsWithPredicate, 
 				BiPredicate<K, V> endsWithPredicate)
 		{
 			this.stateStoreName = stateStoreName;
+			this.groupKeyFunction = groupKeyFunction;
 			this.startsWithPredicate = startsWithPredicate;
 			this.endsWithPredicate = endsWithPredicate;
 		}
@@ -153,18 +160,19 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V>>
 		@Override
 		@SuppressWarnings("unchecked")
 		public void init(ProcessorContext context) {
-			this.stateStore = (KeyValueStore<K,TransactionRecord<V>>)context.getStateStore(stateStoreName);
+			this.stateStore = (KeyValueStore<GK,TransactionRecord<V, GK>>)context.getStateStore(stateStoreName);
 		}
 
 		@Override
-		public KeyValue<K, TransactionRecord<V>> transform(K key, V value) {
-			
-			TransactionRecord<V> transactionRecord = this.stateStore.get(key);
+		public KeyValue<K, TransactionRecord<V, GK>> transform(K key, V value) {
+			final GK groupKey = this.groupKeyFunction.apply(key, value);
+			TransactionRecord<V, GK> transactionRecord = this.stateStore.get(groupKey);
 			
 			// store empty? yea, startswith? no, ignore
 			if(transactionRecord == null && startsWith(key, value)) {
 				// store empty? yea, startswith? yea, create TransactionRecord add value
 				transactionRecord = TransactionRecord.createFrom(value);
+				transactionRecord.setGroupKey(groupKey);
 			}
 			
 			if(transactionRecord == null) {
@@ -173,14 +181,14 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V>>
 			}
 			
 			transactionRecord.addUnique(value);
-			this.stateStore.put(key, transactionRecord);
+			this.stateStore.put(groupKey, transactionRecord);
 			
 			if(!endsWith(key, value)) {
 				return null;
 			}
 			
 			// endswith? yea, delete TransactionRecord, emit TransactionRecord
-			this.stateStore.delete(key);
+			this.stateStore.delete(groupKey);
 			
 			return new KeyValue<>(key, transactionRecord);
 		}

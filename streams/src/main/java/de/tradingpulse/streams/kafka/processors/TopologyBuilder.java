@@ -339,11 +339,12 @@ public class TopologyBuilder <K,V> {
 	 * in this TopologyBuilder's stream.
 	 * 
 	 * @param <A> actually V as A
+	 * @param <GK> the potential groupKey type, can be Void
 	 * @return
 	 * 	a new initialized TransactionBuilder
 	 */
 	@SuppressWarnings("unchecked")
-	public <A extends AbstractIncrementalAggregateRecord> TransactionBuilder<K,A> transaction() {
+	public <A extends AbstractIncrementalAggregateRecord, GK> TransactionBuilder<K,A, GK> transaction() {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");

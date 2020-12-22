@@ -24,6 +24,7 @@ import lombok.experimental.SuperBuilder;
 
 class TransactionRecordTest {
 
+	private static final String GROUP_KEY = "groupKey";
 	private static final String SYMBOL = "symbol";
 	private static final String VALUE = "value";
 
@@ -35,7 +36,7 @@ class TransactionRecordTest {
 	void test_createFrom__correctly_initializes() {
 		TestValue value = createTestValue(VALUE);
 		
-		TransactionRecord<TestValue> record = TransactionRecord.createFrom(value);
+		TransactionRecord<TestValue, Void> record = TransactionRecord.createFrom(value);
 		
 		assertNotNull(value.getKey());
 		assertEquals(value.getKey(), record.getKey());
@@ -48,7 +49,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_addUnique__fails_on_this_key_null() {
-		TransactionRecord<TestValue> record = new TransactionRecord<>();
+		TransactionRecord<TestValue, Void> record = new TransactionRecord<>();
 		TestValue value = createTestValue(VALUE);
 		
 		assertThrows(NullPointerException.class, () -> {
@@ -58,7 +59,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_addUnique__fails_on_value_null() {
-		TransactionRecord<TestValue> record = createTransactionRecord();
+		TransactionRecord<TestValue, Void> record = createTransactionRecord();
 		
 		assertThrows(NullPointerException.class, () -> {
 			record.addUnique(null);
@@ -67,7 +68,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_addUnique__fails_on_value_key_null() {
-		TransactionRecord<TestValue> record = createTransactionRecord();
+		TransactionRecord<TestValue, Void> record = createTransactionRecord();
 		TestValue value = new TestValue();
 		
 		assertThrows(NullPointerException.class, () -> {
@@ -77,7 +78,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_addUnique__adds_value() {
-		TransactionRecord<TestValue> record = createTransactionRecord();
+		TransactionRecord<TestValue, Void> record = createTransactionRecord();
 		TestValue value = createTestValue(VALUE);
 
 		record.addUnique(value);
@@ -87,7 +88,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_addUnique__ignores_adding_already_stored_values() {
-		TransactionRecord<TestValue> record = createTransactionRecord();
+		TransactionRecord<TestValue, Void> record = createTransactionRecord();
 		TestValue value = createTestValue(VALUE);
 
 		record.addUnique(value);
@@ -98,7 +99,7 @@ class TransactionRecordTest {
 	
 	@Test
 	void test_addUnique__updates_this_timestamp() {
-		TransactionRecord<TestValue> record = createTransactionRecord();
+		TransactionRecord<TestValue, Void> record = createTransactionRecord();
 		long thisTimestamp = record.getKey().getTimestamp();
 		
 		await().atMost(Duration.ofSeconds(1)).until(() -> System.currentTimeMillis() > thisTimestamp);
@@ -116,7 +117,8 @@ class TransactionRecordTest {
 
 	@Test
 	void test_serde() throws JsonProcessingException {
-		TransactionRecord<TestValue> record = createTransactionRecord();
+		TransactionRecord<TestValue, String> record = createTransactionRecord();
+		record.setGroupKey(GROUP_KEY);
 		TestValue value = createTestValue(VALUE);
 
 		record.addUnique(value);
@@ -124,7 +126,8 @@ class TransactionRecordTest {
 		ObjectMapper mapper = new ObjectMapper();
 		String json = mapper.writeValueAsString(record);
 		
-		TransactionRecord<?> r = mapper.readValue(json, TransactionRecord.class); 
+		TransactionRecord<?,?> r = mapper.readValue(json, TransactionRecord.class); 
+		assertEquals(GROUP_KEY, r.getGroupKey());
 		assertTrue(r.getValues().contains(value));
 		
 	}
@@ -134,8 +137,8 @@ class TransactionRecordTest {
 	// ------------------------------------------------------------------------
 
 	@SuppressWarnings("unchecked")
-	private static <V extends AbstractIncrementalAggregateRecord> TransactionRecord<V> createTransactionRecord() {
-		return (TransactionRecord<V>) TransactionRecord.builder()
+	private static <V extends AbstractIncrementalAggregateRecord, GK> TransactionRecord<V, GK> createTransactionRecord() {
+		return (TransactionRecord<V, GK>) TransactionRecord.builder()
 				.key(SymbolTimestampKey.builder()
 						.symbol(SYMBOL)
 						.timestamp(System.currentTimeMillis())

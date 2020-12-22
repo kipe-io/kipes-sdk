@@ -22,11 +22,11 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class TransactionRecord<V extends AbstractIncrementalAggregateRecord> extends AbstractIncrementalAggregateRecord {
+public class TransactionRecord<V extends AbstractIncrementalAggregateRecord, GK> extends AbstractIncrementalAggregateRecord {
 	
 	@SuppressWarnings("unchecked")
-	public static <V extends AbstractIncrementalAggregateRecord> TransactionRecord<V> createFrom(V value) {
-		TransactionRecord<V> record = (TransactionRecord<V>) TransactionRecord.builder()
+	public static <V extends AbstractIncrementalAggregateRecord, GK> TransactionRecord<V, GK> createFrom(V value) {
+		TransactionRecord<V, GK> record = (TransactionRecord<V, GK>) TransactionRecord.builder()
 				.key(value.getKey().deepClone())
 				.build();
 		
@@ -38,6 +38,15 @@ public class TransactionRecord<V extends AbstractIncrementalAggregateRecord> ext
 	@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "className")
 	private LinkedList<V> values = new LinkedList<>();
 	
+	/**
+	 * The groupKey used to create this transaction.
+	 */
+	@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "className")
+	private GK groupKey;
+	
+	/**
+	 * Returns the list of unique records making up this transaction. 
+	 */
 	public List<V> getValues() {
 		return Collections.unmodifiableList(values);
 	}
