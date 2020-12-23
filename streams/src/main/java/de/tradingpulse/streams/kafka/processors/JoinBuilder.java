@@ -28,6 +28,7 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V,
 	private final KStream<K,OV> otherStream;
 	private final Serde<OV> otherValueSerde;
 	
+	private Duration windowSizeBefore; 
 	private Duration windowSizeAfter; 
 	private Duration retentionPeriod;
 	
@@ -48,8 +49,19 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V,
 		this.otherValueSerde = otherValueSerde;
 	}
 	
-	public JoinBuilder<K,V, OV, VR> withWindowSizeAfter(Duration windowAfterSize) {
-		this.windowSizeAfter = windowAfterSize;
+	public JoinBuilder<K,V, OV, VR> withWindowSize(Duration windowSize) {
+		this.windowSizeBefore = windowSize;
+		this.windowSizeAfter = windowSize;
+		return this;
+	}
+	
+	public JoinBuilder<K,V, OV, VR> withWindowSizeBefore(Duration windowSizeBefore) {
+		this.windowSizeBefore = windowSizeBefore;
+		return this;
+	}
+	
+	public JoinBuilder<K,V, OV, VR> withWindowSizeAfter(Duration windowSizeAfter) {
+		this.windowSizeAfter = windowSizeAfter;
 		return this;
 	}
 	
@@ -58,9 +70,27 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V,
 		return this;
 	}
 	
+	/**
+	 * Assembles the joined stream.<br>
+	 * <br>
+	 * The processing is backed by a named materialized changelog store. Clients
+	 * need to specify the base name with 
+	 * {@link #withTopicsBaseName(String)} before.
+	 * 
+	 * @param joiner
+	 * @param resultValueSerde
+	 * @return
+	 */
 	public TopologyBuilder<K,VR> as(ValueJoiner<V, OV, VR> joiner, Serde<VR> resultValueSerde) {
 		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");
-		Objects.requireNonNull(this.windowSizeAfter, "windowSizeAfter");
+		
+		if(this.windowSizeBefore == null) {
+			this.windowSizeBefore = Duration.ZERO;
+		}
+		if(this.windowSizeAfter == null) {
+			this.windowSizeAfter = Duration.ZERO;
+		}
+		
 		Objects.requireNonNull(this.retentionPeriod, "retentionPeriod");
 		Objects.requireNonNull(joiner, "joiner");
 		Objects.requireNonNull(resultValueSerde, "resultValueSerde");
@@ -72,18 +102,19 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V,
 						joiner,
 						JoinWindows
 						.of(Duration.ZERO)
+						.before(this.windowSizeBefore)
 						.after(this.windowSizeAfter)
 						.grace(this.retentionPeriod),
 						StreamJoined.<K,V,OV>with(
 								Stores.persistentWindowStore(
 										getTopicsBaseName()+"-join-store-left", 
-										this.retentionPeriod.plus(this.windowSizeAfter), 
-										this.windowSizeAfter, 
+										this.retentionPeriod.plus(this.windowSizeBefore).plus(this.windowSizeAfter), 
+										this.windowSizeBefore.plus(this.windowSizeAfter), 
 										true), 
 								Stores.persistentWindowStore(
 										getTopicsBaseName()+"-join-store-right", 
-										this.retentionPeriod.plus(this.windowSizeAfter), 
-										this.windowSizeAfter, 
+										this.retentionPeriod.plus(this.windowSizeBefore).plus(this.windowSizeAfter), 
+										this.windowSizeBefore.plus(this.windowSizeAfter), 
 										true))
 						.withKeySerde(this.keySerde)
 						.withValueSerde(this.valueSerde)

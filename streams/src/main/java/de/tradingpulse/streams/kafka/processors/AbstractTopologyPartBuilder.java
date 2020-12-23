@@ -6,7 +6,7 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 
-abstract class AbstractTopologyPartBuilder<K,V, B extends AbstractTopologyPartBuilder<K, V, B>> {
+abstract class AbstractTopologyPartBuilder<K,V, B extends AbstractTopologyPartBuilder<K,V, B>> {
 
 	protected final StreamsBuilder streamsBuilder;
 	protected final KStream<K,V> stream;

@@ -54,14 +54,15 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 		//   ohlcv_daily 
 		//   on signal_daily.key.symbol = ohlcv_daily.key.symbol
 		//   window before 0 after 7 days retention 2 years 
-		// as SignalExecutionRecord
+		//   as SignalExecutionRecord
 		// filter 
 		//   # remove the first element of the stream as execution can only happen-after the signal
 		//   signalRecord.timeRangeTimestamp < ohlcvRecord.timeRangeTimestamp
 		// dedup
 		//   # we assume correct order to select the first element of the stream
 		//   on signalRecord.key
-		// to signal_execution_daily
+		// to
+		//   signal_execution_daily
 		// --------------------------------------------------------------------
 		
 		TopologyBuilder<?,?> topologyBuilder = TopologyBuilder.init(streamBuilder);
@@ -78,6 +79,7 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 						(key, value) -> 
 							key.getSymbol(),
 						jsonSerdeRegistry.getSerde(String.class))
+				
 				.through(
 						TOPIC_SIGNAL_DAILY_BY_SYMBOL)
 				.getStream();
@@ -94,6 +96,7 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 						(key, value) -> 
 							key.getSymbol(),
 						jsonSerdeRegistry.getSerde(String.class))
+				
 				.through(
 						TOPIC_OHLCV_DAILY_BY_SYMBOL)
 				.getStream();
@@ -106,7 +109,7 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 				jsonSerdeRegistry.getSerde(String.class),
 				jsonSerdeRegistry.getSerde(SignalRecord.class))
 		
-		.<OHLCVRecord, SignalExecutionRecord>join(
+		.<OHLCVRecord, SignalExecutionRecord> join(
 				rekeyedOhlcvStream, 
 				jsonSerdeRegistry.getSerde(OHLCVRecord.class))
 			
@@ -115,13 +118,18 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 			.as(
 				SignalExecutionRecord::from, 
 				jsonSerdeRegistry.getSerde(SignalExecutionRecord.class))
+			
 		.filter(
 				(key, record) -> 
 					record.getSignalRecord().getTimeRangeTimestamp() < record.getOhlcvRecord().getTimeRangeTimestamp())
-		.dedup(
+		
+		.<SymbolTimestampKey,Void> dedup()
+			.groupBy(
 				(key, record) -> 
 					record.getSignalRecord().getKey(),
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class))
+			.emitFirst()
+			
 		.rekey(
 				(key, value) -> 
 					value.getKey(),

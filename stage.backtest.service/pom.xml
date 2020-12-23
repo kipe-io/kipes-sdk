@@ -16,7 +16,7 @@
 	</parent>
 
 	<properties>
-		<exec.mainClass>de.tradingpulse.stage.indicators.service.Application</exec.mainClass>
+		<exec.mainClass>de.tradingpulse.stage.backtest.service.Application</exec.mainClass>
 	</properties>
 
 	<dependencies>

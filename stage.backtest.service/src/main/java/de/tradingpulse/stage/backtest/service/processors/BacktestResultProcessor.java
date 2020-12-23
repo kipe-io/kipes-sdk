@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.backtest.recordtypes.BacktestResultRecord;
 import de.tradingpulse.stage.backtest.recordtypes.SignalExecutionRecord;
 import de.tradingpulse.stage.backtest.recordtypes.SignalType;
 import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;
@@ -36,7 +37,7 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 		//  	endswith signalRecord.signalType.type = EXIT
 		//  	on key.symbol and signalRecord.strategyKey
 		//  	as TransactionRecord<SignalExecutionRecord, String>
-		// map
+		// transform
 		//		delta = records[-1].ohlcvRecord.close - record[0].ohlcvRecord.open
 		//		as BacktestResultRecord
 		// to
@@ -49,6 +50,8 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 				backtestStreamsFacade.getSignalExecutionDailyStream(), 
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
 				jsonSerdeRegistry.getSerde(SignalExecutionRecord.class))
+		
+		.withTopicsBaseName(backtestStreamsFacade.getSignalExecutionDailyStreamName())
 		
 		.<SignalExecutionRecord, String> transaction()
 			.groupBy(
@@ -64,7 +67,24 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 			.as(
 					jsonSerdeRegistry.getSerde(
 							(Class<TransactionRecord<SignalExecutionRecord, String>>)
-							(Class<?>) TransactionRecord.class));
+							(Class<?>) TransactionRecord.class))
+			
+		.<BacktestResultRecord> transform()
+			.into(
+					(key, value) ->
+						BacktestResultRecord.builder()
+						.key(value.getKey().deepClone())
+						.timeRange(value.getTimeRange())
+						.strategyKey(value.getRecord(0).getSignalRecord().getStrategyKey())
+						.tradingDirection(value.getRecord(0).getSignalRecord().getSignalType().getTradingDirection())
+						.entryTimestamp(value.getRecord(0).getTimeRangeTimestamp())
+						.entryValue(value.getRecord(0).getOhlcvRecord().getOpen())
+						.exitValue(value.getRecord(-1).getOhlcvRecord().getClose())
+						.build())
+			.as(
+					jsonSerdeRegistry.getSerde(BacktestResultRecord.class))
+		.to(
+				backtestStreamsFacade.getBacktestResultDailyStreamName());
 		
 	}
 }

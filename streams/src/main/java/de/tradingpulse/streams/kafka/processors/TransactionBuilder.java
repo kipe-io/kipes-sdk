@@ -15,6 +15,8 @@ import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 import de.tradingpulse.streams.recordtypes.TransactionRecord;
@@ -96,7 +98,11 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 	
 	/**
 	 * Assembles the transaction transformer and returns a new TopologyBuilder
-	 * configured with the resulting TransactionRecord stream.
+	 * configured with the resulting TransactionRecord stream.<br>
+	 * <br>
+	 * The processing is backed by a named materialized changelog store. Clients
+	 * need to specify the base name with 
+	 * {@link #withTopicsBaseName(String)} before.
 	 *  
 	 * @return
 	 * 	a new TopologyBuilder
@@ -137,7 +143,8 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 	static class TransactionTransformer <K,V extends AbstractIncrementalAggregateRecord, GK> 
 	implements Transformer<K,V, KeyValue<K, TransactionRecord<V, GK>>>
 	{
-
+		private static final Logger LOG = LoggerFactory.getLogger(TransactionTransformer.class);
+		
 		private final String stateStoreName;
 		private final BiFunction<K,V, GK> groupKeyFunction;
 		private final BiPredicate<K, V> startsWithPredicate;
@@ -173,6 +180,8 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 				// store empty? yea, startswith? yea, create TransactionRecord add value
 				transactionRecord = TransactionRecord.createFrom(value);
 				transactionRecord.setGroupKey(groupKey);
+				
+				LOG.debug("transaction.startsWith groupKey:{} value:{}", groupKey, value);
 			}
 			
 			if(transactionRecord == null) {
@@ -184,11 +193,14 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 			this.stateStore.put(groupKey, transactionRecord);
 			
 			if(!endsWith(key, value)) {
+				LOG.debug("transaction.continued groupKey:{} value:{}", groupKey, value);
 				return null;
 			}
 			
 			// endswith? yea, delete TransactionRecord, emit TransactionRecord
 			this.stateStore.delete(groupKey);
+			
+			LOG.debug("transaction.endsWith groupKey:{} value:{}", groupKey, value);
 			
 			return new KeyValue<>(key, transactionRecord);
 		}

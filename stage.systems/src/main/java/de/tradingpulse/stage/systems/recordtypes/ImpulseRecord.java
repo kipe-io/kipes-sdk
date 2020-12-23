@@ -4,6 +4,7 @@ import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.NEUTRAL;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
@@ -67,5 +68,13 @@ public class ImpulseRecord extends AbstractIncrementalAggregateRecord {
 	public boolean isSameImpulse(ImpulseRecord other) {
 		return this.tradingDirection == other.tradingDirection
 				&& this.lastTradingDirection == other.lastTradingDirection;
+	}
+	
+	@JsonIgnore
+	public String getImpulseDescriptor() {
+		return String.format(
+				"%s->%s", 
+				this.lastTradingDirection, 
+				this.tradingDirection);
 	}
 }

@@ -23,6 +23,9 @@ public class BacktestProcessorsFacade {
 	@Inject
 	private SignalExecutionProcessor signalExecutionProcessor;
 	
+	@Inject
+	private BacktestResultProcessor backtestResultProcessor;
+	
 	@PostConstruct
 	void postConstruct() {
 		LOG.info("initialized");

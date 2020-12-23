@@ -40,7 +40,7 @@ class TransactionRecordTest {
 		
 		assertNotNull(value.getKey());
 		assertEquals(value.getKey(), record.getKey());
-		assertTrue(record.getValues().contains(value));
+		assertTrue(record.getRecords().contains(value));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -83,7 +83,7 @@ class TransactionRecordTest {
 
 		record.addUnique(value);
 		
-		assertTrue(record.getValues().contains(value));
+		assertTrue(record.getRecords().contains(value));
 	}
 
 	@Test
@@ -94,7 +94,7 @@ class TransactionRecordTest {
 		record.addUnique(value);
 		record.addUnique(value);
 		
-		assertEquals(1, record.getValues().size());
+		assertEquals(1, record.getRecords().size());
 	}
 	
 	@Test
@@ -109,6 +109,52 @@ class TransactionRecordTest {
 		
 		assertTrue(thisTimestamp < record.getKey().getTimestamp());
 		assertEquals(record.getKey().getTimestamp(), value.getKey().getTimestamp());
+	}
+	
+	// ------------------------------------------------------------------------
+	// tests getRecord
+	// ------------------------------------------------------------------------
+
+	@Test
+	void test_getRecord__throws_IndexOutOfBoundsException() {
+		TransactionRecord<TestValue, Void> record = createTransactionRecord();
+		
+		TestValue v1 = createTestValue("1");
+		TestValue v2 = createTestValue("2");
+		TestValue v3 = createTestValue("3");
+		
+		record.addUnique(v1);
+		record.addUnique(v2);
+		record.addUnique(v3);
+		
+		assertEquals(3, record.getRecords().size());
+		
+		assertThrows(IndexOutOfBoundsException.class, () -> record.getRecord(3));
+		assertThrows(IndexOutOfBoundsException.class, () -> record.getRecord(-4));
+	}
+
+	@Test
+	void test_getRecord__returns_correct_record() {
+		TransactionRecord<TestValue, Void> record = createTransactionRecord();
+		
+		TestValue v1 = createTestValue("1");
+		TestValue v2 = createTestValue("2");
+		TestValue v3 = createTestValue("3");
+		
+		record.addUnique(v1);
+		record.addUnique(v2);
+		record.addUnique(v3);
+		
+		assertEquals(3, record.getRecords().size());
+
+		assertEquals(v1, record.getRecord(0));
+		assertEquals(v1, record.getRecord(-3));
+
+		assertEquals(v2, record.getRecord(1));
+		assertEquals(v2, record.getRecord(-2));
+
+		assertEquals(v3, record.getRecord(2));
+		assertEquals(v3, record.getRecord(-1));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -128,7 +174,7 @@ class TransactionRecordTest {
 		
 		TransactionRecord<?,?> r = mapper.readValue(json, TransactionRecord.class); 
 		assertEquals(GROUP_KEY, r.getGroupKey());
-		assertTrue(r.getValues().contains(value));
+		assertTrue(r.getRecords().contains(value));
 		
 	}
 	

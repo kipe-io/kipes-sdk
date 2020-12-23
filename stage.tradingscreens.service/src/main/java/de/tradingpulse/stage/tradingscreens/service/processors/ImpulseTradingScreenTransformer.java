@@ -7,8 +7,8 @@ import org.apache.kafka.streams.processor.ProcessorContext;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.tradingscreens.recordtypes.EntrySignal;
 import de.tradingpulse.stage.tradingscreens.recordtypes.ExitSignal;
-import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseSignalRecord;
+import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SwingSignalType;
 
 class ImpulseTradingScreenTransformer 

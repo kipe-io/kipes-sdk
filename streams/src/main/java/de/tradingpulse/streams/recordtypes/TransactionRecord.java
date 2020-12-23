@@ -28,6 +28,7 @@ public class TransactionRecord<V extends AbstractIncrementalAggregateRecord, GK>
 	public static <V extends AbstractIncrementalAggregateRecord, GK> TransactionRecord<V, GK> createFrom(V value) {
 		TransactionRecord<V, GK> record = (TransactionRecord<V, GK>) TransactionRecord.builder()
 				.key(value.getKey().deepClone())
+				.timeRange(value.getTimeRange())
 				.build();
 		
 		record.addUnique(value);
@@ -36,7 +37,7 @@ public class TransactionRecord<V extends AbstractIncrementalAggregateRecord, GK>
 	
 	@Default
 	@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "className")
-	private LinkedList<V> values = new LinkedList<>();
+	private LinkedList<V> records = new LinkedList<>();
 	
 	/**
 	 * The groupKey used to create this transaction.
@@ -47,10 +48,36 @@ public class TransactionRecord<V extends AbstractIncrementalAggregateRecord, GK>
 	/**
 	 * Returns the list of unique records making up this transaction. 
 	 */
-	public List<V> getValues() {
-		return Collections.unmodifiableList(values);
+	public List<V> getRecords() {
+		return Collections.unmodifiableList(records);
 	}
 
+	/**
+	 * Returns the record at the index position in this transaction. The index
+	 * can be negative to select records starting from the end of this
+	 * transaction.
+	 * 
+	 * @param index 0-indexed index
+	 * @return
+	 * 	the record at the specified index position
+	 * 
+	 * @throws IndexOutOfBoundsException
+	 */
+	public V getRecord(int index) {
+		int i = index >= 0 ? index : this.records.size() + index;
+
+		if( i < 0 || i >= this.records.size()) {
+			throw new IndexOutOfBoundsException(
+					String.format(
+							"resulting index '%d' from index parameter '%d' doesn't match list of records of size %d",
+							i,
+							index,
+							this.records.size()));
+		}
+		
+		return this.records.get(i);
+	}
+	
 	/**
 	 * Adds the given value to the transaction value list and adjusts 
 	 * this.key.timestamp to the larger value of this.key.timestamp and
@@ -65,11 +92,11 @@ public class TransactionRecord<V extends AbstractIncrementalAggregateRecord, GK>
 		Objects.requireNonNull(value, "value must be not null");
 		Objects.requireNonNull(value.getKey(), "value.key must be not null");
 		
-		if(values.contains(value)) {
+		if(records.contains(value)) {
 			return;
 		}
 		
-		values.add(value);
+		records.add(value);
 		getKey().setTimestamp(Math.max(getKey().getTimestamp(), value.getKey().getTimestamp()));
 	}
 }

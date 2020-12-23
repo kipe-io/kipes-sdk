@@ -1,7 +1,5 @@
 package de.tradingpulse.streams.kafka.processors;
 
-import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
-
 import java.util.Objects;
 import java.util.function.BiFunction;
 
@@ -11,9 +9,6 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Predicate;
 import org.apache.kafka.streams.kstream.Produced;
-import org.apache.kafka.streams.state.KeyValueStore;
-import org.apache.kafka.streams.state.StoreBuilder;
-import org.apache.kafka.streams.state.Stores;
 
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 
@@ -37,6 +32,8 @@ import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRec
  * 
  * TODO document the exact behavior
  * TODO add tests
+ * TODO add developer documentation how to extend
+ * TODO develop a plugin concept to dynamically enhance the functionality 
  *
  * @param <K> the key type of the initital stream
  * @param <V> the value type of the initial stream
@@ -248,47 +245,22 @@ public class TopologyBuilder <K,V> {
 	}
 	
 	/**
-	 * De-duplicates the records of the current stream by returning the first
-	 * record of a record group identified by a group key. The groupKeyFunction
-	 * calculates the group key for each record of the current stream.<br>
-	 * <br>
-	 * The processing is backed by a named materialized changelog store. Clients
-	 * need to specify the base name with 
-	 * {@link #withTopicsBaseName(String)} before.
+	 * De-duplicates the records of the current stream.<br>
 	 *  
-	 * @param <GK> the group key type
-	 * @param groupKeyFunction the function to evaluate the groupKey for each record
-	 * @param groupKeySerde the group key's {@link Serde}
+	 * @param <GK> the group key type (see {@link DedupBuilder#groupBy(BiFunction, Serde)})
+	 * @param <DK> the group dedup value type (see {@link DedupBuilder#advanceBy(BiFunction)})
+	 * 
 	 * @return
-	 * 	a new initiated {@link TopologyBuilder} with the dedup'ed stream 
+	 * 	a new initiated {@link DedupBuilder} with the dedup'ed stream 
 	 */
-	public <GK> TopologyBuilder<K,V> dedup(BiFunction<K, V, GK> groupKeyFunction, Serde<GK> groupKeySerde) {
-		// TODO introduce DedupBuilder
-		// JoinBuilder, TransactionBuilder provide the pattern. This 
-		// TopologyBuild should not know the details of how this manipulation
-		// works (groupKeyFunction!)
-		
+	public <GK,DV> DedupBuilder<K,V, GK,DV> dedup() {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
-		Objects.requireNonNull(this.topicsBaseName, "storeTopicsBaseName");
-		Objects.requireNonNull(groupKeyFunction, "groupKeyFunction");
-		Objects.requireNonNull(groupKeySerde, "groupKeySerde");
 		
-		final String stateStoreName = getProcessorStoreTopicName(this.topicsBaseName+"-dedup");
-		
-		StoreBuilder<KeyValueStore<GK,V>> dedupStoreBuilder =
-				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(stateStoreName),
-						groupKeySerde,
-						this.valueSerde);
-		this.streamsBuilder.addStateStore(dedupStoreBuilder);
-		
-		return new TopologyBuilder<>(
-				this.streamsBuilder,
-				this.stream
-					.transform(
-						() -> new DedupTransformer<>(stateStoreName, groupKeyFunction),
-						stateStoreName), 
+		return new DedupBuilder<K,V, GK,DV> (
+				this.streamsBuilder, 
+				this.stream, 
 				this.keySerde, 
 				this.valueSerde)
 				.withTopicsBaseName(this.topicsBaseName);
@@ -349,10 +321,32 @@ public class TopologyBuilder <K,V> {
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
 		
-		return new TransactionBuilder<>(
+		return (TransactionBuilder<K,A, GK>)new TransactionBuilder<>(
 				this.streamsBuilder, 
 				(KStream<K,A>)this.stream, 
 				this.keySerde, 
-				(Serde<A>)this.valueSerde);
+				(Serde<A>)this.valueSerde)
+				.withTopicsBaseName(this.topicsBaseName);
+	}
+	
+	/**
+	 * Creates a stream of transformed records.
+	 * 
+	 * @param <VR> the transformed record's type
+	 * @return
+	 * 	a new initialized TransformBuilder
+	 */
+	@SuppressWarnings("unchecked")
+	public <VR> TransformBuilder<K,V, VR> transform() {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		
+		return (TransformBuilder<K,V, VR>)new TransformBuilder<>(
+				this.streamsBuilder, 
+				this.stream, 
+				this.keySerde, 
+				this.valueSerde)
+				.withTopicsBaseName(topicsBaseName);
 	}
 }
