@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
+// TODO: move entry and exit signals evaluation into a processor
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

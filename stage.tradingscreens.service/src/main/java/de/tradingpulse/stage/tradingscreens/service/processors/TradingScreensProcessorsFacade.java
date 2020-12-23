@@ -19,10 +19,10 @@ public class TradingScreensProcessorsFacade {
 	
 	@Inject
 	private ImpulseTradingScreenProcessor impulseIncrementalStreamProcessor;
-	
-	@Inject
-	private ImpulseSignalsProcessor signalsProcessor;
 
+	@Inject
+	private SignalsProcessor signalsProcessor;
+	
 	@PostConstruct
 	void postConstruct() {
 		LOG.info("initialized");

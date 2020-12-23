@@ -1,4 +1,4 @@
-package de.tradingpulse.stage.backtest.recordtypes;
+package de.tradingpulse.stage.tradingscreens.recordtypes;
 
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;

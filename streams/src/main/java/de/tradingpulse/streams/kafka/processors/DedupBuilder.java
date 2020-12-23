@@ -26,8 +26,24 @@ import org.slf4j.LoggerFactory;
  * de-duplicated in these groups.<br>
  * <br>
  * Second, client can specify how the stream of records within these groups is
- * de-duplicated (see {@link #advanceBy(BiFunction)}).
- *  
+ * de-duplicated (see {@link #advanceBy(BiFunction)}).<br>
+ * <br>
+ * <b>Pseudo DSL</b>
+ * <pre>
+ *   from
+ *     {SOURCE[key:value]}
+ *   
+ *   <b>dedup</b>
+ *     <b>groupBy</b>
+ *       {FUNCTION(key,value):groupKey}
+ *     <b>advanceBy</b>
+ *       {FUNCTION(key,value):groupDedupValue}
+ *     <b>emitFirst</b>
+ *   
+ *   to
+ *     {TARGET[key:value]}
+ * </pre>
+ * 
  * @param <K> the incoming and outgoing streams' key type
  * @param <V> the incoming and outgoing streams' value type
  * @param <GK> the group key's type (see {@link #groupBy(BiFunction, Serde)})

@@ -1,4 +1,4 @@
-package de.tradingpulse.stage.backtest.streams;
+package de.tradingpulse.stage.tradingscreens.streams;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -9,19 +9,17 @@ import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
-import de.tradingpulse.stage.backtest.BacktestStageConstants;
-import de.tradingpulse.stage.backtest.recordtypes.SignalExecutionRecord;
-import de.tradingpulse.stage.backtest.recordtypes.SignalRecord;
+import de.tradingpulse.stage.tradingscreens.TradingScreensStageConstants;
+import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import io.micronaut.context.annotation.Factory;
 
 @Factory
-public class SignalStreams extends AbstractStreamFactory {
-
-	static final String TOPIC_SIGNAL_DAILY = BacktestStageConstants.STAGE_NAME + "-" + "signal_daily";
-	static final String TOPIC_SIGNAL_EXECUTION_DAILY = BacktestStageConstants.STAGE_NAME + "-" + "signal_execution_daily";
+class SignalStream extends AbstractStreamFactory {
+	
+	static final String TOPIC_SIGNAL_DAILY = TradingScreensStageConstants.STAGE_NAME + "-" + "signal_daily";
 
 	@Inject
 	private JsonSerdeRegistry jsonSerdeRegistry;
@@ -29,8 +27,7 @@ public class SignalStreams extends AbstractStreamFactory {
 	@Override
 	protected String[] getTopicNames() {
 		return new String[] {
-				TOPIC_SIGNAL_DAILY,
-				TOPIC_SIGNAL_EXECUTION_DAILY
+				TOPIC_SIGNAL_DAILY
 		};
 	}
 	
@@ -42,17 +39,6 @@ public class SignalStreams extends AbstractStreamFactory {
 				.stream(TOPIC_SIGNAL_DAILY, Consumed.with(
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
 						jsonSerdeRegistry.getSerde(SignalRecord.class))
-						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
-    }
-	
-	@Singleton
-    @Named(TOPIC_SIGNAL_EXECUTION_DAILY)
-    KStream<SymbolTimestampKey, SignalExecutionRecord> signalExecutionDailyStream(final ConfiguredStreamBuilder builder) {
-		
-		return builder
-				.stream(TOPIC_SIGNAL_EXECUTION_DAILY, Consumed.with(
-						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-						jsonSerdeRegistry.getSerde(SignalExecutionRecord.class))
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
     }
 }

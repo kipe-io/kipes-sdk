@@ -26,7 +26,26 @@ import de.tradingpulse.streams.recordtypes.TransactionRecord;
  * <br>
  * A transaction is a sequence of input records starting and ending with 
  * records identified by {@link BiPredicate}s. You can further group records by
- * specifying a groupByFunction.  
+ * specifying a groupByFunction.<br>
+ * <br>
+ * <b>Pseudo DSL</b>
+ * <pre>
+ *   from
+ *     {SOURCE[key:value]}
+ *   
+ *   <b>transaction</b>
+ *     <b>groupBy</b>
+ *       {FUNCTION(key,value):groupKey}
+ *     <b>startsWith</b>
+ *       {FUNCTION(key,value):boolean}
+ *     <b>endsWith</b>
+ *       {FUNCTION(key,value):boolean}
+ *     <b>as</b>
+ *        TransactionRecord[value,groupKey]
+ *   to
+ *     {TARGET[key:TransactionRecord[value,groupKey]]}
+ * </pre>
+ * 
  * 
  * TODO: describe the exact behavior
  * TODO add tests

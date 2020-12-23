@@ -10,10 +10,11 @@ import org.apache.kafka.streams.kstream.KStream;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.backtest.BacktestStageConstants;
 import de.tradingpulse.stage.backtest.recordtypes.SignalExecutionRecord;
-import de.tradingpulse.stage.backtest.recordtypes.SignalRecord;
 import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
+import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
+import de.tradingpulse.stage.tradingscreens.streams.TradingScreensStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
@@ -24,12 +25,15 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 
 	private static final String TOPIC_SIGNAL_DAILY_BY_SYMBOL =  BacktestStageConstants.STAGE_NAME + "-" + "signal_daily_by_symbol";
 	private static final String TOPIC_OHLCV_DAILY_BY_SYMBOL =  BacktestStageConstants.STAGE_NAME + "-" + "ohlcv_daily_by_symbol";
-	
-	@Inject
-	private BacktestStreamsFacade backtestStreamsFacade;
 
 	@Inject
 	private SourceDataStreamsFacade sourceDataStreamsFacade;
+	
+	@Inject
+	private TradingScreensStreamsFacade tradingScreensStreamsFacade;
+	
+	@Inject
+	private BacktestStreamsFacade backtestStreamsFacade;
 	
 	@Inject
 	private ConfiguredStreamBuilder streamBuilder;
@@ -69,9 +73,9 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 		
 		// rekeying signal_daily to key.symbol
 		KStream<String, SignalRecord> rekeyedSignalStream = topologyBuilder
-				.withTopicsBaseName(backtestStreamsFacade.getSignalDailyStreamName())
+				.withTopicsBaseName(tradingScreensStreamsFacade.getSignalDailyStreamName())
 				.from(
-						backtestStreamsFacade.getSignalDailyStream(),
+						tradingScreensStreamsFacade.getSignalDailyStream(),
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class),
 						jsonSerdeRegistry.getSerde(SignalRecord.class))
 				
@@ -86,7 +90,7 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 		
 		// rekeying ohlcv_daily to key.symbol
 		KStream<String, OHLCVRecord> rekeyedOhlcvStream = topologyBuilder
-				.withTopicsBaseName(backtestStreamsFacade.getSignalDailyStreamName())
+				.withTopicsBaseName(sourceDataStreamsFacade.getOhlcvDailyStreamName())
 				.from(
 						sourceDataStreamsFacade.getOhlcvDailyStream(),
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class),

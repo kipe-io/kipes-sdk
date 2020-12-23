@@ -1,4 +1,4 @@
-package de.tradingpulse.stage.backtest.recordtypes;
+package de.tradingpulse.stage.tradingscreens.recordtypes;
 
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 import lombok.AllArgsConstructor;

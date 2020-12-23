@@ -6,8 +6,8 @@ import javax.inject.Singleton;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.backtest.recordtypes.BacktestResultRecord;
 import de.tradingpulse.stage.backtest.recordtypes.SignalExecutionRecord;
-import de.tradingpulse.stage.backtest.recordtypes.SignalType;
 import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;
+import de.tradingpulse.stage.tradingscreens.recordtypes.SignalType;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
 import de.tradingpulse.streams.recordtypes.TransactionRecord;
@@ -70,7 +70,7 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 							(Class<?>) TransactionRecord.class))
 			
 		.<BacktestResultRecord> transform()
-			.into(
+			.intoSingleRecord(
 					(key, value) ->
 						BacktestResultRecord.builder()
 						.key(value.getKey().deepClone())
