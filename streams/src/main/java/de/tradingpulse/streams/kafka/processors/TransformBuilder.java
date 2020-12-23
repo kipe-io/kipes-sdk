@@ -45,12 +45,7 @@ public class TransformBuilder<K,V, VR> extends AbstractTopologyPartBuilder<K, V,
 
 	public TransformBuilder<K,V, VR> intoSingleRecord(BiFunction<K,V, VR> transformFunction) {
 		
-		this.transformFunction = new BiFunction<K, V, Iterable<VR>>() {
-			@Override
-			public Iterable<VR> apply(K key, V value) {
-				return Arrays.asList(transformFunction.apply(key, value));
-			}
-		};
+		this.transformFunction = (key, value) -> Arrays.asList(transformFunction.apply(key, value));
 		
 		return this;
 	}

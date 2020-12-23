@@ -31,7 +31,7 @@ public enum SignalType {
 		return this.tradingDirection;
 	}
 	
-	public static enum Type {
+	public enum Type {
 		ENTRY,
 		EXIT;
 	}
