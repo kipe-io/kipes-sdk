@@ -14,5 +14,6 @@
     </root>
     
     <logger name="de.tradingpulse" level="DEBUG" />
+    <logger name="de.tradingpulse.streams" level="INFO" />
     
 </configuration>

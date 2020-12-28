@@ -64,7 +64,7 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 		//   signalRecord.timeRangeTimestamp < ohlcvRecord.timeRangeTimestamp
 		// dedup
 		//   # we assume correct order to select the first element of the stream
-		//   on signalRecord.key
+		//   on signalRecord
 		// to
 		//   signal_execution_daily
 		// --------------------------------------------------------------------
@@ -127,11 +127,11 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 				(key, record) -> 
 					record.getSignalRecord().getTimeRangeTimestamp() < record.getOhlcvRecord().getTimeRangeTimestamp())
 		
-		.<SymbolTimestampKey,Void> dedup()
+		.<SignalRecord,Void> dedup()
 			.groupBy(
 				(key, record) -> 
-					record.getSignalRecord().getKey(),
-				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class))
+					record.getSignalRecord(),
+				jsonSerdeRegistry.getSerde(SignalRecord.class))
 			.emitFirst()
 			
 		.rekey(

@@ -4,7 +4,7 @@ public abstract class IEXCloudException extends Exception {
 
 	private static final long serialVersionUID = 2L;
 
-	public IEXCloudException(String message) {
+	protected IEXCloudException(String message) {
 		super(message);
 	}
 }

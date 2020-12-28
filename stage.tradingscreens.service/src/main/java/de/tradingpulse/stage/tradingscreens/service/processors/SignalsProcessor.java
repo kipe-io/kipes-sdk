@@ -49,9 +49,13 @@ public class SignalsProcessor extends AbstractProcessorFactory {
 		//   impulse_trading_screen
 		// transform
 		//   into
-		//     asSignalRecords(value):SignalRecord[]
+		//     ImpulseTradingScreenToSignalFunction:SignalRecord[]
 		//   as
 		//     SignalRecord
+		// dedup
+		//   groupBy key.symbol, strategyKey, signalType.tradingDirection
+		//   advanceBy signalType
+		//   emitFirst
 		// to
 		//   signals_daily
 		// --------------------------------------------------------------------
@@ -70,6 +74,21 @@ public class SignalsProcessor extends AbstractProcessorFactory {
 			.as(
 					jsonSerdeRegistry.getSerde(SignalRecord.class))
 		
+		.withTopicsBaseName(tradingScreensStreamsFacade.getSignalDailyStreamName())
+		
+		.<String[], String> dedup()
+			.groupBy(
+					(key, value) ->
+						 new String[]{
+								 key.getSymbol(),
+								 value.getStrategyKey(),
+								 value.getSignalType().getTradingDirection().name()},
+					jsonSerdeRegistry.getSerde(String[].class))
+			.advanceBy(
+					(key, value) ->
+						value.getSignalType().name())
+			.emitFirst()
+			
 		.to(
 				tradingScreensStreamsFacade.getSignalDailyStreamName());
 	}

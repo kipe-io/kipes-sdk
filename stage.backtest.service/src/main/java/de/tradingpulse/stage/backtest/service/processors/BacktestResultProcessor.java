@@ -7,6 +7,7 @@ import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.backtest.recordtypes.BacktestResultRecord;
 import de.tradingpulse.stage.backtest.recordtypes.SignalExecutionRecord;
 import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;
+import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalType;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
@@ -71,16 +72,21 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 			
 		.<BacktestResultRecord> transform()
 			.intoSingleRecord(
-					(key, value) ->
-						BacktestResultRecord.builder()
-						.key(value.getKey().deepClone())
-						.timeRange(value.getTimeRange())
-						.strategyKey(value.getRecord(0).getSignalRecord().getStrategyKey())
-						.tradingDirection(value.getRecord(0).getSignalRecord().getSignalType().getTradingDirection())
-						.entryTimestamp(value.getRecord(0).getTimeRangeTimestamp())
-						.entryValue(value.getRecord(0).getOhlcvRecord().getOpen())
-						.exitValue(value.getRecord(-1).getOhlcvRecord().getClose())
-						.build())
+					(key, value) -> {
+						OHLCVRecord entry = value.getRecord(0).getOhlcvRecord();
+						// sometimes there are only close values available.
+						Double entryValue = entry.getOpen() == 0.0? entry.getClose() : entry.getOpen();
+						
+						return BacktestResultRecord.builder()
+							.key(value.getKey().deepClone())
+							.timeRange(value.getTimeRange())
+							.strategyKey(value.getRecord(0).getSignalRecord().getStrategyKey())
+							.tradingDirection(value.getRecord(0).getSignalRecord().getSignalType().getTradingDirection())
+							.entryTimestamp(value.getRecord(0).getTimeRangeTimestamp())
+							.entryValue(entryValue)
+							.exitValue(value.getRecord(-1).getOhlcvRecord().getClose())
+							.build(); 
+					})
 			.as(
 					jsonSerdeRegistry.getSerde(BacktestResultRecord.class))
 		.to(
