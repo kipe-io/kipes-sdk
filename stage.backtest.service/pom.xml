@@ -16,7 +16,7 @@
 	</parent>
 
 	<properties>
-		<exec.mainClass>de.tradingpulse.stage.indicators.service.Application</exec.mainClass>
+		<exec.mainClass>de.tradingpulse.stage.backtest.service.Application</exec.mainClass>
 	</properties>
 
 	<dependencies>
@@ -58,22 +58,6 @@
 		<dependency>
 			<groupId>io.micronaut</groupId>
 			<artifactId>micronaut-runtime</artifactId>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-junit-jupiter</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

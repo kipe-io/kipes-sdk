@@ -9,9 +9,8 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Predicate;
 import org.apache.kafka.streams.kstream.Produced;
-import org.apache.kafka.streams.state.KeyValueStore;
-import org.apache.kafka.streams.state.StoreBuilder;
-import org.apache.kafka.streams.state.Stores;
+
+import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 
 /**
  * A builder to easily setup KStream topologies. Clients normally interact by
@@ -33,19 +32,13 @@ import org.apache.kafka.streams.state.Stores;
  * 
  * TODO document the exact behavior
  * TODO add tests
+ * TODO add developer documentation how to extend
+ * TODO develop a plugin concept to dynamically enhance the functionality 
  *
  * @param <K> the key type of the initital stream
  * @param <V> the value type of the initial stream
  */
 public class TopologyBuilder <K,V> {
-	
-	/**
-	 * Returns the canonical topic name for processor store by appending 
-	 * '-processor-store' to the given tbaseTopicName
-	 */
-	private static String getProcessorStoreTopicName(String baseTopicName) {
-		return baseTopicName+"-processor-store";
-	}
 	
 	/**
 	 * Initiates a new TopologyBuilder.<br>
@@ -203,6 +196,11 @@ public class TopologyBuilder <K,V> {
 	 * 	a new TopologyBuilder<NK,V> initiated with the new KStream
 	 */
 	public <NK> TopologyBuilder<NK,V> rekey(BiFunction<K,V, NK> rekeyFunction, Serde<NK> newKeySerde) {
+		// TODO introduce RekeyBuilder
+		// JoinBuilder, TransactionBuilder provide the pattern. This 
+		// TopologyBuild should not know the details of how this manipulation
+		// works (rekeyFunction!)
+		
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
 		Objects.requireNonNull(rekeyFunction, "rekeyFunction");
@@ -215,6 +213,55 @@ public class TopologyBuilder <K,V> {
 				this.streamsBuilder,
 				rekeyedStream,
 				newKeySerde,
+				this.valueSerde)
+				.withTopicsBaseName(this.topicsBaseName);
+	}
+	
+	/**
+	 * Filters the current stream by applying the given predicate.
+	 * 
+	 * @param predicate the {@link Predicate} to filter the current stream
+	 * @return
+	 * 	a new initiated TopologyBuilder<K,V> with the filtered stream
+	 */
+	public TopologyBuilder<K,V> filter(Predicate<K, V> predicate) {
+		// TODO introduce FilterBuilder
+		// JoinBuilder, TransactionBuilder provide the pattern. This 
+		// TopologyBuild should not know the details of how this manipulation
+		// works (predicate!)
+		
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		Objects.requireNonNull(predicate, "predicate");
+		
+		return new TopologyBuilder<>(
+				this.streamsBuilder,
+				this.stream
+					.filter(predicate),
+				this.keySerde,
+				this.valueSerde)
+				.withTopicsBaseName(this.topicsBaseName);
+	}
+	
+	/**
+	 * De-duplicates the records of the current stream.<br>
+	 *  
+	 * @param <GK> the group key type (see {@link DedupBuilder#groupBy(BiFunction, Serde)})
+	 * @param <DK> the group dedup value type (see {@link DedupBuilder#advanceBy(BiFunction)})
+	 * 
+	 * @return
+	 * 	a new initiated {@link DedupBuilder} with the dedup'ed stream 
+	 */
+	public <GK,DV> DedupBuilder<K,V, GK,DV> dedup() {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		
+		return new DedupBuilder<K,V, GK,DV> (
+				this.streamsBuilder, 
+				this.stream, 
+				this.keySerde, 
 				this.valueSerde)
 				.withTopicsBaseName(this.topicsBaseName);
 	}
@@ -234,9 +281,13 @@ public class TopologyBuilder <K,V> {
 	 * @param otherStream the other (right) stream
 	 * @param otherValueSerde the other stream's value {@link Serde}
 	 * @return
-	 * 	a new initiated JoinBuilder<K,V, OV, VR>
+	 * 	a new initialized JoinBuilder<K,V, OV, VR>
 	 */
 	public <OV, VR> JoinBuilder<K,V, OV, VR> join(KStream<K,OV> otherStream, Serde<OV> otherValueSerde) {
+		// TODO move parameters to JoinBuilder
+		// TopologyBuild should not know the details of how this manipulation
+		// works 
+		
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
@@ -253,68 +304,49 @@ public class TopologyBuilder <K,V> {
 				otherValueSerde)
 			.withTopicsBaseName(topicsBaseName);
 	}
-	
+
+
 	/**
-	 * Filters the current stream by applying the given predicate.
+	 * Creates a new stream of TransactionRecords describing transactions found
+	 * in this TopologyBuilder's stream.
 	 * 
-	 * @param predicate the {@link Predicate} to filter the current stream
+	 * @param <A> actually V as A
+	 * @param <GK> the potential groupKey type, can be Void
 	 * @return
-	 * 	a new initiated TopologyBuilder<K,V> with the filtered stream
+	 * 	a new initialized TransactionBuilder
 	 */
-	public TopologyBuilder<K,V> filter(Predicate<K, V> predicate) {
+	@SuppressWarnings("unchecked")
+	public <A extends AbstractIncrementalAggregateRecord, GK> TransactionBuilder<K,A, GK> transaction() {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
-		Objects.requireNonNull(predicate, "predicate");
 		
-		return new TopologyBuilder<>(
-				this.streamsBuilder,
-				this.stream
-					.filter(predicate),
-				this.keySerde,
-				this.valueSerde)
+		return (TransactionBuilder<K,A, GK>)new TransactionBuilder<>(
+				this.streamsBuilder, 
+				(KStream<K,A>)this.stream, 
+				this.keySerde, 
+				(Serde<A>)this.valueSerde)
 				.withTopicsBaseName(this.topicsBaseName);
 	}
 	
 	/**
-	 * De-duplicates the records of the current stream by returning the first
-	 * record of a record group identified by a group key. The groupKeyFunction
-	 * calculates the group key for each record of the current stream.<br>
-	 * <br>
-	 * The processing is backed by a named materialized changelog store. Clients
-	 * need to specify the base name with 
-	 * {@link #withTopicsBaseName(String)} before.
-	 *  
-	 * @param <GK> the group key type
-	 * @param groupKeyFunction the function to evaluate the groupKey for each record
-	 * @param groupKeySerde the group key's {@link Serde}
+	 * Creates a stream of transformed records.
+	 * 
+	 * @param <VR> the transformed record's type
 	 * @return
-	 * 	a new initiated {@link TopologyBuilder} with the dedup'ed stream 
+	 * 	a new initialized TransformBuilder
 	 */
-	public <GK> TopologyBuilder<K,V> dedup(BiFunction<K, V, GK> groupKeyFunction, Serde<GK> groupKeySerde) {
+	@SuppressWarnings("unchecked")
+	public <VR> TransformBuilder<K,V, VR> transform() {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
-		Objects.requireNonNull(this.topicsBaseName, "storeTopicsBaseName");
-		Objects.requireNonNull(groupKeyFunction, "groupKeyFunction");
-		Objects.requireNonNull(groupKeySerde, "groupKeySerde");
 		
-		final String stateStoreName = getProcessorStoreTopicName(this.topicsBaseName+"-dedup");
-		
-		StoreBuilder<KeyValueStore<GK,V>> dedupStoreBuilder =
-				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(stateStoreName),
-						groupKeySerde,
-						this.valueSerde);
-		this.streamsBuilder.addStateStore(dedupStoreBuilder);
-		
-		return new TopologyBuilder<>(
-				this.streamsBuilder,
-				this.stream
-					.transform(
-						() -> new DedupTransformer<>(stateStoreName, groupKeyFunction),
-						stateStoreName), 
+		return (TransformBuilder<K,V, VR>)new TransformBuilder<>(
+				this.streamsBuilder, 
+				this.stream, 
 				this.keySerde, 
 				this.valueSerde)
-				.withTopicsBaseName(this.topicsBaseName);
+				.withTopicsBaseName(topicsBaseName);
 	}
 }

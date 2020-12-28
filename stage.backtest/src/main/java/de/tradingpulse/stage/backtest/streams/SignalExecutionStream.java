@@ -1,4 +1,4 @@
-package de.tradingpulse.stage.tradingscreens.streams;
+package de.tradingpulse.stage.backtest.streams;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -9,36 +9,36 @@ import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
-import de.tradingpulse.stage.tradingscreens.TradingScreensStageConstants;
-import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
+import de.tradingpulse.stage.backtest.BacktestStageConstants;
+import de.tradingpulse.stage.backtest.recordtypes.SignalExecutionRecord;
 import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import io.micronaut.context.annotation.Factory;
 
 @Factory
-class ImpulseScreenStreams extends AbstractStreamFactory {
+public class SignalExecutionStream extends AbstractStreamFactory {
 
-	static final String TOPIC_IMPULSE_TRADING_SCREEN = TradingScreensStageConstants.STAGE_NAME + "-" + "impulse_trading_screen";
+	static final String TOPIC_SIGNAL_EXECUTION_DAILY = BacktestStageConstants.STAGE_NAME + "-" + "signal_execution_daily";
 
 	@Inject
 	private JsonSerdeRegistry jsonSerdeRegistry;
-	
+
 	@Override
 	protected String[] getTopicNames() {
 		return new String[] {
-				TOPIC_IMPULSE_TRADING_SCREEN
+				TOPIC_SIGNAL_EXECUTION_DAILY
 		};
 	}
 	
 	@Singleton
-	@Named(TOPIC_IMPULSE_TRADING_SCREEN)
-	KStream<SymbolTimestampKey, ImpulseTradingScreenRecord> impulseTradingScreenStream(final ConfiguredStreamBuilder builder) {
+    @Named(TOPIC_SIGNAL_EXECUTION_DAILY)
+    KStream<SymbolTimestampKey, SignalExecutionRecord> signalExecutionDailyStream(final ConfiguredStreamBuilder builder) {
 		
 		return builder
-				.stream(TOPIC_IMPULSE_TRADING_SCREEN, Consumed.with(
+				.stream(TOPIC_SIGNAL_EXECUTION_DAILY, Consumed.with(
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-						jsonSerdeRegistry.getSerde(ImpulseTradingScreenRecord.class))
+						jsonSerdeRegistry.getSerde(SignalExecutionRecord.class))
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
-	}
+    }
 }

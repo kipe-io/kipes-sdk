@@ -28,9 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
-import de.tradingpulse.stage.tradingscreens.recordtypes.EntrySignal;
-import de.tradingpulse.stage.tradingscreens.recordtypes.ExitSignal;
-import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
 
 class ImpulseTradingScreenRecordTest {
 

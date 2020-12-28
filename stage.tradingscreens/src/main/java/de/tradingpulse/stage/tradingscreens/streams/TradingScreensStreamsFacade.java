@@ -8,7 +8,7 @@ import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
-import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseSignalRecord;
+import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
 import lombok.Getter;
 
 @Singleton
@@ -19,12 +19,7 @@ public final class TradingScreensStreamsFacade {
     private KStream<SymbolTimestampKey, ImpulseTradingScreenRecord> impulseTradingScreenStream;
 	private final String impulseTradingScreenStreamName = ImpulseScreenStreams.TOPIC_IMPULSE_TRADING_SCREEN;
 
-	@Inject @Named(ImpulseScreenStreams.TOPIC_IMPULSE_MOMENTUM_SIGNALS)
-    private KStream<SymbolTimestampKey, ImpulseSignalRecord> impulseMomentumSignalsStream;
-	private final String impulseMomentumSignalsStreamName = ImpulseScreenStreams.TOPIC_IMPULSE_MOMENTUM_SIGNALS;
-
-	@Inject @Named(ImpulseScreenStreams.TOPIC_IMPULSE_POTENTIAL_SIGNALS)
-    private KStream<SymbolTimestampKey, ImpulseSignalRecord> impulsePotentialSignalsStream;
-	private final String impulsePotentialSignalsStreamName = ImpulseScreenStreams.TOPIC_IMPULSE_POTENTIAL_SIGNALS;
-
+	@Inject @Named(SignalStream.TOPIC_SIGNAL_DAILY)
+    private KStream<SymbolTimestampKey, SignalRecord> signalDailyStream;
+	private final String signalDailyStreamName = SignalStream.TOPIC_SIGNAL_DAILY;
 }

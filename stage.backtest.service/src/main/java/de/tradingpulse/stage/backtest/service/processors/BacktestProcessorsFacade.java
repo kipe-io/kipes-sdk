@@ -16,12 +16,12 @@ import io.micronaut.context.annotation.Context;
 public class BacktestProcessorsFacade {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BacktestProcessorsFacade.class);
-	
-	@Inject
-	private SignalProcessor signalProcessor;
-	
+		
 	@Inject
 	private SignalExecutionProcessor signalExecutionProcessor;
+	
+	@Inject
+	private BacktestResultProcessor backtestResultProcessor;
 	
 	@PostConstruct
 	void postConstruct() {

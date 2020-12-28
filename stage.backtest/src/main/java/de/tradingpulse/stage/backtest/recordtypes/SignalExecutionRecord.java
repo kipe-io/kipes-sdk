@@ -2,6 +2,7 @@ package de.tradingpulse.stage.backtest.recordtypes;
 
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
+import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

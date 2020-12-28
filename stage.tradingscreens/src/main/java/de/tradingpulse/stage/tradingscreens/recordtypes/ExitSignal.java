@@ -2,15 +2,15 @@ package de.tradingpulse.stage.tradingscreens.recordtypes;
 
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.SHORT;
-import static de.tradingpulse.stage.tradingscreens.recordtypes.SwingSignalType.MOMENTUM;
+import static de.tradingpulse.stage.tradingscreens.recordtypes.SwingSignalType.SWING_MOMENTUM;
 
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 
 public enum ExitSignal {
 	
-	EXIT_SHORT_MOMENTUM(SHORT, MOMENTUM),
+	EXIT_SHORT_MOMENTUM(SHORT, SWING_MOMENTUM),
 	EXIT_SHORT(SHORT, null),
-	EXIT_LONG_MOMENTUM(LONG, MOMENTUM),
+	EXIT_LONG_MOMENTUM(LONG, SWING_MOMENTUM),
 	EXIT_LONG(LONG, null);
 	
 	private final TradingDirection tradingDirection;
