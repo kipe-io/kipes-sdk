@@ -1,5 +1,7 @@
 package de.tradingpulse.stage.backtest.recordtypes;
 
+import static de.tradingpulse.common.utils.MathUtils.round;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
@@ -28,15 +30,26 @@ public class BacktestResultRecord extends AbstractIncrementalAggregateRecord {
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	public Double getRevenue() {
-		int sign = tradingDirection == TradingDirection.SHORT? -1 : 1;
-		return entryValue == null || exitValue == null ? null : 
-			sign * (exitValue - entryValue);
+		if(this.entryValue == null || this.exitValue == null) {
+			return null;
+		}
+		
+		int sign = this.tradingDirection == TradingDirection.SHORT? -1 : 1;
+		
+		return round(sign * (this.exitValue - this.entryValue), 2);
 	}
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	public Double getRevenueRatio() {
 		Double revenue = getRevenue();
-		return revenue == null? null : 
-			revenue / entryValue;
+		if(revenue == null) {
+			return null;
+		}
+		return round(revenue / this.entryValue, 4); 
+	}
+	
+	@JsonProperty(access = Access.READ_ONLY)
+	public long getDurationMS() {
+		return getKey().getTimestamp() - entryTimestamp;
 	}
 }
