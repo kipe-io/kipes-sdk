@@ -1,0 +1,6 @@
+kafka:
+  bootstrap:
+    servers: dummy:1234
+
+  replication.factor: 1
+    

@@ -1,0 +1,24 @@
+ksql:
+    CREATE STREAM backtestresult_daily (
+        topic_key VARCHAR KEY,
+        key STRUCT<symbol VARCHAR, timestamp BIGINT>,
+        timeRange VARCHAR,
+        timeRangeTimestamp BIGINT,
+        strategyKey VARCHAR,
+        tradingDirection VARCHAR,
+        entryTimestamp BIGINT,
+        entryValue DOUBLE,
+        exitValue DOUBLE,
+        revenue DOUBLE,
+        revenueRatio DOUBLE,
+        durationMS BIGINT
+    ) WITH (
+        KAFKA_TOPIC = 'stg-backtest-backtestresult_daily',
+        VALUE_FORMAT = 'JSON'
+    );
+streamsProperties:
+   auto.offset.reset: earliest
+   
+rollback:
+    ksql:
+        DROP STREAM backtestresult_daily;

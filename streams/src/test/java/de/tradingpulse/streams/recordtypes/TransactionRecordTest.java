@@ -2,6 +2,7 @@ package de.tradingpulse.streams.recordtypes;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,11 +37,11 @@ class TransactionRecordTest {
 	void test_createFrom__correctly_initializes() {
 		TestValue value = createTestValue(VALUE);
 		
-		TransactionRecord<TestValue, Void> record = TransactionRecord.createFrom(value);
+		TransactionRecord<Void, TestValue> record = TransactionRecord.createFrom(value);
 		
 		assertNotNull(value.getKey());
 		assertEquals(value.getKey(), record.getKey());
-		assertTrue(record.getRecords().contains(value));
+		assertFalse(record.getRecords().contains(value));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -49,7 +50,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_addUnique__fails_on_this_key_null() {
-		TransactionRecord<TestValue, Void> record = new TransactionRecord<>();
+		TransactionRecord<Void, TestValue> record = new TransactionRecord<>();
 		TestValue value = createTestValue(VALUE);
 		
 		assertThrows(NullPointerException.class, () -> {
@@ -59,7 +60,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_addUnique__fails_on_value_null() {
-		TransactionRecord<TestValue, Void> record = createTransactionRecord();
+		TransactionRecord<Void, TestValue> record = createTransactionRecord();
 		
 		assertThrows(NullPointerException.class, () -> {
 			record.addUnique(null);
@@ -68,7 +69,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_addUnique__fails_on_value_key_null() {
-		TransactionRecord<TestValue, Void> record = createTransactionRecord();
+		TransactionRecord<Void, TestValue> record = createTransactionRecord();
 		TestValue value = new TestValue();
 		
 		assertThrows(NullPointerException.class, () -> {
@@ -78,7 +79,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_addUnique__adds_value() {
-		TransactionRecord<TestValue, Void> record = createTransactionRecord();
+		TransactionRecord<Void, TestValue> record = createTransactionRecord();
 		TestValue value = createTestValue(VALUE);
 
 		record.addUnique(value);
@@ -88,7 +89,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_addUnique__ignores_adding_already_stored_values() {
-		TransactionRecord<TestValue, Void> record = createTransactionRecord();
+		TransactionRecord<Void, TestValue> record = createTransactionRecord();
 		TestValue value = createTestValue(VALUE);
 
 		record.addUnique(value);
@@ -99,7 +100,7 @@ class TransactionRecordTest {
 	
 	@Test
 	void test_addUnique__updates_this_timestamp() {
-		TransactionRecord<TestValue, Void> record = createTransactionRecord();
+		TransactionRecord<Void, TestValue> record = createTransactionRecord();
 		long thisTimestamp = record.getKey().getTimestamp();
 		
 		await().atMost(Duration.ofSeconds(1)).until(() -> System.currentTimeMillis() > thisTimestamp);
@@ -117,7 +118,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_getRecord__throws_IndexOutOfBoundsException() {
-		TransactionRecord<TestValue, Void> record = createTransactionRecord();
+		TransactionRecord<Void, TestValue> record = createTransactionRecord();
 		
 		TestValue v1 = createTestValue("1");
 		TestValue v2 = createTestValue("2");
@@ -135,7 +136,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_getRecord__returns_correct_record() {
-		TransactionRecord<TestValue, Void> record = createTransactionRecord();
+		TransactionRecord<Void, TestValue> record = createTransactionRecord();
 		
 		TestValue v1 = createTestValue("1");
 		TestValue v2 = createTestValue("2");
@@ -163,7 +164,7 @@ class TransactionRecordTest {
 
 	@Test
 	void test_serde() throws JsonProcessingException {
-		TransactionRecord<TestValue, String> record = createTransactionRecord();
+		TransactionRecord<String, TestValue> record = createTransactionRecord();
 		record.setGroupKey(GROUP_KEY);
 		TestValue value = createTestValue(VALUE);
 
@@ -183,8 +184,8 @@ class TransactionRecordTest {
 	// ------------------------------------------------------------------------
 
 	@SuppressWarnings("unchecked")
-	private static <V extends AbstractIncrementalAggregateRecord, GK> TransactionRecord<V, GK> createTransactionRecord() {
-		return (TransactionRecord<V, GK>) TransactionRecord.builder()
+	private static <V extends AbstractIncrementalAggregateRecord, GK> TransactionRecord<GK, V> createTransactionRecord() {
+		return (TransactionRecord<GK, V>) TransactionRecord.builder()
 				.key(SymbolTimestampKey.builder()
 						.symbol(SYMBOL)
 						.timestamp(System.currentTimeMillis())

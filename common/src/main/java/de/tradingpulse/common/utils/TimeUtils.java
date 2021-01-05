@@ -1,9 +1,12 @@
 package de.tradingpulse.common.utils;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 public class TimeUtils {
 
@@ -56,6 +59,13 @@ public class TimeUtils {
 				.toZonedDateTime()
 				.withSecond(0)
 				.withNano(0)
+				.toEpochSecond() * 1000;
+	}
+	
+	public static final long getTimestampDaysBeforeNow(int daysBefore) {
+		return LocalDate.now()
+				.minus(daysBefore, ChronoUnit.DAYS)
+				.atStartOfDay(ZoneId.of("UTC"))
 				.toEpochSecond() * 1000;
 	}
 }

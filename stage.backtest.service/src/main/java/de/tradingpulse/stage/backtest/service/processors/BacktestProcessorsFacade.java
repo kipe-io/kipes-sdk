@@ -9,10 +9,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.micronaut.context.annotation.Context;
+import io.micronaut.context.annotation.Requires;
 
-@Singleton
-@Context
-@SuppressWarnings("unused")
+//@Singleton
+//@Context
+//@Requires(
+//		notEnv="test",
+//		beans = {
+//				SignalExecutionProcessor.class,
+//				BacktestResultProcessor.class
+//		})
+//@SuppressWarnings("unused")
 public class BacktestProcessorsFacade {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BacktestProcessorsFacade.class);

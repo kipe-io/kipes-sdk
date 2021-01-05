@@ -37,7 +37,8 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 		//		startswith signalRecord.signalType.type = ENTRY
 		//  	endswith signalRecord.signalType.type = EXIT
 		//  	on key.symbol and signalRecord.strategyKey
-		//  	as TransactionRecord<SignalExecutionRecord, String>
+		//  	as TransactionRecord<String, SignalExecutionRecord>
+		// 
 		// transform
 		//		delta = records[-1].ohlcvRecord.close - record[0].ohlcvRecord.open
 		//		as BacktestResultRecord
@@ -52,9 +53,9 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
 				jsonSerdeRegistry.getSerde(SignalExecutionRecord.class))
 		
-		.withTopicsBaseName(backtestStreamsFacade.getSignalExecutionDailyStreamName())
+		.withTopicsBaseName(BacktestStreamsFacade.TOPIC_SIGNAL_EXECUTION_DAILY)
 		
-		.<SignalExecutionRecord, String> transaction()
+		.<String, SignalExecutionRecord> transaction()
 			.groupBy(
 					(key, value) ->
 						value.getKey().getSymbol() + "-" + value.getSignalRecord().getStrategyKey(), 
@@ -67,11 +68,11 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 						value.getSignalRecord().getSignalType().is(SignalType.Type.EXIT))
 			.as(
 					jsonSerdeRegistry.getSerde(
-							(Class<TransactionRecord<SignalExecutionRecord, String>>)
+							(Class<TransactionRecord<String, SignalExecutionRecord>>)
 							(Class<?>) TransactionRecord.class))
 			
-		.<BacktestResultRecord> transform()
-			.intoSingleRecord(
+		.<SymbolTimestampKey, BacktestResultRecord> transform()
+			.changeValue(
 					(key, value) -> {
 						OHLCVRecord entry = value.getRecord(0).getOhlcvRecord();
 						// sometimes there are only close values available.
@@ -87,10 +88,10 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 							.exitValue(value.getRecord(-1).getOhlcvRecord().getClose())
 							.build(); 
 					})
-			.as(
+			.asValueType(
 					jsonSerdeRegistry.getSerde(BacktestResultRecord.class))
 		.to(
-				backtestStreamsFacade.getBacktestResultDailyStreamName());
+				BacktestStreamsFacade.TOPIC_BACKTESTRESULT_DAILY);
 		
 	}
 }

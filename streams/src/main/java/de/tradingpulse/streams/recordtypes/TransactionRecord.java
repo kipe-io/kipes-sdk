@@ -22,17 +22,14 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class TransactionRecord<V extends AbstractIncrementalAggregateRecord, GK> extends AbstractIncrementalAggregateRecord {
+public class TransactionRecord<GK, V extends AbstractIncrementalAggregateRecord> extends AbstractIncrementalAggregateRecord {
 	
 	@SuppressWarnings("unchecked")
-	public static <V extends AbstractIncrementalAggregateRecord, GK> TransactionRecord<V, GK> createFrom(V value) {
-		TransactionRecord<V, GK> record = (TransactionRecord<V, GK>) TransactionRecord.builder()
+	public static <GK, V extends AbstractIncrementalAggregateRecord> TransactionRecord<GK, V> createFrom(V value) {
+		return (TransactionRecord<GK, V>) TransactionRecord.builder()
 				.key(value.getKey().deepClone())
 				.timeRange(value.getTimeRange())
 				.build();
-		
-		record.addUnique(value);
-		return record;
 	}
 	
 	@Default

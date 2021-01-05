@@ -13,7 +13,7 @@ import lombok.Getter;
 
 @Singleton
 @Getter
-public final class SourceDataStreamsFacade {
+public class SourceDataStreamsFacade {
 
 	@Inject @Named(OHLCVDailyRawStream.TOPIC_OHLCV_DAILY_RAW)
     private KStream<String, OHLCVRawRecord> ohlcvDailyRawStream;
@@ -21,7 +21,7 @@ public final class SourceDataStreamsFacade {
 	
 	@Inject @Named(OHLCVStreams.TOPIC_OHLCV_DAILY)
     private KStream<SymbolTimestampKey, OHLCVRecord> ohlcvDailyStream;
-	private final String ohlcvDailyStreamName = OHLCVStreams.TOPIC_OHLCV_DAILY;
+	public static final String TOPIC_OHLCV_DAILY = OHLCVStreams.TOPIC_OHLCV_DAILY;
 
 	@Inject @Named(OHLCVStreams.TOPIC_OHLCV_WEEKLY)
     private KStream<SymbolTimestampKey, OHLCVRecord> ohlcvWeeklyStream;

@@ -12,13 +12,14 @@
 	<parent>
 		<groupId>io.micronaut</groupId>
 		<artifactId>micronaut-parent</artifactId>
-		<version>2.0.3</version>
+		<version>2.2.2</version>
 	</parent>
 
 	<properties>
 		<lombok.version>1.18.12</lombok.version>
 		<maven.version>3.6.0</maven.version>
 		<micronaut.version>2.0.3</micronaut.version>
+		<mockito.version>3.6.28</mockito.version>
 		<release.version>11</release.version>
 		<retrofit.version>2.9.0</retrofit.version>
 		<micronaut.env>local</micronaut.env>
@@ -79,6 +80,12 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
+				<groupId>org.apache.kafka</groupId>
+				<artifactId>kafka-streams-test-utils</artifactId>
+				<version>${kafka.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
 				<groupId>org.awaitility</groupId>
 				<artifactId>awaitility</artifactId>
 				<version>4.0.3</version>
@@ -87,13 +94,13 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>2.21.0</version>
+				<version>${mockito.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-junit-jupiter</artifactId>
-				<version>2.23.0</version>
+				<version>${mockito.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
