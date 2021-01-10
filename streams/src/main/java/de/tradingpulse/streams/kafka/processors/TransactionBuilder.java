@@ -269,7 +269,9 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 				
 				currentTXNType = START;
 				
-				LOG.debug("transaction.startsWith groupKey:{} value:{}", groupKey, value);
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("transaction.startsWith groupKey:{} value:{}", groupKey, value);
+				}
 			}
 			
 			if(transactionRecord == null) {
@@ -280,12 +282,15 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 			if(!endsWith(key, value)) {
 				if(currentTXNType != START) {
 					currentTXNType = ONGOING;
-					LOG.debug("transaction.continued groupKey:{} value:{}", groupKey, value);
+					LOG.trace("transaction.continued groupKey:{} value:{}", groupKey, value);
 				}
 				
 			} else {
 				currentTXNType = currentTXNType == START? START_AND_END : END;
-				LOG.debug("transaction.endsWith groupKey:{} value:{}", groupKey, value);
+				
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("transaction.endsWith groupKey:{} value:{}", groupKey, value);
+				}
 			}
 			
 			if(	this.emitType.isCovered(currentTXNType)
@@ -294,7 +299,10 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 			{
 				// emit record if current record txn type is covered
 				transactionRecord.addUnique(value);
-				LOG.debug("transaction.emit.{} groupKey:{} value:{} covers currentTXNType:{}", this.emitType, groupKey, value, currentTXNType);
+				
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("transaction.emit.{}.covers groupKey:{} value:{} currentTXNType:{}", this.emitType, groupKey, value, currentTXNType);
+				}
 			}
 			
 			if(!currentTXNType.isCovered(END)) {
@@ -307,7 +315,9 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 			// endswith? yea, delete TransactionRecord, emit TransactionRecord
 			this.stateStore.delete(groupKey);
 			
-			LOG.debug("transaction.endsWith groupKey:{} value:{}", groupKey, value);
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("transaction.emit.{} groupKey:{} key:{} transaction:{} ", this.emitType, groupKey, key, transactionRecord);
+			}
 			
 			return new KeyValue<>(key, transactionRecord);
 		}

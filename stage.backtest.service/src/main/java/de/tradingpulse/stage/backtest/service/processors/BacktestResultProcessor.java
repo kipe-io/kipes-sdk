@@ -3,6 +3,8 @@ package de.tradingpulse.stage.backtest.service.processors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.kafka.streams.kstream.KStream;
+
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.backtest.recordtypes.BacktestResultRecord;
 import de.tradingpulse.stage.backtest.recordtypes.SignalExecutionRecord;
@@ -19,17 +21,23 @@ import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 public class BacktestResultProcessor extends AbstractProcessorFactory {
 	
 	@Inject
-	private BacktestStreamsFacade backtestStreamsFacade;
+	BacktestStreamsFacade backtestStreamsFacade;
 	
 	@Inject
-	private ConfiguredStreamBuilder streamBuilder;
+	ConfiguredStreamBuilder streamBuilder;
 
 	@Inject
-	private JsonSerdeRegistry jsonSerdeRegistry;
+	JsonSerdeRegistry jsonSerdeRegistry;
 
 	@Override
-	@SuppressWarnings("unchecked")
 	protected void initProcessors() throws Exception {
+		createTopology(backtestStreamsFacade.getSignalExecutionDailyStream());
+	}
+	
+	@SuppressWarnings("unchecked")
+	void createTopology(
+			KStream<SymbolTimestampKey, SignalExecutionRecord> signalExecutionDailyStream)
+	{
 		// --------------------------------------------------------------------
 		// from
 		//		signal_excution_daily
@@ -40,7 +48,7 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 		//  	as TransactionRecord<String, SignalExecutionRecord>
 		// 
 		// transform
-		//		delta = records[-1].ohlcvRecord.close - record[0].ohlcvRecord.open
+		//		changeValue 
 		//		as BacktestResultRecord
 		// to
 		//		backtestresult_daily	
@@ -49,7 +57,7 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 		TopologyBuilder
 		.init(streamBuilder)
 		.from(
-				backtestStreamsFacade.getSignalExecutionDailyStream(), 
+				signalExecutionDailyStream, 
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
 				jsonSerdeRegistry.getSerde(SignalExecutionRecord.class))
 		
@@ -74,9 +82,20 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 		.<SymbolTimestampKey, BacktestResultRecord> transform()
 			.changeValue(
 					(key, value) -> {
-						OHLCVRecord entry = value.getRecord(0).getOhlcvRecord();
+						
+						OHLCVRecord entryRecord = value.getRecord(0).getOhlcvRecord();
 						// sometimes there are only close values available.
-						Double entryValue = entry.getOpen() == 0.0? entry.getClose() : entry.getOpen();
+						double entry = entryRecord.getOpen() == 0.0? entryRecord.getClose() : entryRecord.getOpen();
+						double exit = value.getRecord(-1).getOhlcvRecord().getClose();
+						double high = Math.max(entry, exit);
+						double low = Math.min(entry, exit);
+
+						for(SignalExecutionRecord record : value.getRecords()) {
+							OHLCVRecord ohlcv = record.getOhlcvRecord();
+							high = Math.max(high, ohlcv.getHigh());
+							// sometimes there are only close values available.
+							low = Math.min(low, ohlcv.getLow() == 0.0? ohlcv.getClose() : ohlcv.getLow());
+						}
 						
 						return BacktestResultRecord.builder()
 							.key(value.getKey().deepClone())
@@ -84,8 +103,10 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 							.strategyKey(value.getRecord(0).getSignalRecord().getStrategyKey())
 							.tradingDirection(value.getRecord(0).getSignalRecord().getSignalType().getTradingDirection())
 							.entryTimestamp(value.getRecord(0).getTimeRangeTimestamp())
-							.entryValue(entryValue)
-							.exitValue(value.getRecord(-1).getOhlcvRecord().getClose())
+							.entry(entry)
+							.high(high)
+							.low(low)
+							.exit(exit)
 							.build(); 
 					})
 			.asValueType(

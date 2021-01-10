@@ -1,23 +1,11 @@
 package de.tradingpulse.stage.backtest.service.processors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Properties;
-
-import org.apache.kafka.common.serialization.Serde;
-import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
-import org.apache.kafka.streams.Topology;
-import org.apache.kafka.streams.Topology.AutoOffsetReset;
-import org.apache.kafka.streams.TopologyTestDriver;
-import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
@@ -30,66 +18,63 @@ import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalType;
 import de.tradingpulse.stage.tradingscreens.streams.TradingScreensStreamsFacade;
-import io.micronaut.configuration.kafka.serde.JsonSerde;
-import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
-import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
-import io.micronaut.context.BeanContext;
-import io.micronaut.core.reflect.ClassUtils;
 
-class SignalExecutionProcessorIntegrationTest {
-	
-	private static final long ONE_DAY = 86400000L;
-	
-	private static final String STRATEGY_KEY = "strategyKey";
-	private static final String SYMBOL = "symbol";
-
-	private static final Properties CONFIG = new Properties();
-	static {
-		CONFIG.put(StreamsConfig.APPLICATION_ID_CONFIG, "test");
-		CONFIG.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dummy:1234");
-	}
-	
-	private final JsonSerdeRegistry jsonSerdeRegistry = MockedJsonSerdeRegistry.create();
-	
-	// @BeforeEach initializes the following members
-	private ConfiguredStreamBuilder streamBuilder;
-	private KStream<SymbolTimestampKey, SignalRecord> signalDailyStream;
-	private KStream<SymbolTimestampKey, OHLCVRecord> ohlcvDailyStream;
-	private TopologyTestDriver driver;
+class SignalExecutionProcessorIntegrationTest extends AbstractTopologyTest{
 	
 	private TestInputTopic<SymbolTimestampKey, SignalRecord> signalDailyTopic;
 	private TestInputTopic<SymbolTimestampKey, OHLCVRecord> ohlcvDailyTopic;
 	private TestOutputTopic<SymbolTimestampKey, SignalExecutionRecord> signalExecutionTopic;
 	
-	@BeforeEach
-	void beforeEach() {
-		this.streamBuilder = new ConfiguredStreamBuilder(CONFIG);
-		this.signalDailyStream = createSignalDailyStream();
-		this.ohlcvDailyStream = createOhlcvDailyStream();
+	@Override
+	protected void initTopology(TopologyTestContext topologyTestContext) {
+		createSignalExecutionProcessor(topologyTestContext)
+		.createTopology(
+				createSignalDailyStream(topologyTestContext), 
+				createOhlcvDailyStream(topologyTestContext));
+	}
+	
+	private SignalExecutionProcessor createSignalExecutionProcessor(TopologyTestContext topologyTestContext) {
+		SignalExecutionProcessor p = new SignalExecutionProcessor();
+		p.streamBuilder = topologyTestContext.getStreamsBuilder();
+		p.jsonSerdeRegistry = topologyTestContext.getJsonSerdeRegistry();
 		
-		this.driver = new TopologyTestDriver(buildTopology(), CONFIG);
+		return p;
+	}
+    
+	private KStream<SymbolTimestampKey, SignalRecord> createSignalDailyStream(TopologyTestContext topologyTestContext) {
 		
-		this.signalDailyTopic = createTestInputTopic(
+		return topologyTestContext.createKStream(
+				TradingScreensStreamsFacade.TOPIC_SIGNAL_DAILY, 
+				SymbolTimestampKey.class, 
+				SignalRecord.class);
+    }
+	
+    private KStream<SymbolTimestampKey, OHLCVRecord> createOhlcvDailyStream(TopologyTestContext topologyTestContext) {
+		
+		return topologyTestContext.createKStream(
+				SourceDataStreamsFacade.TOPIC_OHLCV_DAILY, 
+				SymbolTimestampKey.class, 
+				OHLCVRecord.class);
+    }
+
+	@Override
+	protected void initTestTopics(TopologyTestContext topologyTestContext) {
+		this.signalDailyTopic = topologyTestContext.createTestInputTopic(
 				TradingScreensStreamsFacade.TOPIC_SIGNAL_DAILY, 
 				SymbolTimestampKey.class, 
 				SignalRecord.class);
 		
-		this.ohlcvDailyTopic = createTestInputTopic(
+		this.ohlcvDailyTopic = topologyTestContext.createTestInputTopic(
 				SourceDataStreamsFacade.TOPIC_OHLCV_DAILY, 
 				SymbolTimestampKey.class, 
 				OHLCVRecord.class);
 		
-		this.signalExecutionTopic = createTestOutputTopic(
+		this.signalExecutionTopic = topologyTestContext.createTestOutputTopic(
 				BacktestStreamsFacade.TOPIC_SIGNAL_EXECUTION_DAILY, 
 				SymbolTimestampKey.class, 
-				SignalExecutionRecord.class);
+				SignalExecutionRecord.class);		
 	}
-	
-	@AfterEach
-	void afterEach() {
-		this.driver.close();
-	}
-	
+		
 	// ------------------------------------------------------------------------
 	// tests
 	// ------------------------------------------------------------------------
@@ -129,6 +114,9 @@ class SignalExecutionProcessorIntegrationTest {
 		assertEquals(secondDay, ser.getSignalRecord().getTimeRangeTimestamp());
 		assertEquals(thirdDay, ser.getOhlcvRecord().getTimeRangeTimestamp());
 		assertEquals(3.0, ser.getOhlcvRecord().getOpen());
+		
+		// and there are no more records
+		assertTrue(this.signalExecutionTopic.isEmpty());
 	}
 
 	@Test
@@ -180,6 +168,9 @@ class SignalExecutionProcessorIntegrationTest {
 		assertEquals(thirdDay, ser.getSignalRecord().getTimeRangeTimestamp());
 		assertEquals(fourthDay, ser.getOhlcvRecord().getTimeRangeTimestamp());
 		assertEquals(4.0, ser.getOhlcvRecord().getOpen());
+		
+		// and there are no more records
+		assertTrue(this.signalExecutionTopic.isEmpty());
 	}
 	
 	// ------------------------------------------------------------------------
@@ -210,95 +201,5 @@ class SignalExecutionProcessorIntegrationTest {
 				
 		this.ohlcvDailyTopic.pipeInput(record.getKey(), record);
 	}
-	
-	
-	private <K,V> TestInputTopic<K,V> createTestInputTopic(String topic, Class<K> keyType, Class<V> valueType) {
-		return this.driver.createInputTopic(
-				topic, 
-				jsonSerdeRegistry.getSerializer(keyType), 
-				jsonSerdeRegistry.getSerializer(valueType));
-	}
-	
-	private <K,V> TestOutputTopic<K, V> createTestOutputTopic(String topic, Class<K> keyType, Class<V> valueType) {
-		return this.driver.createOutputTopic(
-				topic, 
-				jsonSerdeRegistry.getDeserializer(keyType), 
-				jsonSerdeRegistry.getDeserializer(valueType));
-	}
-	
-	private Topology buildTopology() {
-		createSignalExecutionProcessor()
-		.createTopology(
-				signalDailyStream, 
-				ohlcvDailyStream);
-		
-		return streamBuilder.build();
-	}
-	
-	/**
-	 * <pre>
-	 * Creates an SignalExecutionProcessor with
-	 * - streamBuilder
-	 * - jsonSerdeRegistry
-	 * initialized.  
-	 * </pre> 
-	 */
-	private SignalExecutionProcessor createSignalExecutionProcessor() {
-		SignalExecutionProcessor p = new SignalExecutionProcessor();
-		p.streamBuilder = this.streamBuilder;
-		p.jsonSerdeRegistry = this.jsonSerdeRegistry;
-		
-		return p;
-	}
-    
-	private KStream<SymbolTimestampKey, SignalRecord> createSignalDailyStream() {
-		
-		return streamBuilder
-				.stream(TradingScreensStreamsFacade.TOPIC_SIGNAL_DAILY, Consumed.with(
-						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-						jsonSerdeRegistry.getSerde(SignalRecord.class))
-						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
-    }
-	
-    KStream<SymbolTimestampKey, OHLCVRecord> createOhlcvDailyStream() {
-		
-		return streamBuilder
-				.stream(SourceDataStreamsFacade.TOPIC_OHLCV_DAILY, Consumed.with(
-						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-						jsonSerdeRegistry.getSerde(OHLCVRecord.class))
-						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
-    }
-    
-	// ------------------------------------------------------------------------
-	// MockedJsonSerdeRegistry
-	// ------------------------------------------------------------------------
 
-	private static class MockedJsonSerdeRegistry extends JsonSerdeRegistry {
-		static JsonSerdeRegistry create() {
-			return new MockedJsonSerdeRegistry(mock(BeanContext.class));
-		}
-		
-		private final BeanContext beanContextMock;
-		
-		public MockedJsonSerdeRegistry(BeanContext mock) {
-			super(mock);
-			
-			this.beanContextMock = mock;
-		}
-
-		@Override
-		public <T> Serde<T> getSerde(Class<T> type) {
-			if(ClassUtils.isJavaBasicType(type)) {
-				return super.getSerde(type);
-			}
-			reset(beanContextMock);
-			
-			lenient()
-			.when(beanContextMock.createBean(JsonSerde.class, type))
-			.thenReturn(new JsonSerde<>(type));
-			
-			return super.getSerde(type);
-		}
-		
-	}
 }
