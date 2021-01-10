@@ -1,14 +1,12 @@
 package de.tradingpulse.stage.backtest.service.processors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
 import java.util.Properties;
 
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.TestInputTopic;
@@ -18,7 +16,6 @@ import org.apache.kafka.streams.Topology.AutoOffsetReset;
 import org.apache.kafka.streams.TopologyTestDriver;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.test.ConsumerRecordFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -97,21 +94,21 @@ class SignalExecutionProcessorIntegrationTest {
 	// tests
 	// ------------------------------------------------------------------------
 
-	
 	@Test
 	void test_ENTRY_EXIT() throws InterruptedException {
 		// when on first day
 		long firstDay = TimeUtils.getTimestampDaysBeforeNow(7);
+		sendOHLCV(firstDay, 1.0);
 		sendSignal(firstDay, SignalType.ENTRY_LONG);
 		
 		// and on second day
 		long secondDay = firstDay + ONE_DAY;
-		sendOHLCV(secondDay, 1.0);
+		sendOHLCV(secondDay, 2.0);
 		sendSignal(secondDay, SignalType.EXIT_LONG);
 		
 		// and on third day
 		long thirdDay = secondDay + ONE_DAY;
-		sendOHLCV(thirdDay, 2.0);
+		sendOHLCV(thirdDay, 3.0);
 		
 		// then
 		assertEquals(2, this.signalExecutionTopic.getQueueSize());
@@ -123,15 +120,66 @@ class SignalExecutionProcessorIntegrationTest {
 		
 		assertEquals(firstDay, ser.getSignalRecord().getTimeRangeTimestamp());
 		assertEquals(secondDay, ser.getOhlcvRecord().getTimeRangeTimestamp());
-		assertEquals(1.0, ser.getOhlcvRecord().getOpen());
+		assertEquals(2.0, ser.getOhlcvRecord().getOpen());
 		
 		// and exit execution is on third day
 		ser = this.signalExecutionTopic.readValue();
-		assertEquals(entrySignalDayTs + ONE_DAY + ONE_DAY, ser.getTimeRangeTimestamp());
+		assertEquals(thirdDay, ser.getTimeRangeTimestamp());
 		assertEquals(SignalType.EXIT_LONG, ser.getSignalRecord().getSignalType());
-		assertEquals(entrySignalDayTs + ONE_DAY, ser.getSignalRecord().getTimeRangeTimestamp());
-		assertEquals(entrySignalDayTs + ONE_DAY + ONE_DAY, ser.getOhlcvRecord().getTimeRangeTimestamp());
+		assertEquals(secondDay, ser.getSignalRecord().getTimeRangeTimestamp());
+		assertEquals(thirdDay, ser.getOhlcvRecord().getTimeRangeTimestamp());
+		assertEquals(3.0, ser.getOhlcvRecord().getOpen());
+	}
+
+	@Test
+	void test_ENTRY_ONGOING_EXIT() throws InterruptedException {
+		// when on first day
+		long firstDay = TimeUtils.getTimestampDaysBeforeNow(7);
+		sendOHLCV(firstDay, 1.0);
+		sendSignal(firstDay, SignalType.ENTRY_SHORT);
+		
+		// and on second day
+		long secondDay = firstDay + ONE_DAY;
+		sendOHLCV(secondDay, 2.0);
+		
+		// and on third day
+		long thirdDay = secondDay + ONE_DAY;
+		sendOHLCV(thirdDay, 3.0);
+		sendSignal(thirdDay, SignalType.EXIT_SHORT);
+		
+		// and on fourth day
+		long fourthDay = thirdDay + ONE_DAY;
+		sendOHLCV(fourthDay, 4.0);
+		
+		// then
+		assertEquals(3, this.signalExecutionTopic.getQueueSize());
+		
+		// and entry execution is on second day
+		SignalExecutionRecord ser = this.signalExecutionTopic.readValue();
+		assertEquals(secondDay, ser.getTimeRangeTimestamp());
+		assertEquals(SignalType.ENTRY_SHORT, ser.getSignalRecord().getSignalType());
+		
+		assertEquals(firstDay, ser.getSignalRecord().getTimeRangeTimestamp());
+		assertEquals(secondDay, ser.getOhlcvRecord().getTimeRangeTimestamp());
 		assertEquals(2.0, ser.getOhlcvRecord().getOpen());
+		
+		// and ongoing execution on third day
+		ser = this.signalExecutionTopic.readValue();
+		assertEquals(thirdDay, ser.getTimeRangeTimestamp());
+		assertEquals(SignalType.ONGOING_SHORT, ser.getSignalRecord().getSignalType());
+		
+		assertEquals(secondDay, ser.getSignalRecord().getTimeRangeTimestamp());
+		assertEquals(thirdDay, ser.getOhlcvRecord().getTimeRangeTimestamp());
+		assertEquals(3.0, ser.getOhlcvRecord().getOpen());
+		
+		// and exit execution is on fourth day
+		ser = this.signalExecutionTopic.readValue();
+		assertEquals(fourthDay, ser.getTimeRangeTimestamp());
+		assertEquals(SignalType.EXIT_SHORT, ser.getSignalRecord().getSignalType());
+		
+		assertEquals(thirdDay, ser.getSignalRecord().getTimeRangeTimestamp());
+		assertEquals(fourthDay, ser.getOhlcvRecord().getTimeRangeTimestamp());
+		assertEquals(4.0, ser.getOhlcvRecord().getOpen());
 	}
 	
 	// ------------------------------------------------------------------------
