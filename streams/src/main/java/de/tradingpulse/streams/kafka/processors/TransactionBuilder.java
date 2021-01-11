@@ -1,7 +1,14 @@
 package de.tradingpulse.streams.kafka.processors;
 
 import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
+import static de.tradingpulse.streams.kafka.processors.TransactionBuilder.EmitType.END;
+import static de.tradingpulse.streams.kafka.processors.TransactionBuilder.EmitType.ONGOING;
+import static de.tradingpulse.streams.kafka.processors.TransactionBuilder.EmitType.START;
+import static de.tradingpulse.streams.kafka.processors.TransactionBuilder.EmitType.START_AND_END;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -40,6 +47,8 @@ import de.tradingpulse.streams.recordtypes.TransactionRecord;
  *       {FUNCTION(key,value):boolean}
  *     <b>endsWith</b>
  *       {FUNCTION(key,value):boolean}
+ *     <b>emit</b>
+ *       ALL
  *     <b>as</b>
  *        TransactionRecord[value,groupKey]
  *   to
@@ -62,6 +71,8 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 	
 	private BiPredicate<K, V> startsWithPredicate;
 	private BiPredicate<K, V> endsWithPredicate;
+	
+	private EmitType emitType = EmitType.ALL;
 	
 	TransactionBuilder(
 			StreamsBuilder streamsBuilder,
@@ -116,6 +127,20 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 	}
 	
 	/**
+	 * Configures which records get emitted in the final TransactionRecords.
+	 * Defaults to {@link EmitType#ALL}.
+	 * 
+	 * @param emitType
+	 * 
+	 * @return
+	 * 	this builder
+	 */
+	public TransactionBuilder<K,V, GK> emit(EmitType emitType) {
+		this.emitType = emitType;
+		return this;
+	}
+	
+	/**
 	 * Assembles the transaction transformer and returns a new TopologyBuilder
 	 * configured with the resulting TransactionRecord stream.<br>
 	 * <br>
@@ -126,16 +151,18 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 	 * @return
 	 * 	a new TopologyBuilder
 	 */
-	public TopologyBuilder<K, TransactionRecord<V, GK>> as(Serde<TransactionRecord<V, GK>> resultValueSerde) {
+	public TopologyBuilder<K, TransactionRecord<GK, V>> as(Serde<TransactionRecord<GK, V>> resultValueSerde) {
 		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");		
 		Objects.requireNonNull(this.groupKeyFunction, "groupKeyFunction");
 		Objects.requireNonNull(this.groupKeySerde, "groupKeySerde");
 		Objects.requireNonNull(this.startsWithPredicate, "startsWithPredicate");
 		Objects.requireNonNull(this.endsWithPredicate, "endsWithPredicate");
+		Objects.requireNonNull(this.emitType, "emitType");
+		
 		
 		final String stateStoreName = getProcessorStoreTopicName(getTopicsBaseName()+"-transaction");
 		
-		StoreBuilder<KeyValueStore<GK, TransactionRecord<V, GK>>> dedupStoreBuilder =
+		StoreBuilder<KeyValueStore<GK, TransactionRecord<GK, V>>> dedupStoreBuilder =
 				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(stateStoreName),
 						this.groupKeySerde,
 						resultValueSerde);
@@ -149,10 +176,46 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 								stateStoreName,
 								this.groupKeyFunction,
 								this.startsWithPredicate,
-								this.endsWithPredicate),
+								this.endsWithPredicate,
+								this.emitType),
 						stateStoreName), 
 				this.keySerde, 
 				resultValueSerde);
+	}
+	
+	// ------------------------------------------------------------------------
+	// EmitType
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Enumeration to configure which records of a transaction will be emitted
+	 * in a TransactionRecord. 
+	 */
+	public enum EmitType {
+		/** records starting a transaction will be emitted */ 
+		START,
+		/** records within a transaction will be emitted, but not those starting or ending the transaction */ 
+		ONGOING,
+		/** records ending a transaction will be emitted */ 
+		END,
+		/** all records of a transaction will be emitted */ 
+		ALL(START, ONGOING, END),
+		/** START and END */
+		START_AND_END(START, END);
+		
+		private List<EmitType> covered;
+		
+		private EmitType() {
+			this.covered = Collections.emptyList(); 
+		}
+		
+		private EmitType(EmitType...coveredTypes ) {
+			this.covered = Arrays.asList(coveredTypes);
+		}
+		
+		public boolean isCovered(EmitType emitType) {
+			return this == emitType || covered.contains(emitType);
+		}
 	}
 	
 	// ------------------------------------------------------------------------
@@ -160,7 +223,7 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 	// ------------------------------------------------------------------------
 
 	static class TransactionTransformer <K,V extends AbstractIncrementalAggregateRecord, GK> 
-	implements Transformer<K,V, KeyValue<K, TransactionRecord<V, GK>>>
+	implements Transformer<K,V, KeyValue<K, TransactionRecord<GK, V>>>
 	{
 		private static final Logger LOG = LoggerFactory.getLogger(TransactionTransformer.class);
 		
@@ -168,39 +231,47 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 		private final BiFunction<K,V, GK> groupKeyFunction;
 		private final BiPredicate<K, V> startsWithPredicate;
 		private final BiPredicate<K, V> endsWithPredicate;
+		private final EmitType emitType;
 		
-		private KeyValueStore<GK,TransactionRecord<V, GK>> stateStore;
+		KeyValueStore<GK,TransactionRecord<GK, V>> stateStore;
 		
 		TransactionTransformer(
 				String stateStoreName, 
 				BiFunction<K,V, GK> groupKeyFunction,
 				BiPredicate<K, V> startsWithPredicate, 
-				BiPredicate<K, V> endsWithPredicate)
+				BiPredicate<K, V> endsWithPredicate,
+				EmitType emitType)
 		{
 			this.stateStoreName = stateStoreName;
 			this.groupKeyFunction = groupKeyFunction;
 			this.startsWithPredicate = startsWithPredicate;
 			this.endsWithPredicate = endsWithPredicate;
+			this.emitType = emitType;
 		}
 		
 		@Override
 		@SuppressWarnings("unchecked")
 		public void init(ProcessorContext context) {
-			this.stateStore = (KeyValueStore<GK,TransactionRecord<V, GK>>)context.getStateStore(stateStoreName);
+			this.stateStore = (KeyValueStore<GK,TransactionRecord<GK, V>>)context.getStateStore(stateStoreName);
 		}
 
 		@Override
-		public KeyValue<K, TransactionRecord<V, GK>> transform(K key, V value) {
+		public KeyValue<K, TransactionRecord<GK, V>> transform(K key, V value) {
 			final GK groupKey = this.groupKeyFunction.apply(key, value);
-			TransactionRecord<V, GK> transactionRecord = this.stateStore.get(groupKey);
+			TransactionRecord<GK, V> transactionRecord = this.stateStore.get(groupKey);
 			
-			// store empty? yea, startswith? no, ignore
+			EmitType currentTXNType = null;
+
 			if(transactionRecord == null && startsWith(key, value)) {
 				// store empty? yea, startswith? yea, create TransactionRecord add value
 				transactionRecord = TransactionRecord.createFrom(value);
 				transactionRecord.setGroupKey(groupKey);
 				
-				LOG.debug("transaction.startsWith groupKey:{} value:{}", groupKey, value);
+				currentTXNType = START;
+				
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("transaction.startsWith groupKey:{} value:{}", groupKey, value);
+				}
 			}
 			
 			if(transactionRecord == null) {
@@ -208,18 +279,45 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 				return null;
 			}
 			
-			transactionRecord.addUnique(value);
-			this.stateStore.put(groupKey, transactionRecord);
-			
 			if(!endsWith(key, value)) {
-				LOG.debug("transaction.continued groupKey:{} value:{}", groupKey, value);
+				if(currentTXNType != START) {
+					currentTXNType = ONGOING;
+					LOG.trace("transaction.continued groupKey:{} value:{}", groupKey, value);
+				}
+				
+			} else {
+				currentTXNType = currentTXNType == START? START_AND_END : END;
+				
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("transaction.endsWith groupKey:{} value:{}", groupKey, value);
+				}
+			}
+			
+			if(	this.emitType.isCovered(currentTXNType)
+				|| (currentTXNType == START_AND_END 
+					&& (this.emitType.isCovered(START) || this.emitType.isCovered(END))))
+			{
+				// emit record if current record txn type is covered
+				transactionRecord.addUnique(value);
+				
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("transaction.emit.{}.covers groupKey:{} value:{} currentTXNType:{}", this.emitType, groupKey, value, currentTXNType);
+				}
+			}
+			
+			if(!currentTXNType.isCovered(END)) {
+				// endswith?, no
+				this.stateStore.put(groupKey, transactionRecord);
+				
 				return null;
 			}
 			
 			// endswith? yea, delete TransactionRecord, emit TransactionRecord
 			this.stateStore.delete(groupKey);
 			
-			LOG.debug("transaction.endsWith groupKey:{} value:{}", groupKey, value);
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("transaction.emit.{} groupKey:{} key:{} transaction:{} ", this.emitType, groupKey, key, transactionRecord);
+			}
 			
 			return new KeyValue<>(key, transactionRecord);
 		}

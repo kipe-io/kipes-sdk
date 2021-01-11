@@ -13,14 +13,14 @@ import lombok.Getter;
 
 @Singleton
 @Getter
-public final class BacktestStreamsFacade {
+public class BacktestStreamsFacade {
 
 	@Inject @Named(SignalExecutionStream.TOPIC_SIGNAL_EXECUTION_DAILY)
     private KStream<SymbolTimestampKey, SignalExecutionRecord> signalExecutionDailyStream;
-	private final String signalExecutionDailyStreamName = SignalExecutionStream.TOPIC_SIGNAL_EXECUTION_DAILY;
+	public static final String TOPIC_SIGNAL_EXECUTION_DAILY = SignalExecutionStream.TOPIC_SIGNAL_EXECUTION_DAILY;
 
 	@Inject @Named(BacktestResultStream.TOPIC_BACKTESTRESULT_DAILY)
     private KStream<SymbolTimestampKey, BacktestResultRecord> backtestResultDailyStream;
-	private final String backtestResultDailyStreamName = BacktestResultStream.TOPIC_BACKTESTRESULT_DAILY;
+	public static final String TOPIC_BACKTESTRESULT_DAILY = BacktestResultStream.TOPIC_BACKTESTRESULT_DAILY;
 
 }

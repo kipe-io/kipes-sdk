@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 import org.apache.kafka.common.serialization.Serde;
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Predicate;
@@ -187,37 +186,6 @@ public class TopologyBuilder <K,V> {
 	}
 	
 	/**
-	 * Creates a new KStream from the current stream by changing the key.
-	 *  
-	 * @param <NK> the key type of the new stream
-	 * @param rekeyFunction the function to specify the new key for each the original stream's records
-	 * @param newKeySerde the new key {@link Serde}
-	 * @return
-	 * 	a new TopologyBuilder<NK,V> initiated with the new KStream
-	 */
-	public <NK> TopologyBuilder<NK,V> rekey(BiFunction<K,V, NK> rekeyFunction, Serde<NK> newKeySerde) {
-		// TODO introduce RekeyBuilder
-		// JoinBuilder, TransactionBuilder provide the pattern. This 
-		// TopologyBuild should not know the details of how this manipulation
-		// works (rekeyFunction!)
-		
-		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
-		Objects.requireNonNull(rekeyFunction, "rekeyFunction");
-		Objects.requireNonNull(newKeySerde, "newKeySerde");
-		
-		KStream<NK,V> rekeyedStream = this.stream
-		.map((key, value) -> new KeyValue<>(rekeyFunction.apply(key, value), value));
-		
-		return new TopologyBuilder<>(
-				this.streamsBuilder,
-				rekeyedStream,
-				newKeySerde,
-				this.valueSerde)
-				.withTopicsBaseName(this.topicsBaseName);
-	}
-	
-	/**
 	 * Filters the current stream by applying the given predicate.
 	 * 
 	 * @param predicate the {@link Predicate} to filter the current stream
@@ -316,7 +284,7 @@ public class TopologyBuilder <K,V> {
 	 * 	a new initialized TransactionBuilder
 	 */
 	@SuppressWarnings("unchecked")
-	public <A extends AbstractIncrementalAggregateRecord, GK> TransactionBuilder<K,A, GK> transaction() {
+	public <GK, A extends AbstractIncrementalAggregateRecord> TransactionBuilder<K,A, GK> transaction() {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
@@ -337,12 +305,12 @@ public class TopologyBuilder <K,V> {
 	 * 	a new initialized TransformBuilder
 	 */
 	@SuppressWarnings("unchecked")
-	public <VR> TransformBuilder<K,V, VR> transform() {
+	public <KR,VR> TransformBuilder<K,V, KR,VR> transform() {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
 		
-		return (TransformBuilder<K,V, VR>)new TransformBuilder<>(
+		return (TransformBuilder<K,V, KR,VR>)new TransformBuilder<>(
 				this.streamsBuilder, 
 				this.stream, 
 				this.keySerde, 

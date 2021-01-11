@@ -25,27 +25,33 @@ public class BacktestResultRecord extends AbstractIncrementalAggregateRecord {
 	private String strategyKey;
 	private TradingDirection tradingDirection;
 	private long entryTimestamp;
-	private Double entryValue;
-	private Double exitValue;
+	private Double entry;
+	private Double high;
+	private Double low;
+	private Double exit;
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	public Double getRevenue() {
-		if(this.entryValue == null || this.exitValue == null) {
+		if(this.entry == null || this.exit == null) {
 			return null;
 		}
 		
 		int sign = this.tradingDirection == TradingDirection.SHORT? -1 : 1;
 		
-		return round(sign * (this.exitValue - this.entryValue), 2);
+		return round(sign * (this.exit - this.entry), 2);
 	}
 	
 	@JsonProperty(access = Access.READ_ONLY)
-	public Double getRevenueRatio() {
-		Double revenue = getRevenue();
-		if(revenue == null) {
+	public Double getMaxPotentialRevenue() {
+		if(this.entry == null || this.high == null || this.low == null) {
 			return null;
 		}
-		return round(revenue / this.entryValue, 4); 
+		
+		if(this.tradingDirection == TradingDirection.LONG) {
+			return round(this.high - this.entry, 2);
+		} else {
+			return round(this.entry - this.low, 2);
+		}
 	}
 	
 	@JsonProperty(access = Access.READ_ONLY)

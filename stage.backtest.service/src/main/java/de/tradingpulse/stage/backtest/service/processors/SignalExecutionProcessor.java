@@ -1,144 +1,210 @@
 package de.tradingpulse.stage.backtest.service.processors;
 
 import java.time.Duration;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
-import de.tradingpulse.stage.backtest.BacktestStageConstants;
 import de.tradingpulse.stage.backtest.recordtypes.SignalExecutionRecord;
 import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
+import de.tradingpulse.stage.tradingscreens.recordtypes.SignalType;
+import de.tradingpulse.stage.tradingscreens.recordtypes.SignalType.Type;
 import de.tradingpulse.stage.tradingscreens.streams.TradingScreensStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
+import de.tradingpulse.streams.kafka.processors.TransactionBuilder.EmitType;
+import de.tradingpulse.streams.recordtypes.TransactionRecord;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 
 @Singleton
 public class SignalExecutionProcessor extends AbstractProcessorFactory {
 
-	private static final String TOPIC_SIGNAL_DAILY_BY_SYMBOL =  BacktestStageConstants.STAGE_NAME + "-" + "signal_daily_by_symbol";
-	private static final String TOPIC_OHLCV_DAILY_BY_SYMBOL =  BacktestStageConstants.STAGE_NAME + "-" + "ohlcv_daily_by_symbol";
-
 	@Inject
-	private SourceDataStreamsFacade sourceDataStreamsFacade;
+	SourceDataStreamsFacade sourceDataStreamsFacade;
 	
 	@Inject
-	private TradingScreensStreamsFacade tradingScreensStreamsFacade;
+	TradingScreensStreamsFacade tradingScreensStreamsFacade;
 	
 	@Inject
-	private BacktestStreamsFacade backtestStreamsFacade;
-	
-	@Inject
-	private ConfiguredStreamBuilder streamBuilder;
+	ConfiguredStreamBuilder streamBuilder;
 
 	@Inject
-	private JsonSerdeRegistry jsonSerdeRegistry;
+	JsonSerdeRegistry jsonSerdeRegistry;
 
-	@Override
-	protected String[] getTopicNames() {
-		return new String[] {
-				TOPIC_SIGNAL_DAILY_BY_SYMBOL,
-				TOPIC_OHLCV_DAILY_BY_SYMBOL
-		};
+	/**
+	 * Creates a list of SignalRecords starting with the first
+	 * SignalRecord[ENTRY] from the given transaction, followed by {@code n} 
+	 * SignalRecords[ONGOING], and ending with the second SignalRecord[EXIT]
+	 * from the given transaction. <br>
+	 * There will be as much {@code n} SignalRecords[ONGOING] as there are days
+	 * between excluding the first and the second SignalRecord of the given
+	 * transaction. 
+	 */
+	static List<KeyValue<SymbolTimestampKey, SignalRecord>> createContinuousDailySignalRecords(
+			TransactionRecord<String, SignalRecord> transactionRecord) 
+	{
+		List<KeyValue<SymbolTimestampKey, SignalRecord>> keyValues = new LinkedList<>();
+
+		SignalRecord entrySignal = transactionRecord.getRecord(0);
+		SignalRecord exitSignal = transactionRecord.getRecord(1);
+		long currentTimestampMS = entrySignal.getTimeRangeTimestamp();
+		long exitTimestampMS = exitSignal.getTimeRangeTimestamp();
+		
+
+		// add entry SignalRecord
+		keyValues.add(new KeyValue<>(entrySignal.getKey(), entrySignal));
+		
+		// add ongoing SignalRecords for each day after entry until before exit
+		SignalType ongoingSignalType = entrySignal.getSignalType().as(Type.ONGOING);
+		do {
+			currentTimestampMS += 86400000;
+			if(currentTimestampMS >= exitTimestampMS) {
+				break;
+			}
+			SignalRecord currentOngoingSignal = entrySignal.deepClone();
+			currentOngoingSignal.getKey().setTimestamp(currentTimestampMS);
+			currentOngoingSignal.setSignalType(ongoingSignalType);
+			keyValues.add(new KeyValue<>(currentOngoingSignal.getKey(), currentOngoingSignal));
+		} while(true);
+		
+		// add exit SignalRecord
+		keyValues.add(new KeyValue<>(exitSignal.getKey(), exitSignal));
+		
+		return keyValues;
+		
 	}
-
+	
 	@Override
 	protected void initProcessors() {
+		createTopology(
+				tradingScreensStreamsFacade.getSignalDailyStream(),
+				sourceDataStreamsFacade.getOhlcvDailyStream());
+	}
+	
+	@SuppressWarnings("unchecked")
+	void createTopology(
+			KStream<SymbolTimestampKey, SignalRecord> signalDailyStream,
+			KStream<SymbolTimestampKey, OHLCVRecord> ohlcvDailyStream)
+	{
 		// --------------------------------------------------------------------
-		// from 
+		// from
 		//   signal_daily
+		//
+		// transaction
+		//   startsWith signalType.type = ENTRY
+		//   endsWith signalType.type = EXIT
+		//   groupBy key.symbol, strategyKey
+		//   emit START,END
+		//   as TransactionRecord<String, SignalRecord>
+		//
+		// transform
+		//   into {createContinuousDailySignalRecords}
+		//   as {SymbolTimestampKey, SignalRecord}
+		//
+		// transform
+		//   into key.timestamp += 1 day
+		//   as SymbolTimestampKey
+		//
 		// inner join
-		//   ohlcv_daily 
-		//   on signal_daily.key.symbol = ohlcv_daily.key.symbol
-		//   window before 0 after 7 days retention 2 years 
+		//   ohlcv_daily
+		//   on signal_daily.key = ohlcv_daily.key
+		//   window before 0 after 7 days retention 2 years 1 day
 		//   as SignalExecutionRecord
-		// filter 
-		//   # remove the first element of the stream as execution can only happen-after the signal
-		//   signalRecord.timeRangeTimestamp < ohlcvRecord.timeRangeTimestamp
+		//
 		// dedup
 		//   # we assume correct order to select the first element of the stream
 		//   on signalRecord
+		//
 		// to
 		//   signal_execution_daily
 		// --------------------------------------------------------------------
 		
-		TopologyBuilder<?,?> topologyBuilder = TopologyBuilder.init(streamBuilder);
-		
-		// rekeying signal_daily to key.symbol
-		KStream<String, SignalRecord> rekeyedSignalStream = topologyBuilder
-				.withTopicsBaseName(tradingScreensStreamsFacade.getSignalDailyStreamName())
-				.from(
-						tradingScreensStreamsFacade.getSignalDailyStream(),
-						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class),
-						jsonSerdeRegistry.getSerde(SignalRecord.class))
+		TopologyBuilder.init(streamBuilder)
+		.withTopicsBaseName(TradingScreensStreamsFacade.TOPIC_SIGNAL_DAILY)
 				
-				.rekey(
-						(key, value) -> 
-							key.getSymbol(),
-						jsonSerdeRegistry.getSerde(String.class))
-				
-				.through(
-						TOPIC_SIGNAL_DAILY_BY_SYMBOL)
-				.getStream();
-		
-		// rekeying ohlcv_daily to key.symbol
-		KStream<String, OHLCVRecord> rekeyedOhlcvStream = topologyBuilder
-				.withTopicsBaseName(sourceDataStreamsFacade.getOhlcvDailyStreamName())
-				.from(
-						sourceDataStreamsFacade.getOhlcvDailyStream(),
-						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class),
-						jsonSerdeRegistry.getSerde(OHLCVRecord.class))
-				
-				.rekey(
-						(key, value) -> 
-							key.getSymbol(),
-						jsonSerdeRegistry.getSerde(String.class))
-				
-				.through(
-						TOPIC_OHLCV_DAILY_BY_SYMBOL)
-				.getStream();
-		
-		// main topology
-		topologyBuilder
-		.withTopicsBaseName(backtestStreamsFacade.getSignalExecutionDailyStreamName())
+		// stream of SignalRecords per symbol and day
 		.from(
-				rekeyedSignalStream,
-				jsonSerdeRegistry.getSerde(String.class),
+				signalDailyStream,
+				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class),
 				jsonSerdeRegistry.getSerde(SignalRecord.class))
 		
+		// into a stream of TransactionRecords<SignalRecords> per symbol and day (of the SignalRecord ending the transaction)
+		// the TransactionRecords contain two SignalRecords starting and ending the transaction
+		.<String, SignalRecord> transaction()
+			.startsWith(
+					(key, value) ->
+						value.getSignalType().is(SignalType.Type.ENTRY))
+			.endsWith(
+					(key, value) ->
+						value.getSignalType().is(SignalType.Type.EXIT))
+			.groupBy(
+					(key, value) ->
+						value.getKey().getSymbol() + "-" + value.getStrategyKey(), 
+						jsonSerdeRegistry.getSerde(String.class))
+			.emit(
+					EmitType.START_AND_END)
+			.as(
+					jsonSerdeRegistry.getSerde(
+							(Class<TransactionRecord<String, SignalRecord>>)
+							(Class<?>)
+							TransactionRecord.class))
+		
+		// into stream of SignalRecords per symbol and day in sequential semantical
+		// groups of [ENTRY, ONGOING, ..., ONGOING, EXIT] records whereas those
+		// groups form a continuous group of days
+		.<SymbolTimestampKey, SignalRecord> transform()
+			.newKeyValues(
+					(key, value) -> SignalExecutionProcessor.createContinuousDailySignalRecords(value))
+			.asKeyValueType(
+					jsonSerdeRegistry.getSerde(SymbolTimestampKey.class),
+					jsonSerdeRegistry.getSerde(SignalRecord.class))
+		
+		// into same stream as above but keys shifted by one day
+		.<SymbolTimestampKey, SignalRecord> transform()
+			.changeKey(
+					(key, value) -> {
+						SymbolTimestampKey newKey = key.deepClone();
+						newKey.setTimestamp(key.getTimestamp() + 86400000);
+						return newKey;
+					})
+			.asKeyType(
+					jsonSerdeRegistry.getSerde(SymbolTimestampKey.class))
+		
+		// into stream of SignalExecutionRecords[ENTRY|ONGOING|EXIT] from 
+		// joined with stream ohlcv_daily
+		// we get multiple joins (max 7) for each SignalRecord because of the
+		// windowSizeAfter 7 days
 		.<OHLCVRecord, SignalExecutionRecord> join(
-				rekeyedOhlcvStream, 
+				ohlcvDailyStream, 
 				jsonSerdeRegistry.getSerde(OHLCVRecord.class))
-			
+		
 			.withWindowSizeAfter(Duration.ofDays(7))
 			.withRetentionPeriod(Duration.ofMillis(this.retentionMs + 86400000L)) // we add a day to have today access to the full retention time (record create ts is start of day)
 			.as(
-				SignalExecutionRecord::from, 
-				jsonSerdeRegistry.getSerde(SignalExecutionRecord.class))
-			
-		.filter(
-				(key, record) -> 
-					record.getSignalRecord().getTimeRangeTimestamp() < record.getOhlcvRecord().getTimeRangeTimestamp())
+					SignalExecutionRecord::from, 
+					jsonSerdeRegistry.getSerde(SignalExecutionRecord.class))
 		
+		// into stream containing only the first SignalExecutionRecords per 
+		// SignalRecord
 		.<SignalRecord,Void> dedup()
 			.groupBy(
-				(key, record) -> 
-					record.getSignalRecord(),
-				jsonSerdeRegistry.getSerde(SignalRecord.class))
+					(key, record) -> 
+						record.getSignalRecord(),
+					jsonSerdeRegistry.getSerde(SignalRecord.class))
 			.emitFirst()
-			
-		.rekey(
-				(key, value) -> 
-					value.getKey(),
-				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class))
+		
+		// to signal_execution_daily
 		.to(
-				backtestStreamsFacade.getSignalExecutionDailyStreamName());
+				BacktestStreamsFacade.TOPIC_SIGNAL_EXECUTION_DAILY);
 	}
 }

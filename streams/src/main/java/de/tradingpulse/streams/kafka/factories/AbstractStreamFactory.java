@@ -19,12 +19,11 @@ import io.micronaut.context.annotation.Value;
  * Provides base functionality around streams.
  */
 public abstract class AbstractStreamFactory {
-
-	
+			
 	@Inject
 	private TopicManager topicManager;
 	
-	@Value("${kafka.replication.factor}")
+	@Value("${kafka.replication.factor:1}")
 	private short replicationFactor;
 	
 	@Value("${kafka.retentionMs:61516800000}") // 2yrs: 1000L * 60 * 60 * 24 * 356 * 2

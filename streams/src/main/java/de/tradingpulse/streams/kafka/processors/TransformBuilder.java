@@ -1,15 +1,23 @@
 package de.tradingpulse.streams.kafka.processors;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
 
 import org.apache.kafka.common.serialization.Serde;
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 
 /**
  * Builder to setup a stream transforming incoming records into zero or more 
- * outgoing records.<br>
+ * outgoing records with transformed keys, values, or both.<br>
+ * <br>
+ * Clients select the intended transformation by starting with one of the
+ * {@code intoXXX(...)} methods followed and finalized  by the related
+ * {@code asXXX(...)} method. <br>
  * <br>
  * <b>Pseudo DSL</b>
  * <pre>
@@ -17,22 +25,35 @@ import org.apache.kafka.streams.kstream.KStream;
  *     {SOURCE[key:value]}
  *   
  *   <b>transform</b>
- *     <b>into</b>
- *       {FUNCTION(key,value):newValue[]}
+ *     <b>change|new</b>
+ *       {FUNCTION(key,value):{newKey,newValue}[]}
  *     <b>as</b>
- *       newValue
+ *       {newKey,newValue}
  *   
  *   to
- *     {TARGET[key:newValue]}
+ *     {TARGET[newKey:newValue]}
  * </pre>
- *
- * @param <K>
- * @param <V>
- * @param <VR>
+ * 
+ * @param <K> the source stream's key type
+ * @param <V> the source stream's value type
+ * @param <KR> the target stream's key type
+ * @param <VR> the target stream's value type
  */
-public class TransformBuilder<K,V, VR> extends AbstractTopologyPartBuilder<K, V, TransformBuilder<K,V, VR>>{
+// TODO introduce sub builders to improve encapsulation of the individual cases
+// It's currently to easy to combine wrong intoXXX and asXXX variants.
 
-	private BiFunction<K,V, Iterable<VR>> transformFunction;
+// TODO introduce asXXX variants to simplify same key/value type transformations
+// Transform not only supports changing types but also changing quantities. In
+// latter cases it would be nice to have asXXX methods which do not ask for new
+// serdes. 
+// NOTE: makes sense only if we got sub builders (see to do above)
+
+// TODO add tests
+public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K, V, TransformBuilder<K,V, KR,VR>>{
+
+	private BiFunction<K,V, Iterable<VR>> transformValueFunction;
+	private BiFunction<K,V, Iterable<KR>> transformKeyFunction;
+	private BiFunction<K,V, Iterable<KeyValue<KR,VR>>> transformKeyValueFunction;
 	
 	TransformBuilder(
 			StreamsBuilder streamsBuilder, 
@@ -43,26 +64,92 @@ public class TransformBuilder<K,V, VR> extends AbstractTopologyPartBuilder<K, V,
 		super(streamsBuilder, stream, keySerde, valueSerde);
 	}
 
-	public TransformBuilder<K,V, VR> intoSingleRecord(BiFunction<K,V, VR> transformFunction) {
+	// ------------------------------------------------------------------------
+	// transform values
+	// ------------------------------------------------------------------------
+
+	@SuppressWarnings("unchecked")
+	public TransformBuilder<K,V, K,VR> changeValue(BiFunction<K,V, VR> transformValueFunction) {
 		
-		this.transformFunction = (key, value) -> Arrays.asList(transformFunction.apply(key, value));
+		this.transformValueFunction = (key, value) -> Arrays.asList(transformValueFunction.apply(key, value));
 		
-		return this;
+		return (TransformBuilder<K,V, K,VR>)this;
 	}
 	
-	public TransformBuilder<K,V, VR> intoMultiRecords(BiFunction<K,V, Iterable<VR>> transformFunction) {
-		this.transformFunction = transformFunction;
+	@SuppressWarnings("unchecked")
+	public TransformBuilder<K,V, K,VR> newValues(BiFunction<K,V, Iterable<VR>> transformValueFunction) {
+		this.transformValueFunction = transformValueFunction;
 		
-		return this;
+		return (TransformBuilder<K,V, K,VR>)this;
 	}
 
-	public TopologyBuilder<K,VR> as(Serde<VR> resultValueSerde) {
+	public TopologyBuilder<K,VR> asValueType(Serde<VR> resultValueSerde) {
+		Objects.requireNonNull(this.transformValueFunction, "transformValueFunction");
+		
 		return createTopologyBuilder(
 				this.stream
 				.flatMapValues(
 						(key, value) ->
-							this.transformFunction.apply(key,value)), 
+							this.transformValueFunction.apply(key,value)), 
 				this.keySerde, 
 				resultValueSerde);
 	}
+	
+	// ------------------------------------------------------------------------
+	// transform keys
+	// ------------------------------------------------------------------------
+	
+	@SuppressWarnings("unchecked")
+	public TransformBuilder<K,V, KR,V> changeKey(BiFunction<K,V, KR> transformKeyFunction) {
+		this.transformKeyFunction = (key, value) -> Arrays.asList(transformKeyFunction.apply(key, value));
+		
+		return (TransformBuilder<K,V, KR,V>)this;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public TransformBuilder<K,V, KR,V> newKeys(BiFunction<K,V, Iterable<KR>> transformKeyFunction) {
+		this.transformKeyFunction = transformKeyFunction;
+		
+		return (TransformBuilder<K,V, KR,V>)this;
+	}
+
+	public TopologyBuilder<KR,V> asKeyType(Serde<KR> resultKeySerde) {
+		Objects.requireNonNull(this.transformKeyFunction, "transformKeyFunction");
+		return createTopologyBuilder(
+				this.stream
+				.flatMap(
+						(key, value) -> {
+							List<KeyValue<KR,V>> keyValues = new LinkedList<>();
+							
+							this.transformKeyFunction.apply(key,value)
+							.forEach(resultKey -> keyValues.add(new KeyValue<>(resultKey, value)));
+							
+							return keyValues;
+						}), 
+				resultKeySerde, 
+				this.valueSerde);
+	}
+	
+	// ------------------------------------------------------------------------
+	// transform keys and values
+	// ------------------------------------------------------------------------
+	
+	public TransformBuilder<K,V, KR,VR> newKeyValues(BiFunction<K,V, Iterable<KeyValue<KR,VR>>> transformKeyValueFunction) {
+		this.transformKeyValueFunction = transformKeyValueFunction;
+		
+		return this;
+	}
+	
+	public TopologyBuilder<KR,VR> asKeyValueType(Serde<KR> resultKeySerde, Serde<VR> resultValueSerde) {
+		Objects.requireNonNull(this.transformKeyValueFunction, "transformKeyValueFunction");
+		return createTopologyBuilder(
+				this.stream
+				.flatMap(
+						(key, value) -> 
+							this.transformKeyValueFunction.apply(key,value)), 
+				resultKeySerde, 
+				resultValueSerde);
+		
+	}
+
 }

@@ -87,7 +87,7 @@ class OHLCVDailyProcessor extends AbstractProcessorFactory {
 			}
 		}, dedupStoreName)
 		// push to sink
-		.to(sourceDataStreamsFacade.getOhlcvDailyStreamName(), Produced.with(
+		.to(SourceDataStreamsFacade.TOPIC_OHLCV_DAILY, Produced.with(
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
 				jsonSerdeRegistry.getSerde(OHLCVRecord.class)));
 	}

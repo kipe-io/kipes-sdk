@@ -13,7 +13,7 @@ import lombok.Getter;
 
 @Singleton
 @Getter
-public final class TradingScreensStreamsFacade {
+public class TradingScreensStreamsFacade {
 
 	@Inject @Named(ImpulseScreenStreams.TOPIC_IMPULSE_TRADING_SCREEN)
     private KStream<SymbolTimestampKey, ImpulseTradingScreenRecord> impulseTradingScreenStream;
@@ -21,5 +21,5 @@ public final class TradingScreensStreamsFacade {
 
 	@Inject @Named(SignalStream.TOPIC_SIGNAL_DAILY)
     private KStream<SymbolTimestampKey, SignalRecord> signalDailyStream;
-	private final String signalDailyStreamName = SignalStream.TOPIC_SIGNAL_DAILY;
+	public static final String TOPIC_SIGNAL_DAILY = SignalStream.TOPIC_SIGNAL_DAILY;
 }

@@ -22,9 +22,10 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class TopicManager {
 	
-	static final Logger log = LoggerFactory.getLogger(TopicManager.class);
+	static final Logger LOG = LoggerFactory.getLogger(TopicManager.class);
 	static final RecordsToDelete DELETE_ALL_RECORDS = RecordsToDelete.beforeOffset(-1);
 
+	// when manually created for tests the AdminClient will be null
 	@Inject
 	private AdminClient adminClient;
 	
@@ -33,6 +34,11 @@ public class TopicManager {
 	}
 	
 	public void ensureTopics(Set<NewTopic> newTopics) throws InterruptedException, ExecutionException {
+		if(adminClient == null) {
+			newTopics.forEach(topic -> LOG.warn("adminClient not injected, skipping creation of topic '{}'", topic));
+			return;
+		}
+		
 		Set<NewTopic> topicsToBeCreated = new HashSet<>();
 		Set<String>	availableTopics = adminClient.listTopics().names().get();
 		
@@ -40,7 +46,7 @@ public class TopicManager {
 			String topicName = newTopic.name();
 			
 			if (availableTopics.contains(topicName)) {
-				log.info("topic '{}' is available", topicName);
+				LOG.info("topic '{}' is available", topicName);
 				return;
 			}
 			
@@ -49,14 +55,22 @@ public class TopicManager {
 		
 		adminClient.createTopics(topicsToBeCreated).all().get();
 		
-		topicsToBeCreated.forEach(createdTopic -> log.info("topic '{}' created", createdTopic.name()));
+		topicsToBeCreated.forEach(createdTopic -> LOG.info("topic '{}' created", createdTopic.name()));
 	}
 	
 	public void deleteTopics(Collection<String> topics) throws InterruptedException, ExecutionException {
+		if(adminClient == null) {
+			topics.forEach(topic -> LOG.warn("adminClient not injected, skipping deletion of topic '{}'", topic));
+			return;
+		}
 		adminClient.deleteTopics(topics).all().get();
 	}
 	
 	public void clearTopics(Collection<String> topics) throws InterruptedException, ExecutionException {
+		if(adminClient == null) {
+			topics.forEach(topic -> LOG.warn("adminClient not injected, skipping cleaning of topic '{}'", topic));
+			return;
+		}
 		Collection<TopicDescription> topicDescriptions = adminClient.describeTopics(topics)
 				.all().get()
 				.values();
@@ -74,6 +88,6 @@ public class TopicManager {
 		});
 		
 		adminClient.deleteRecords(recordsToDelete).all().get();
-		topicDescriptions.forEach(topicDescription -> log.info("topic '{}' removed all messages", topicDescription.name()));
+		topicDescriptions.forEach(topicDescription -> LOG.info("topic '{}' removed all messages", topicDescription.name()));
 	}
 }
