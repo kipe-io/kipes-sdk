@@ -1,13 +1,13 @@
 ksql:
-    CREATE STREAM impulse_momentum_signals (
+    CREATE STREAM signal_daily (
         topic_key VARCHAR KEY,
         key STRUCT<symbol VARCHAR, timestamp BIGINT>,
         timeRange VARCHAR,
         timeRangeTimestamp BIGINT,
-        entry VARCHAR,
-        exit VARCHAR
+        strategyKey VARCHAR,
+        signalType VARCHAR
     ) WITH (
-        KAFKA_TOPIC = 'stg-tradingscreens-impulse_momentum_signals',
+        KAFKA_TOPIC = 'stg-tradingscreens-signal_daily',
         VALUE_FORMAT = 'JSON'
     );
 streamsProperties:
@@ -15,5 +15,5 @@ streamsProperties:
    
 rollback:
     ksql:
-        DROP STREAM impulse_momentum_signals;
+        DROP STREAM signal_daily;
     

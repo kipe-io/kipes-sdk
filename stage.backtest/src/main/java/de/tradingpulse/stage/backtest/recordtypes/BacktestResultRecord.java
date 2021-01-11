@@ -42,12 +42,16 @@ public class BacktestResultRecord extends AbstractIncrementalAggregateRecord {
 	}
 	
 	@JsonProperty(access = Access.READ_ONLY)
-	public Double getRevenueRatio() {
-		Double revenue = getRevenue();
-		if(revenue == null) {
+	public Double getMaxPotentialRevenue() {
+		if(this.entry == null || this.high == null || this.low == null) {
 			return null;
 		}
-		return round(revenue / this.entry, 4); 
+		
+		if(this.tradingDirection == TradingDirection.LONG) {
+			return round(this.high - this.entry, 2);
+		} else {
+			return round(this.entry - this.low, 2);
+		}
 	}
 	
 	@JsonProperty(access = Access.READ_ONLY)

@@ -7,10 +7,12 @@ ksql:
         strategyKey VARCHAR,
         tradingDirection VARCHAR,
         entryTimestamp BIGINT,
-        entryValue DOUBLE,
-        exitValue DOUBLE,
+        entry DOUBLE,
+        high DOUBLE,
+        low DOUBLE,
+        exit DOUBLE,
         revenue DOUBLE,
-        revenueRatio DOUBLE,
+        maxPotentialRevenue DOUBLE,
         durationMS BIGINT
     ) WITH (
         KAFKA_TOPIC = 'stg-backtest-backtestresult_daily',
