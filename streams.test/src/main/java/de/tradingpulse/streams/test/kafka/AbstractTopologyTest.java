@@ -1,4 +1,4 @@
-package de.tradingpulse.stage.backtest.service.processors;
+package de.tradingpulse.streams.test.kafka;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

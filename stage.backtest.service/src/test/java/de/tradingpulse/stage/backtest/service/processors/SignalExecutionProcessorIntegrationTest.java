@@ -18,6 +18,8 @@ import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalType;
 import de.tradingpulse.stage.tradingscreens.streams.TradingScreensStreamsFacade;
+import de.tradingpulse.streams.test.kafka.AbstractTopologyTest;
+import de.tradingpulse.streams.test.kafka.TopologyTestContext;
 
 class SignalExecutionProcessorIntegrationTest extends AbstractTopologyTest{
 	

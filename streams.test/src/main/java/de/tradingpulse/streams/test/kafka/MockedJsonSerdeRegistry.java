@@ -1,4 +1,4 @@
-package de.tradingpulse.stage.backtest.service.processors;
+package de.tradingpulse.streams.test.kafka;
 
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;

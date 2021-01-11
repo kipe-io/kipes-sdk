@@ -16,6 +16,8 @@ import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalType;
+import de.tradingpulse.streams.test.kafka.AbstractTopologyTest;
+import de.tradingpulse.streams.test.kafka.TopologyTestContext;
 
 class BacktestResultProcessorIntegrationTest extends AbstractTopologyTest {
 

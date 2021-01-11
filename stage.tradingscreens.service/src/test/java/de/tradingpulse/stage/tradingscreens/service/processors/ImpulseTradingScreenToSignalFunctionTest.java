@@ -30,7 +30,7 @@ import de.tradingpulse.stage.tradingscreens.service.processors.SignalsProcessor.
 
 
 @ExtendWith(MockitoExtension.class)
-class SignalRecordMapperTest {
+class ImpulseTradingScreenToSignalFunctionTest {
 
 	@Mock
 	private ImpulseTradingScreenRecord impulseTradingScreenRecordMock;
@@ -68,36 +68,37 @@ class SignalRecordMapperTest {
 
 	static Stream<Arguments> applyTestData() {
 		return Stream.of(
-				arguments(null, 								ExitSignal.EXIT_LONG_MOMENTUM,	new SignalRecord[]{ exitLongMomentum() }),
-				arguments(null, 								ExitSignal.EXIT_LONG,			new SignalRecord[]{ exitLongMomentum(),		exitLongTurn() }),
-				arguments(null, 								ExitSignal.EXIT_SHORT_MOMENTUM,	new SignalRecord[]{ exitShortMomentum() }),
-				arguments(null, 								ExitSignal.EXIT_SHORT,			new SignalRecord[]{ exitShortMomentum(),	exitShortTurn() }),
+				//			entry signal,						exit signal,					expected SignalRecords
+				arguments(	null, 								ExitSignal.EXIT_LONG_MOMENTUM,	new SignalRecord[]{ exitLongMomentum() }),
+				arguments(	null, 								ExitSignal.EXIT_LONG,			new SignalRecord[]{ exitLongMomentum(),		exitLongTurn() }),
+				arguments(	null, 								ExitSignal.EXIT_SHORT_MOMENTUM,	new SignalRecord[]{ exitShortMomentum() }),
+				arguments(	null, 								ExitSignal.EXIT_SHORT,			new SignalRecord[]{ exitShortMomentum(),	exitShortTurn() }),
 				
-				arguments(EntrySignal.ENTRY_LONG_POTENTIAL,		ExitSignal.EXIT_LONG_MOMENTUM,	new SignalRecord[]{ exitLongMomentum() }),
-				arguments(EntrySignal.ENTRY_LONG_POTENTIAL,		ExitSignal.EXIT_LONG,			new SignalRecord[]{ exitLongMomentum(),		exitLongTurn() }), 
-				arguments(EntrySignal.ENTRY_LONG_POTENTIAL,		ExitSignal.EXIT_SHORT_MOMENTUM,	new SignalRecord[]{ exitShortMomentum(),						entryLongTurn() }),
-				arguments(EntrySignal.ENTRY_LONG_POTENTIAL,		ExitSignal.EXIT_SHORT,			new SignalRecord[]{	exitShortMomentum(),	exitShortTurn(),	entryLongTurn() }),
-				arguments(EntrySignal.ENTRY_LONG_POTENTIAL,		null,							new SignalRecord[]{												entryLongTurn() }),
+				arguments(	EntrySignal.ENTRY_LONG_POTENTIAL,	ExitSignal.EXIT_LONG_MOMENTUM,	new SignalRecord[]{ exitLongMomentum() }),
+				arguments(	EntrySignal.ENTRY_LONG_POTENTIAL,	ExitSignal.EXIT_LONG,			new SignalRecord[]{ exitLongMomentum(),		exitLongTurn() }), 
+				arguments(	EntrySignal.ENTRY_LONG_POTENTIAL,	ExitSignal.EXIT_SHORT_MOMENTUM,	new SignalRecord[]{ exitShortMomentum(),						entryLongTurn() }),
+				arguments(	EntrySignal.ENTRY_LONG_POTENTIAL,	ExitSignal.EXIT_SHORT,			new SignalRecord[]{	exitShortMomentum(),	exitShortTurn(),	entryLongTurn() }),
+				arguments(	EntrySignal.ENTRY_LONG_POTENTIAL,	null,							new SignalRecord[]{												entryLongTurn() }),
 				
-				arguments(EntrySignal.ENTRY_LONG_MOMENTUM,		ExitSignal.EXIT_LONG_MOMENTUM,	new SignalRecord[]{ exitLongMomentum() }),
-				arguments(EntrySignal.ENTRY_LONG_MOMENTUM,		ExitSignal.EXIT_LONG,			new SignalRecord[]{ exitLongMomentum(),		exitLongTurn() }), 
-				arguments(EntrySignal.ENTRY_LONG_MOMENTUM,		ExitSignal.EXIT_SHORT_MOMENTUM,	new SignalRecord[]{ exitShortMomentum(),						entryLongMomentum(),	entryLongTurn() }),
-				arguments(EntrySignal.ENTRY_LONG_MOMENTUM,		ExitSignal.EXIT_SHORT,			new SignalRecord[]{	exitShortMomentum(),	exitShortTurn(),	entryLongMomentum(),	entryLongTurn() }),
-				arguments(EntrySignal.ENTRY_LONG_MOMENTUM,		null,							new SignalRecord[]{												entryLongMomentum(),	entryLongTurn() }),
+				arguments(	EntrySignal.ENTRY_LONG_MOMENTUM,	ExitSignal.EXIT_LONG_MOMENTUM,	new SignalRecord[]{ exitLongMomentum() }),
+				arguments(	EntrySignal.ENTRY_LONG_MOMENTUM,	ExitSignal.EXIT_LONG,			new SignalRecord[]{ exitLongMomentum(),		exitLongTurn() }), 
+				arguments(	EntrySignal.ENTRY_LONG_MOMENTUM,	ExitSignal.EXIT_SHORT_MOMENTUM,	new SignalRecord[]{ exitShortMomentum(),						entryLongMomentum(),	entryLongTurn() }),
+				arguments(	EntrySignal.ENTRY_LONG_MOMENTUM,	ExitSignal.EXIT_SHORT,			new SignalRecord[]{	exitShortMomentum(),	exitShortTurn(),	entryLongMomentum(),	entryLongTurn() }),
+				arguments(	EntrySignal.ENTRY_LONG_MOMENTUM,	null,							new SignalRecord[]{												entryLongMomentum(),	entryLongTurn() }),
 				
-				arguments(EntrySignal.ENTRY_SHORT_POTENTIAL,	ExitSignal.EXIT_LONG_MOMENTUM,	new SignalRecord[]{ exitLongMomentum(),							entryShortTurn() }),
-				arguments(EntrySignal.ENTRY_SHORT_POTENTIAL,	ExitSignal.EXIT_LONG,			new SignalRecord[]{ exitLongMomentum(),		exitLongTurn(),		entryShortTurn() }), 
-				arguments(EntrySignal.ENTRY_SHORT_POTENTIAL,	ExitSignal.EXIT_SHORT_MOMENTUM,	new SignalRecord[]{ exitShortMomentum() }),
-				arguments(EntrySignal.ENTRY_SHORT_POTENTIAL,	ExitSignal.EXIT_SHORT,			new SignalRecord[]{	exitShortMomentum(),	exitShortTurn() }),
-				arguments(EntrySignal.ENTRY_SHORT_POTENTIAL,	null,							new SignalRecord[]{												entryShortTurn() }),
+				arguments(	EntrySignal.ENTRY_SHORT_POTENTIAL,	ExitSignal.EXIT_LONG_MOMENTUM,	new SignalRecord[]{ exitLongMomentum(),							entryShortTurn() }),
+				arguments(	EntrySignal.ENTRY_SHORT_POTENTIAL,	ExitSignal.EXIT_LONG,			new SignalRecord[]{ exitLongMomentum(),		exitLongTurn(),		entryShortTurn() }), 
+				arguments(	EntrySignal.ENTRY_SHORT_POTENTIAL,	ExitSignal.EXIT_SHORT_MOMENTUM,	new SignalRecord[]{ exitShortMomentum() }),
+				arguments(	EntrySignal.ENTRY_SHORT_POTENTIAL,	ExitSignal.EXIT_SHORT,			new SignalRecord[]{	exitShortMomentum(),	exitShortTurn() }),
+				arguments(	EntrySignal.ENTRY_SHORT_POTENTIAL,	null,							new SignalRecord[]{												entryShortTurn() }),
 				
-				arguments(EntrySignal.ENTRY_SHORT_MOMENTUM,		ExitSignal.EXIT_LONG_MOMENTUM,	new SignalRecord[]{ exitLongMomentum(),							entryShortMomentum(),	entryShortTurn() }),
-				arguments(EntrySignal.ENTRY_SHORT_MOMENTUM,		ExitSignal.EXIT_LONG,			new SignalRecord[]{ exitLongMomentum(),		exitLongTurn(),		entryShortMomentum(),	entryShortTurn() }), 
-				arguments(EntrySignal.ENTRY_SHORT_MOMENTUM,		ExitSignal.EXIT_SHORT_MOMENTUM,	new SignalRecord[]{ exitShortMomentum() }),
-				arguments(EntrySignal.ENTRY_SHORT_MOMENTUM,		ExitSignal.EXIT_SHORT,			new SignalRecord[]{	exitShortMomentum(),	exitShortTurn() }),
-				arguments(EntrySignal.ENTRY_SHORT_MOMENTUM,		null,							new SignalRecord[]{												entryShortMomentum(),	entryShortTurn() }),
+				arguments(	EntrySignal.ENTRY_SHORT_MOMENTUM,	ExitSignal.EXIT_LONG_MOMENTUM,	new SignalRecord[]{ exitLongMomentum(),							entryShortMomentum(),	entryShortTurn() }),
+				arguments(	EntrySignal.ENTRY_SHORT_MOMENTUM,	ExitSignal.EXIT_LONG,			new SignalRecord[]{ exitLongMomentum(),		exitLongTurn(),		entryShortMomentum(),	entryShortTurn() }), 
+				arguments(	EntrySignal.ENTRY_SHORT_MOMENTUM,	ExitSignal.EXIT_SHORT_MOMENTUM,	new SignalRecord[]{ exitShortMomentum() }),
+				arguments(	EntrySignal.ENTRY_SHORT_MOMENTUM,	ExitSignal.EXIT_SHORT,			new SignalRecord[]{	exitShortMomentum(),	exitShortTurn() }),
+				arguments(	EntrySignal.ENTRY_SHORT_MOMENTUM,	null,							new SignalRecord[]{												entryShortMomentum(),	entryShortTurn() }),
 				
-				arguments(null, 								null, 							new SignalRecord[]{})
+				arguments(	null, 								null, 							new SignalRecord[]{})
 			);
 	}
 	

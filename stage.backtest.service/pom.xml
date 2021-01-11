@@ -61,8 +61,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>io.micronaut.test</groupId>
-			<artifactId>micronaut-test-junit5</artifactId>
+			<groupId>de.tradingpulse</groupId>
+			<artifactId>streams-test</artifactId>
+			<version>${project.parent.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

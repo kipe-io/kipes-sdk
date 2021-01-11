@@ -47,6 +47,7 @@
 	<modules>
 		<module>common</module>
 		<module>streams</module>
+		<module>streams.test</module>
 		<!-- module>timelinetest</module -->
 		<module>stage.sourcedata</module>
 		<module>stage.sourcedata.service</module>

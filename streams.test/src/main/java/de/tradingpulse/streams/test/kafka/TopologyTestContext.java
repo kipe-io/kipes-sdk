@@ -1,4 +1,4 @@
-package de.tradingpulse.stage.backtest.service.processors;
+package de.tradingpulse.streams.test.kafka;
 
 import java.util.Objects;
 import java.util.Properties;
