@@ -2,6 +2,8 @@ package de.tradingpulse.stage.backtest.service.processors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.Instant;
+
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.kstream.KStream;
@@ -67,15 +69,15 @@ class BacktestResultProcessorIntegrationTest extends AbstractTopologyTest {
 	void test_ENTRY_ONGOING_EXIT() {
 		// when on first day
 		long firstDay = TimeUtils.getTimestampDaysBeforeNow(7);
-		sendSignalExecution(firstDay, SignalType.ENTRY_LONG, 1.0, 0.5);
+		sendSignalExecution(firstDay, SignalType.ENTRY_LONG, 1.0, 0.5, 1.0);
 		
 		// and on second day
 		long secondDay = firstDay + ONE_DAY;
-		sendSignalExecution(secondDay, SignalType.ONGOING_LONG, 2.0, 3.5);
+		sendSignalExecution(secondDay, SignalType.ONGOING_LONG, 2.0, 3.5, 2.8);
 		
 		// and on third day
 		long thirdDay = secondDay + ONE_DAY;
-		sendSignalExecution(thirdDay, SignalType.EXIT_LONG, 3.0, 2.0);
+		sendSignalExecution(thirdDay, SignalType.EXIT_LONG, 3.0, 2.0, 3.2);
 		
 		// then
 		BacktestResultRecord r = this.backtestResultDailyTopic.readValue();
@@ -94,7 +96,7 @@ class BacktestResultProcessorIntegrationTest extends AbstractTopologyTest {
 	// utils
 	// ------------------------------------------------------------------------
 	
-	private void sendSignalExecution(long timestamp, SignalType signalType, double entryExit, double highLow) {
+	private void sendSignalExecution(long timestamp, SignalType signalType, double open, double highLow, double close) {
 		
 		SignalExecutionRecord record = SignalExecutionRecord.builder()
 				.key(new SymbolTimestampKey(SYMBOL, timestamp))
@@ -108,15 +110,15 @@ class BacktestResultProcessorIntegrationTest extends AbstractTopologyTest {
 				.ohlcvRecord(OHLCVRecord.builder()
 						.key(new SymbolTimestampKey(SYMBOL, timestamp))
 						.timeRange(TimeRange.DAY)
-						.open(entryExit)
-						.high(Math.max(entryExit, highLow))
-						.low(Math.min(entryExit, highLow))
-						.close(entryExit)
+						.open(open)
+						.high(Math.max(open, highLow))
+						.low(Math.min(open, highLow))
+						.close(close)
 						.volume(1L)
 						.build())
 				.build();
 		
-		this.signalExecutionDailyTopic.pipeInput(record.getKey(), record);
+		this.signalExecutionDailyTopic.pipeInput(record.getKey(), record, Instant.ofEpochMilli(timestamp));
 	}
 
 }

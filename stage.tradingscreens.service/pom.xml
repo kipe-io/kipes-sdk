@@ -55,6 +55,12 @@
 		</dependency>
 		
 		<dependency>
+			<groupId>de.tradingpulse</groupId>
+			<artifactId>streams-test</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>

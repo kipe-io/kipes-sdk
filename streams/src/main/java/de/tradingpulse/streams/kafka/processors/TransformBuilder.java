@@ -1,6 +1,7 @@
 package de.tradingpulse.streams.kafka.processors;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -71,7 +72,14 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
 	@SuppressWarnings("unchecked")
 	public TransformBuilder<K,V, K,VR> changeValue(BiFunction<K,V, VR> transformValueFunction) {
 		
-		this.transformValueFunction = (key, value) -> Arrays.asList(transformValueFunction.apply(key, value));
+		this.transformValueFunction = (key, value) -> {
+			VR result = transformValueFunction.apply(key, value);
+			if(result == null) {
+				return Collections.emptyList();
+			} else {
+				return Arrays.asList(transformValueFunction.apply(key, value));
+			}
+		};
 		
 		return (TransformBuilder<K,V, K,VR>)this;
 	}

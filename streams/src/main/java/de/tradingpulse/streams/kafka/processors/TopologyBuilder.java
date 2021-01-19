@@ -4,10 +4,15 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 import org.apache.kafka.common.serialization.Serde;
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Predicate;
 import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.kstream.Transformer;
+import org.apache.kafka.streams.processor.ProcessorContext;
+import org.apache.kafka.streams.processor.To;
+import org.slf4j.LoggerFactory;
 
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 
@@ -61,7 +66,6 @@ public class TopologyBuilder <K,V> {
 	private KStream<K,V> stream;
 	private Serde<K> keySerde;
 	private Serde<V> valueSerde;
-	
 	private String topicsBaseName;
 	
 	private TopologyBuilder(
@@ -76,7 +80,8 @@ public class TopologyBuilder <K,V> {
 			StreamsBuilder streamsBuilder,
 			KStream<K,V> stream, 
 			Serde<K> keySerde, 
-			Serde<V> valueSerde)
+			Serde<V> valueSerde,
+			String topicsBaseName)
 	{
 		Objects.requireNonNull(streamsBuilder, "streamsBuilder");
 		
@@ -84,6 +89,7 @@ public class TopologyBuilder <K,V> {
 		this.stream = stream;
 		this.keySerde = keySerde;
 		this.valueSerde = valueSerde;
+		this.topicsBaseName = topicsBaseName;
 	}
 	
 	/**
@@ -133,8 +139,26 @@ public class TopologyBuilder <K,V> {
 				this.streamsBuilder, 
 				stream, 
 				keySerde, 
-				valueSerde)
-				.withTopicsBaseName(this.topicsBaseName);
+				valueSerde,
+				this.topicsBaseName);
+	}
+	
+	/**
+	 * logs each passing record as debug. Logger is the value class. 
+	 */
+	public TopologyBuilder<K,V> logDebug(String identifier) {
+		return new TopologyBuilder<>(
+				this.streamsBuilder, 
+				this.stream.map(
+						(key, value) -> {
+							LoggerFactory.getLogger(value.getClass())
+							.debug("{} key: {} value: {}", identifier, key, value);
+							
+							return new KeyValue<>(key, value);
+						}), 
+				this.keySerde, 
+				this.valueSerde,
+				this.topicsBaseName);
 	}
 	
 	/**
@@ -161,8 +185,51 @@ public class TopologyBuilder <K,V> {
 				this.streamsBuilder,
 				topicBackedStream,
 				this.keySerde,
-				this.valueSerde)
-				.withTopicsBaseName(topicName);
+				this.valueSerde,
+				topicName);
+	}
+	
+	/**
+	 * Adjusts a record's timestamp. The given function must return a timestamp
+	 * according to Kafka's requirements 
+	 * (milliseconds since 1970-01-01 00:00:00) 
+	 * 
+	 * @param evalTimestampFunction the function to evaluate the new timestamp from a given key or value
+	 * @return
+	 * 	the new timestamp in milliseconds
+	 */
+	public TopologyBuilder<K,V> adjustRecordTimestamps(final BiFunction<K,V, Long> evalTimestampFunction) {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		Objects.requireNonNull(evalTimestampFunction, "evalTimestampFunction");
+		
+		return new TopologyBuilder<>(
+				this.streamsBuilder, 
+				this.stream.transform(
+						() -> new Transformer<K,V, KeyValue<K,V>>() {
+							private ProcessorContext context;
+							
+							@Override
+							public void init(ProcessorContext context) {
+								this.context = context;
+							}
+		
+							@Override
+							public KeyValue<K, V> transform(K key, V value) {
+								Long timestamp = evalTimestampFunction.apply(key, value);
+								this.context.forward(key, value, To.all().withTimestamp(timestamp));
+								return null;
+							}
+		
+							@Override
+							public void close() {
+								// nothing to do
+							}
+						}), 
+				this.keySerde, 
+				this.valueSerde,
+				this.topicsBaseName);
 	}
 	
 	/**
@@ -208,8 +275,8 @@ public class TopologyBuilder <K,V> {
 				this.stream
 					.filter(predicate),
 				this.keySerde,
-				this.valueSerde)
-				.withTopicsBaseName(this.topicsBaseName);
+				this.valueSerde,
+				this.topicsBaseName);
 	}
 	
 	/**
@@ -311,6 +378,25 @@ public class TopologyBuilder <K,V> {
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
 		
 		return (TransformBuilder<K,V, KR,VR>)new TransformBuilder<>(
+				this.streamsBuilder, 
+				this.stream, 
+				this.keySerde, 
+				this.valueSerde)
+				.withTopicsBaseName(topicsBaseName);
+	}
+	
+	/**
+	 * Creates a stream of aggregated records.
+	 * 
+	 * 
+	 */
+	@SuppressWarnings("unchecked")
+	public <GK, VR> SequenceBuilder<K,V, GK, VR> sequence() {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+
+		return (SequenceBuilder<K,V, GK, VR>)new SequenceBuilder<>(
 				this.streamsBuilder, 
 				this.stream, 
 				this.keySerde, 

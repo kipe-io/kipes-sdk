@@ -17,7 +17,7 @@ public class TradingScreensStreamsFacade {
 
 	@Inject @Named(ImpulseScreenStreams.TOPIC_IMPULSE_TRADING_SCREEN)
     private KStream<SymbolTimestampKey, ImpulseTradingScreenRecord> impulseTradingScreenStream;
-	private final String impulseTradingScreenStreamName = ImpulseScreenStreams.TOPIC_IMPULSE_TRADING_SCREEN;
+	public static final String TOPIC_IMPULSE_TRADING_SCREEN = ImpulseScreenStreams.TOPIC_IMPULSE_TRADING_SCREEN;
 
 	@Inject @Named(SignalStream.TOPIC_SIGNAL_DAILY)
     private KStream<SymbolTimestampKey, SignalRecord> signalDailyStream;

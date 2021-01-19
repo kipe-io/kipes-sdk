@@ -14,6 +14,7 @@ import java.util.function.BiFunction;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.kafka.streams.kstream.KStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,16 +35,22 @@ import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 public class SignalsProcessor extends AbstractProcessorFactory {
 	
 	@Inject
-	private TradingScreensStreamsFacade tradingScreensStreamsFacade;
+	TradingScreensStreamsFacade tradingScreensStreamsFacade;
 
 	@Inject
-	private ConfiguredStreamBuilder streamsBuilder;
+	ConfiguredStreamBuilder streamsBuilder;
 	
 	@Inject
-	private JsonSerdeRegistry jsonSerdeRegistry;
+	JsonSerdeRegistry jsonSerdeRegistry;
 
 	@Override
 	protected void initProcessors() {
+		createTopology(tradingScreensStreamsFacade.getImpulseTradingScreenStream());
+	}
+	
+	void createTopology(
+			KStream<SymbolTimestampKey, ImpulseTradingScreenRecord> impulseTradingScreenStream )
+	{
 		// --------------------------------------------------------------------
 		// from
 		//   impulse_trading_screen
@@ -53,7 +60,7 @@ public class SignalsProcessor extends AbstractProcessorFactory {
 		//   as
 		//     SignalRecord
 		// dedup
-		//   groupBy key.symbol, strategyKey, signalType.tradingDirection
+		//   groupBy key.symbol, strategyKey
 		//   advanceBy signalType
 		//   emitFirst
 		// to
@@ -63,7 +70,7 @@ public class SignalsProcessor extends AbstractProcessorFactory {
 		TopologyBuilder.init(streamsBuilder)
 		
 		.from(
-				tradingScreensStreamsFacade.getImpulseTradingScreenStream(), 
+				impulseTradingScreenStream, 
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
 				jsonSerdeRegistry.getSerde(ImpulseTradingScreenRecord.class))
 		
@@ -81,8 +88,7 @@ public class SignalsProcessor extends AbstractProcessorFactory {
 					(key, value) ->
 						 new String[]{
 								 key.getSymbol(),
-								 value.getStrategyKey(),
-								 value.getSignalType().getTradingDirection().name()},
+								 value.getStrategyKey()},
 					jsonSerdeRegistry.getSerde(String[].class))
 			.advanceBy(
 					(key, value) ->

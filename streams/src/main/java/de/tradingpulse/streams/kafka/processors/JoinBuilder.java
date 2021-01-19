@@ -14,6 +14,24 @@ import org.apache.kafka.streams.state.Stores;
 /**
  * Builder to setup a (inner) join of two streams. Clients do not instanciate
  * this class directly but use {@link TopologyBuilder#join(KStream, Serde)}.
+ * <br>
+ * <b>Pseudo DSL</b>
+ * <pre>
+ *   from
+ *     {STREAM[key:value]}
+ *   
+ *   <b>join</b>
+ *     {STREAM[key:otherValue]}
+ *     <b>windowSize|Before|After</b>
+ *       {DURATION}
+ *     <b>retentionPeriod</b>
+ *       {DURATION}
+ *     <b>as</b>
+ *       {FUNCTION(key,value,otherValue):joinValue}
+ *   
+ *   to
+ *     {TARGET[key:value]}
+ * </pre>
  * 
  * TODO document the exact behavior
  * TODO add tests

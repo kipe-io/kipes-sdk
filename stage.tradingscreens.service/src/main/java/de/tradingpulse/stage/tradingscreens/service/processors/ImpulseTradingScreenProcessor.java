@@ -22,9 +22,6 @@ class ImpulseTradingScreenProcessor extends AbstractProcessorFactory {
 	private SystemsStreamsFacade systemsStreamsFacade;
 	
 	@Inject
-	private TradingScreensStreamsFacade tradingScreensStreamsFacade;
-	
-	@Inject
 	private ConfiguredStreamBuilder streamBuilder;
 
 	@Inject
@@ -51,7 +48,7 @@ class ImpulseTradingScreenProcessor extends AbstractProcessorFactory {
 		TopologyBuilder
 		.init(streamBuilder)
 		
-		.withTopicsBaseName(tradingScreensStreamsFacade.getImpulseTradingScreenStreamName())
+		.withTopicsBaseName(TradingScreensStreamsFacade.TOPIC_IMPULSE_TRADING_SCREEN)
 		
 		.from(
 				systemsStreamsFacade.getImpulseDailyStream(), 
@@ -85,6 +82,6 @@ class ImpulseTradingScreenProcessor extends AbstractProcessorFactory {
 			.emitFirst()
 			
 		.to(
-				tradingScreensStreamsFacade.getImpulseTradingScreenStreamName());
+				TradingScreensStreamsFacade.TOPIC_IMPULSE_TRADING_SCREEN);
 	}
 }

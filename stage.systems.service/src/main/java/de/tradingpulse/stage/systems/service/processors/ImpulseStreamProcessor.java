@@ -1,26 +1,16 @@
 package de.tradingpulse.stage.systems.service.processors;
 
-import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
-
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.kstream.JoinWindows;
 import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.Produced;
-import org.apache.kafka.streams.kstream.StreamJoined;
-import org.apache.kafka.streams.kstream.Transformer;
-import org.apache.kafka.streams.processor.ProcessorContext;
-import org.apache.kafka.streams.state.KeyValueStore;
-import org.apache.kafka.streams.state.StoreBuilder;
-import org.apache.kafka.streams.state.Stores;
 
-import de.tradingpulse.common.stream.aggregates.IncrementalAggregate;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.TimeRange;
+import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseSourceRecord;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
@@ -28,18 +18,45 @@ import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
+import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 
 @Singleton
 class ImpulseStreamProcessor extends AbstractProcessorFactory {
 	
+	static ImpulseRecord createImpulseRecordFrom(ImpulseSourceRecord source) {
+		DoubleRecord emaRecord = source.getEmaData(); 
+		MACDHistogramRecord macdHistogramRecord = source.getMacdHistogramData();
+		
+		TradingDirection tradingDirection = null;
+		
+		if(emaRecord == null || macdHistogramRecord == null || emaRecord.getVChange() == null || macdHistogramRecord.getHChange() == null) {
+			return null;
+		}
+		
+		if(emaRecord.getVChange() > 0 && macdHistogramRecord.getHChange() > 0) {
+			// if both indicators raise then it's a long
+			tradingDirection = TradingDirection.LONG;
+			
+		} else if(emaRecord.getVChange() < 0 && macdHistogramRecord.getHChange() < 0) {
+			// if both indicators fall then it's a short
+			tradingDirection = TradingDirection.SHORT;
+		} else {
+			tradingDirection = TradingDirection.NEUTRAL;
+		}
+		
+		return ImpulseRecord.builder()
+				.key(source.getKey().deepClone())
+				.timeRange(TimeRange.DAY)
+				.tradingDirection(tradingDirection)
+				.lastTradingDirection(null)
+				.build();
+	}
+	
 	@Inject
 	private IndicatorsStreamsFacade indicatorsStreamsFacade;
-	
-	@Inject
-	private SystemsStreamsFacade systemsStreamsFacade;
-	
+		
 	@Inject
 	private ConfiguredStreamBuilder builder;
 
@@ -49,111 +66,95 @@ class ImpulseStreamProcessor extends AbstractProcessorFactory {
 	@Override
 	protected void initProcessors() throws InterruptedException, ExecutionException {
 		// impulse daily
-		createImpulseStream(
-				systemsStreamsFacade.getImpulseDailyStreamName(), 
+		createImpulseDailyStream(
+				SystemsStreamsFacade.TOPIC_IMPULSE_DAILY, 
 				indicatorsStreamsFacade.getEma13DailyStream(), 
 				indicatorsStreamsFacade.getMacd12269DailyStream());
 		
-		// impulse weekly incremental
-		createImpulseStream(
-				systemsStreamsFacade.getImpulseWeeklyStreamName(), 
+		// impulse weekly daily
+		createImpulseDailyStream(
+				SystemsStreamsFacade.TOPIC_IMPULSE_WEEKLY, 
 				indicatorsStreamsFacade.getEma13WeeklyStream(), 
 				indicatorsStreamsFacade.getMacd12269WeeklyStream());
 	}
 	
-	private void createImpulseStream(
-			final String topicName,
-			final KStream<SymbolTimestampKey, DoubleRecord> emaStream,
-			final KStream<SymbolTimestampKey, MACDHistogramRecord> macdStream) 
+	private void createImpulseDailyStream(
+			String topic,
+			KStream<SymbolTimestampKey, DoubleRecord> emaStream,
+			KStream<SymbolTimestampKey, MACDHistogramRecord> macdStream)
 	{
-		// setup join parameters
-		// TODO externalize retention period
-		// IDEA: (via AbstractStreamFactory.topics.XXX.retentionMs)
-		// the config depends on the overall retention period and the earliest
-		// day we fetch at the iexcloud connector. 
-		final Duration storeRetentionPeriod = Duration.ofMillis(this.retentionMs + 86400000L); // we add a day to have today access to the full retention time (record create ts is start of day)
-		final Duration windowSize = Duration.ofSeconds(0);
-		final boolean retainDuplicates = true; // topology creation will fail on false 
-
-		// create transformer store
-		final String transformerStoreName = getProcessorStoreTopicName(topicName+"-transformer");
-		@SuppressWarnings("rawtypes")
-		StoreBuilder<KeyValueStore<String,IncrementalAggregate>> transformerStoreBuilder =
-				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(transformerStoreName),
-						jsonSerdeRegistry.getSerde(String.class),
-						jsonSerdeRegistry.getSerde(IncrementalAggregate.class));
-		builder.addStateStore(transformerStoreBuilder);
-
-		// create dedup store
-		final String dedupStoreName = getProcessorStoreTopicName(topicName+"-dedup");
-		StoreBuilder<KeyValueStore<SymbolTimestampKey,ImpulseRecord>> dedupStoreBuilder =
-				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(dedupStoreName),
-						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class),
-						jsonSerdeRegistry.getSerde(ImpulseRecord.class));
-		builder.addStateStore(dedupStoreBuilder);
-
-		// create topology
-		KStream<SymbolTimestampKey, ImpulseSourceRecord> isrStream = emaStream
+		// --------------------------------------------------------------------
+		// from
+		//   ema_13_weekly
+		//
+		// join
+		//   macd_12_26_9_weekly
+		//	 windowSize 0
+		//   retentionPeriod 2 years 1 day
+		//   as ImpulseSourceRecord
+		//
+		// transform
+		//   change
+		//     into ImpulseRecord[timeRange=DAY]
+		//
+		// transaction
+		//   groupBy key.symbol
+		//   startsWith true
+		//   endsWith false
+		//   maxRecords 2
+		//   emit ALL
+		//   as TransactionRecord<ImpulseRecord>
+		//
+		// --------------------------------------------------------------------
 		
-		// join ema and macd to Impulse
-		.join(
-				macdStream,
-				// join logic below
-				(emaData, macdHistogramData) -> ImpulseSourceRecord.builder()
-						.key(emaData.getKey())
-						.timeRange(emaData.getTimeRange())
-						.emaData(emaData)
-						.macdHistogramData(macdHistogramData)
-						.build(),
-				// window size can be small as we know the data is at minimum at minute intervals
-				JoinWindows
-				.of(windowSize)
-				.grace(storeRetentionPeriod),
-				// configuration of the underlying window join stores for keeping the data
-				StreamJoined.<SymbolTimestampKey, DoubleRecord, MACDHistogramRecord>with(
-						Stores.persistentWindowStore(
-								topicName+"-join-store-left", 
-								storeRetentionPeriod, 
-								windowSize, 
-								retainDuplicates), 
-						Stores.persistentWindowStore(
-								topicName+"-join-store-right", 
-								storeRetentionPeriod, 
-								windowSize, 
-								retainDuplicates))
-				.withKeySerde(jsonSerdeRegistry.getSerde(SymbolTimestampKey.class))
-				.withValueSerde(jsonSerdeRegistry.getSerde(DoubleRecord.class))
-				.withOtherValueSerde(jsonSerdeRegistry.getSerde(MACDHistogramRecord.class)));
-		
-		isrStream
-		// calculate the impulse data
-		.transform(() -> new ImpulseTransformer(transformerStoreName), transformerStoreName)
-		// deduplicate per SymbolTimestampKey
-		.transform(() -> new Transformer<SymbolTimestampKey, ImpulseRecord, KeyValue<SymbolTimestampKey, ImpulseRecord>>() {
-
-			private KeyValueStore<SymbolTimestampKey, ImpulseRecord> state;
-			
-			@SuppressWarnings("unchecked")
-			public void init(ProcessorContext context) {
-				this.state = (KeyValueStore<SymbolTimestampKey, ImpulseRecord>)context.getStateStore(dedupStoreName);
-			}
-
-			@Override
-			public KeyValue<SymbolTimestampKey, ImpulseRecord> transform(SymbolTimestampKey key, ImpulseRecord value) {
-				ImpulseRecord lastImpulseData = this.state.get(key);
-				this.state.put(key, value);
-				
-				return value.equals(lastImpulseData)? null : new KeyValue<>(key, value);
-			}
-
-			@Override
-			public void close() {
-				// nothing to do
-			}
-			
-		}, dedupStoreName)
-		.to(topicName, Produced.with(
+		TopologyBuilder.init(builder)
+		.from(
+				emaStream, 
 				jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
-				jsonSerdeRegistry.getSerde(ImpulseRecord.class)));
+				jsonSerdeRegistry.getSerde(DoubleRecord.class))
+		
+		.withTopicsBaseName(topic)
+		
+		// join EMA and MACD into ImpulseSourceRecord by symbol, timestamp
+		.<MACDHistogramRecord, ImpulseSourceRecord> join(
+				macdStream,
+				jsonSerdeRegistry.getSerde(MACDHistogramRecord.class))
+			.withWindowSizeAfter(Duration.ZERO)
+			.withRetentionPeriod(Duration.ofMillis(this.retentionMs + 86400000L))
+			.as(
+					(emaData, macdHistogramData)-> 
+						ImpulseSourceRecord.builder()
+							.key(emaData.getKey())
+							.timeRange(emaData.getTimeRange())
+							.emaData(emaData)
+							.macdHistogramData(macdHistogramData)
+							.build(), 
+							jsonSerdeRegistry.getSerde(ImpulseSourceRecord.class))
+		
+		// create ImpulseRecord from ImpulseSourceRecord
+		.<SymbolTimestampKey, ImpulseRecord> transform()
+			.changeValue(
+					(key, value) ->
+						ImpulseStreamProcessor.createImpulseRecordFrom(value))
+			.asValueType(
+					jsonSerdeRegistry.getSerde(ImpulseRecord.class))
+		
+		// build sequences of size 2 to set the lastTradingDirection
+		.<String, ImpulseRecord> sequence()
+			.groupBy(
+					(key,value) ->
+						key.getSymbol(), 
+					jsonSerdeRegistry.getSerde(String.class))
+			.size(2)
+			.as(
+					(key, values) -> {
+						ImpulseRecord currentRecord = values.get(1);
+						currentRecord.setLastTradingDirection(values.get(0).getTradingDirection());
+						return currentRecord;
+					},
+					ImpulseRecord.class,
+					jsonSerdeRegistry.getSerde(ImpulseRecord.class))
+		
+		.to(topic);
 	}
 }

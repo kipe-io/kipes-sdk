@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
  * current one, overwriting all former ones.
  * 
  * Imagine now for instance an aggregate which counts the days seen in a time
- * series with hourly records. This is where the IncrementalAggregatePair can
+ * series with hourly records. This is where the IncrementalAggregate can
  * help: Based on the time stamp of the event - normalized to days - you get the
  * stableAggregate of the former day.   
  * 
@@ -32,7 +32,7 @@ import lombok.NoArgsConstructor;
  * 
  * Please note that only two consecutive time stamps T1 and T2 are being
  * managed. As soon as you introduce a new timestamp T3 via 
- * {@link #setAggregate(long, Object)} AND T2 < T3, T1 get evicted. All other
+ * {@link #setAggregate(long, Object)} AND T2 < T3, T1 gets evicted. All other
  * time stamps will be ignored. 
  * 
  * Example:

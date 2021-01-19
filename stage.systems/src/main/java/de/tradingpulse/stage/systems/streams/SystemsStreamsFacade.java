@@ -16,10 +16,10 @@ public final class SystemsStreamsFacade {
 
 	@Inject @Named(ImpulseStreams.TOPIC_IMPULSE_DAILY)
     private KStream<SymbolTimestampKey, ImpulseRecord> impulseDailyStream;
-	private final String impulseDailyStreamName = ImpulseStreams.TOPIC_IMPULSE_DAILY;
+	public static final String TOPIC_IMPULSE_DAILY = ImpulseStreams.TOPIC_IMPULSE_DAILY;
 	
 	@Inject @Named(ImpulseStreams.TOPIC_IMPULSE_WEEKLY)
     private KStream<SymbolTimestampKey, ImpulseRecord> impulseWeeklyStream;
-	private final String impulseWeeklyStreamName = ImpulseStreams.TOPIC_IMPULSE_WEEKLY;
+	public static final String TOPIC_IMPULSE_WEEKLY = ImpulseStreams.TOPIC_IMPULSE_WEEKLY;
 
 }

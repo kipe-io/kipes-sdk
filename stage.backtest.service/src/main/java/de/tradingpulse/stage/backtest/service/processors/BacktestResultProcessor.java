@@ -83,10 +83,15 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 			.changeValue(
 					(key, value) -> {
 						
-						OHLCVRecord entryRecord = value.getRecord(0).getOhlcvRecord();
 						// sometimes there are only close values available.
-						double entry = entryRecord.getOpen() == 0.0? entryRecord.getClose() : entryRecord.getOpen();
-						double exit = value.getRecord(-1).getOhlcvRecord().getClose();
+						SignalExecutionRecord entryRecord = value.getRecord(0);
+						double entry = entryRecord.getOhlcvRecord().getOpen() == 0.0? 
+								entryRecord.getOhlcvRecord().getClose()
+								: entryRecord.getOhlcvRecord().getOpen();
+						SignalExecutionRecord exitRecord = value.getRecord(-1);
+						double exit = exitRecord.getOhlcvRecord().getOpen() == 0.0? 
+								exitRecord.getOhlcvRecord().getClose()
+								: exitRecord.getOhlcvRecord().getOpen();
 						double high = Math.max(entry, exit);
 						double low = Math.min(entry, exit);
 
@@ -98,11 +103,11 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 						}
 						
 						return BacktestResultRecord.builder()
-							.key(value.getKey().deepClone())
-							.timeRange(value.getTimeRange())
-							.strategyKey(value.getRecord(0).getSignalRecord().getStrategyKey())
-							.tradingDirection(value.getRecord(0).getSignalRecord().getSignalType().getTradingDirection())
-							.entryTimestamp(value.getRecord(0).getTimeRangeTimestamp())
+							.key(exitRecord.getKey().deepClone())
+							.timeRange(exitRecord.getTimeRange())
+							.strategyKey(entryRecord.getSignalRecord().getStrategyKey())
+							.tradingDirection(entryRecord.getSignalRecord().getSignalType().getTradingDirection())
+							.entryTimestamp(entryRecord.getTimeRangeTimestamp())
 							.entry(entry)
 							.high(high)
 							.low(low)

@@ -11,6 +11,7 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.backtest.BacktestStageConstants;
 import de.tradingpulse.stage.backtest.recordtypes.SignalExecutionRecord;
 import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
@@ -29,6 +30,8 @@ import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 @Singleton
 public class SignalExecutionProcessor extends AbstractProcessorFactory {
 
+	private static final String TOPIC_SIGNAL_DAILY_EXPANDED = BacktestStageConstants.STAGE_NAME + "-signal_daily_expanded";
+	
 	@Inject
 	SourceDataStreamsFacade sourceDataStreamsFacade;
 	
@@ -85,6 +88,13 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 	}
 	
 	@Override
+	protected String[] getTopicNames() {
+		return new String[] {
+				TOPIC_SIGNAL_DAILY_EXPANDED
+		};
+	}
+	
+	@Override
 	protected void initProcessors() {
 		createTopology(
 				tradingScreensStreamsFacade.getSignalDailyStream(),
@@ -117,7 +127,7 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 		//
 		// inner join
 		//   ohlcv_daily
-		//   on signal_daily.key = ohlcv_daily.key
+		//   on signal_daily.key.symbol = ohlcv_daily.key.symbol
 		//   window before 0 after 7 days retention 2 years 1 day
 		//   as SignalExecutionRecord
 		//
@@ -128,6 +138,21 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 		// to
 		//   signal_execution_daily
 		// --------------------------------------------------------------------
+		
+		KStream<String, OHLCVRecord> ohlcvRekeyed = TopologyBuilder.init(streamBuilder)
+				.withTopicsBaseName(SourceDataStreamsFacade.TOPIC_OHLCV_DAILY)
+				.from(
+						ohlcvDailyStream, 
+						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class),
+						jsonSerdeRegistry.getSerde(OHLCVRecord.class))
+				// rekey
+				.<String, SignalRecord>transform()
+				.changeKey(
+						(key, value) -> 
+							key.getSymbol())
+				.asKeyType(jsonSerdeRegistry.getSerde(String.class))
+				.getStream();
+				
 		
 		TopologyBuilder.init(streamBuilder)
 		.withTopicsBaseName(TradingScreensStreamsFacade.TOPIC_SIGNAL_DAILY)
@@ -180,12 +205,31 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 			.asKeyType(
 					jsonSerdeRegistry.getSerde(SymbolTimestampKey.class))
 		
+		// the transforms above modify/create new records from the transaction
+		// we need to put the records into the right time to be able to join
+		// them with ohlcv_daily
+		.adjustRecordTimestamps(
+				(key, value) -> key.getTimestamp())
+		
+		// change the key to be the symbol only so that we can match with 
+		// later dates
+		.<String, SignalRecord>transform()
+			.changeKey(
+					(key, value) -> 
+						key.getSymbol())
+			.asKeyType(
+					jsonSerdeRegistry.getSerde(String.class))
+		
+		// pass them through an intermediate topic for repartitioning and
+		// debugging
+		.through(TOPIC_SIGNAL_DAILY_EXPANDED)
+		
 		// into stream of SignalExecutionRecords[ENTRY|ONGOING|EXIT] from 
 		// joined with stream ohlcv_daily
 		// we get multiple joins (max 7) for each SignalRecord because of the
 		// windowSizeAfter 7 days
 		.<OHLCVRecord, SignalExecutionRecord> join(
-				ohlcvDailyStream, 
+				ohlcvRekeyed, 
 				jsonSerdeRegistry.getSerde(OHLCVRecord.class))
 		
 			.withWindowSizeAfter(Duration.ofDays(7))
@@ -202,6 +246,18 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 						record.getSignalRecord(),
 					jsonSerdeRegistry.getSerde(SignalRecord.class))
 			.emitFirst()
+		
+		// rekey back from symbol to SymbolTimestampKey
+		.<SymbolTimestampKey, SignalExecutionRecord>transform()
+			.changeKey(
+					(key, value) -> 
+						value.getKey())
+			.asKeyType(
+					jsonSerdeRegistry.getSerde(SymbolTimestampKey.class))
+		
+		// ensure correct record times
+		.adjustRecordTimestamps(
+				(key, value) -> key.getTimestamp())
 		
 		// to signal_execution_daily
 		.to(

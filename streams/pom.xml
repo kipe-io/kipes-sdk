@@ -31,6 +31,12 @@
 		</dependency>
 		
 		<dependency>
+			<groupId>de.tradingpulse</groupId>
+			<artifactId>streams-test</artifactId>
+			<version>0.1-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.awaitility</groupId>
 			<artifactId>awaitility</artifactId>
 			<scope>test</scope>
