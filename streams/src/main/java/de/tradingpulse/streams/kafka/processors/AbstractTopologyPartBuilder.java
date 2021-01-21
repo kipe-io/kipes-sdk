@@ -51,6 +51,15 @@ abstract class AbstractTopologyPartBuilder<K,V, B extends AbstractTopologyPartBu
 		return this.topicsBaseName;
 	}
 	
+	protected TopologyBuilder<K,V> createTopologyBuilder(KStream<K, V> stream) {
+		return TopologyBuilder.init(this.streamsBuilder)
+				.from(
+						stream, 
+						this.keySerde, 
+						this.valueSerde)
+				.withTopicsBaseName(this.topicsBaseName);
+	}
+	
 	protected <KR,VR> TopologyBuilder<KR,VR> createTopologyBuilder(
 			KStream<KR, VR> stream,
 			Serde<KR> keySerde,

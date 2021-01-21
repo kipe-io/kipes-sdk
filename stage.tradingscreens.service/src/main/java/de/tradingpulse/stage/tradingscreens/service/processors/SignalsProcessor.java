@@ -54,15 +54,18 @@ public class SignalsProcessor extends AbstractProcessorFactory {
 		// --------------------------------------------------------------------
 		// from
 		//   impulse_trading_screen
+		//
 		// transform
 		//   into
 		//     ImpulseTradingScreenToSignalFunction:SignalRecord[]
 		//   as
 		//     SignalRecord
+		//
 		// dedup
 		//   groupBy key.symbol, strategyKey
 		//   advanceBy signalType
 		//   emitFirst
+		//
 		// to
 		//   signals_daily
 		// --------------------------------------------------------------------

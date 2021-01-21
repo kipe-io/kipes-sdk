@@ -15,6 +15,7 @@ import org.apache.kafka.streams.processor.To;
 import org.slf4j.LoggerFactory;
 
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
+import de.tradingpulse.common.stream.recordtypes.GenericRecord;
 
 /**
  * A builder to easily setup KStream topologies. Clients normally interact by
@@ -402,5 +403,49 @@ public class TopologyBuilder <K,V> {
 				this.keySerde, 
 				this.valueSerde)
 				.withTopicsBaseName(topicsBaseName);
+	}
+	
+	/**
+	 * Creates a stream from and of GenericRecords with new fields added.
+	 * 
+	 * @param <G> GenericRecord
+	 * @return
+	 *  a new initialized EvalBuilder
+	 */
+	@SuppressWarnings("unchecked")
+	public <G extends GenericRecord> EvalBuilder<K,G> eval() {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		
+		return new EvalBuilder<>(
+				this.streamsBuilder, 
+				(KStream<K,G>)this.stream, 
+				this.keySerde, 
+				(Serde<G>)this.valueSerde)
+				.withTopicsBaseName(topicsBaseName);
+	}
+	
+	/**
+	 * Creates a stream from and of GenericRecords with a field of discretized
+	 * values (bins).
+	 * 
+	 * @param <G> GenericRecord
+	 * @return
+	 *  a new initialized BinBuilder
+	 */
+	@SuppressWarnings("unchecked")
+	public <G extends GenericRecord> BinBuilder<K,G> bin() {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		
+		return new BinBuilder<>(
+				this.streamsBuilder, 
+				(KStream<K,G>)this.stream, 
+				this.keySerde, 
+				(Serde<G>)this.valueSerde)
+				.withTopicsBaseName(topicsBaseName);
+		
 	}
 }
