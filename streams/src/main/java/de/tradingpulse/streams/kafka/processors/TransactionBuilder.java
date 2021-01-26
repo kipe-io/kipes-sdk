@@ -64,7 +64,7 @@ import de.tradingpulse.streams.recordtypes.TransactionRecord;
  * @param <GK> the groupKey type
  */
 public class TransactionBuilder<K,V extends AbstractIncrementalAggregateRecord, GK> 
-extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
+extends AbstractTopologyPartBuilder<K, V>
 {
 	private BiFunction<K,V, GK> groupKeyFunction;
 	private Serde<GK> groupKeySerde;
@@ -78,9 +78,10 @@ extends AbstractTopologyPartBuilder<K, V, TransactionBuilder<K,V, GK>>
 			StreamsBuilder streamsBuilder,
 			KStream<K, V> stream, 
 			Serde<K> keySerde, 
-			Serde<V> valueSerde)
+			Serde<V> valueSerde,
+			String topicsBaseName)
 	{
-		super(streamsBuilder, stream, keySerde, valueSerde);
+		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 	}
 	
 	/**

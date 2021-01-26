@@ -15,6 +15,7 @@ import org.apache.kafka.streams.processor.To;
 import org.slf4j.LoggerFactory;
 
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
+import de.tradingpulse.common.stream.recordtypes.GenericRecord;
 
 /**
  * A builder to easily setup KStream topologies. Clients normally interact by
@@ -297,8 +298,8 @@ public class TopologyBuilder <K,V> {
 				this.streamsBuilder, 
 				this.stream, 
 				this.keySerde, 
-				this.valueSerde)
-				.withTopicsBaseName(this.topicsBaseName);
+				this.valueSerde,
+				this.topicsBaseName);
 	}
 	
 	/**
@@ -336,8 +337,8 @@ public class TopologyBuilder <K,V> {
 				this.keySerde, 
 				this.valueSerde, 
 				otherStream, 
-				otherValueSerde)
-			.withTopicsBaseName(topicsBaseName);
+				otherValueSerde,
+				this.topicsBaseName);
 	}
 
 
@@ -360,8 +361,8 @@ public class TopologyBuilder <K,V> {
 				this.streamsBuilder, 
 				(KStream<K,A>)this.stream, 
 				this.keySerde, 
-				(Serde<A>)this.valueSerde)
-				.withTopicsBaseName(this.topicsBaseName);
+				(Serde<A>)this.valueSerde,
+				this.topicsBaseName);
 	}
 	
 	/**
@@ -381,8 +382,8 @@ public class TopologyBuilder <K,V> {
 				this.streamsBuilder, 
 				this.stream, 
 				this.keySerde, 
-				this.valueSerde)
-				.withTopicsBaseName(topicsBaseName);
+				this.valueSerde,
+				this.topicsBaseName);
 	}
 	
 	/**
@@ -400,7 +401,93 @@ public class TopologyBuilder <K,V> {
 				this.streamsBuilder, 
 				this.stream, 
 				this.keySerde, 
-				this.valueSerde)
-				.withTopicsBaseName(topicsBaseName);
+				this.valueSerde,
+				this.topicsBaseName);
+	}
+	
+	/**
+	 * Creates a stream from and of GenericRecords with new fields added.
+	 * 
+	 * @param <G> GenericRecord
+	 * @return
+	 *  a new initialized EvalBuilder
+	 */
+	@SuppressWarnings("unchecked")
+	public EvalBuilder<K> eval() {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		
+		return new EvalBuilder<>(
+				this.streamsBuilder, 
+				(KStream<K,GenericRecord>)this.stream, 
+				this.keySerde, 
+				(Serde<GenericRecord>)this.valueSerde,
+				this.topicsBaseName);
+	}
+	
+	/**
+	 * Creates a stream from and of GenericRecords with a field of discretized
+	 * values (bins).
+	 * 
+	 * @param <G> GenericRecord
+	 * @return
+	 *  a new initialized BinBuilder
+	 */
+	@SuppressWarnings("unchecked")
+	public BinBuilder<K> bin() {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		
+		return new BinBuilder<>(
+				this.streamsBuilder, 
+				(KStream<K,GenericRecord>)this.stream, 
+				this.keySerde, 
+				(Serde<GenericRecord>)this.valueSerde,
+				this.topicsBaseName);
+		
+	}
+	
+	/**
+	 * Creates Statistics calculated based on the incoming records.
+	 * 
+	 * @param <G> GenericRecord
+	 * @return
+	 *  a new initialized StatsBuilder
+	 */
+	@SuppressWarnings("unchecked")
+	public StatsBuilder<K> stats() {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		
+		return new StatsBuilder<>(
+				this.streamsBuilder, 
+				(KStream<K,GenericRecord>)this.stream, 
+				this.keySerde, 
+				(Serde<GenericRecord>)this.valueSerde,
+				this.topicsBaseName);
+		
+	}
+	
+	/**
+	 * Creates a stream Tables of incoming GenericRecords.
+	 *  
+	 * @return
+	 * 	a new initialized TableBuilder
+	 */
+	@SuppressWarnings("unchecked")
+	public TableBuilder<K> table() {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		
+		return new TableBuilder<>(
+				this.streamsBuilder, 
+				(KStream<K,GenericRecord>)this.stream, 
+				this.keySerde, 
+				(Serde<GenericRecord>)this.valueSerde,
+				this.topicsBaseName);
 	}
 }

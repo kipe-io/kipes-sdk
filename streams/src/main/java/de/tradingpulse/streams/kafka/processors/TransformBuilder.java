@@ -50,7 +50,7 @@ import org.apache.kafka.streams.kstream.KStream;
 // NOTE: makes sense only if we got sub builders (see to do above)
 
 // TODO add tests
-public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K, V, TransformBuilder<K,V, KR,VR>>{
+public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K, V>{
 
 	private BiFunction<K,V, Iterable<VR>> transformValueFunction;
 	private BiFunction<K,V, Iterable<KR>> transformKeyFunction;
@@ -60,9 +60,10 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
 			StreamsBuilder streamsBuilder, 
 			KStream<K, V> stream, 
 			Serde<K> keySerde, 
-			Serde<V> valueSerde)
+			Serde<V> valueSerde,
+			String topicsBaseName)
 	{
-		super(streamsBuilder, stream, keySerde, valueSerde);
+		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 	}
 
 	// ------------------------------------------------------------------------

@@ -17,7 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-class JoinBuilderIntegrationTest extends AbstractTopologyTest {
+class JoinBuilderTest extends AbstractTopologyTest {
 
 	private static final String LEFT_TOPIC = "leftTopic";
 	private static final String RIGHT_TOPIC = "rightTopic";

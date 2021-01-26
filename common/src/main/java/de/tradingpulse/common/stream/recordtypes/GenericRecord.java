@@ -18,6 +18,10 @@ import lombok.ToString;
 @ToString
 public class GenericRecord {
 
+	public static GenericRecord create() {
+		return new GenericRecord();
+	}
+	
 	@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "className")
 	private Map<String, Object> fields = new HashMap<>();
 	
@@ -57,6 +61,21 @@ public class GenericRecord {
 	}
 	
 	/**
+	 * Fluent variant of {@link #set(String, Object)}.
+	 * 
+	 * @param <V>
+	 * @param fieldName
+	 * @param value
+	 * 
+	 * @return
+	 * 	this object
+	 */
+	public <V> GenericRecord with(String fieldName, V value) {
+		set(fieldName, value);
+		return this;
+	}
+	
+	/**
 	 * Removes the given field.
 	 * 
 	 * @param fieldName the field to be removed.
@@ -64,5 +83,29 @@ public class GenericRecord {
 	public void remove(String fieldName) {
 		Objects.requireNonNull(fieldName, "fieldName");
 		this.fields.remove(fieldName);
+	}
+	
+	// ------------------------------------------------------------------------
+	// specialized getters
+	// ------------------------------------------------------------------------
+
+	public String getString(String fieldName) {
+		Object o = get(fieldName);
+		return o == null? null : o.toString();
+	}
+	
+	public Number getNumber(String fieldName) {
+		Object o = get(fieldName);
+		return o == null? null : (Number)o;
+	}
+	
+	public Double getDouble(String fieldName) {
+		Number n = getNumber(fieldName);
+		return n == null? null : n.doubleValue();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <K,V> Map<K,V> getMap(String fieldName) {
+		return (Map<K,V>) get(fieldName);
 	}
 }
