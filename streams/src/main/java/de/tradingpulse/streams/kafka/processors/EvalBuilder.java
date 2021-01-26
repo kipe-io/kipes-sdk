@@ -11,48 +11,47 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.GenericRecord;
-import lombok.AllArgsConstructor;
 
 /**
  * <br>
  * <b>Pseudo DSL</b>
  * <pre>
  *   from
- *     {SOURCE[key:{GenericRecord}]}
+ *     {SOURCE[K:GenericRecord]}
  *   
  *   <b>eval</b>
  *     ({FIELD} = {EXPRESSION})+
  *   
  *   to
- *     {TARGET[key:{GenericRecord}]}
+ *     {TARGET[K:GenericRecord]}
  * </pre>
  * 
- * @param <K>
- * @param <V>
+ * @param <K> the key type
  */
-public class EvalBuilder<K, V extends GenericRecord> extends AbstractTopologyPartBuilder<K, V, EvalBuilder<K, V>> {
+public class EvalBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecord> {
 
-	private final List<Expression<K,V>> expressions = new LinkedList<>();
+	private final List<Expression<K,GenericRecord>> expressions = new LinkedList<>();
 	
 	EvalBuilder(
 			StreamsBuilder streamsBuilder, 
-			KStream<K, V> stream, 
+			KStream<K, GenericRecord> stream, 
 			Serde<K> keySerde, 
-			Serde<V> valueSerde) 
+			Serde<GenericRecord> valueSerde,
+			String topicsBaseName) 
 	{
-		super(streamsBuilder, stream, keySerde, valueSerde);
+		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 	}
 
-	public EvalBuilder<K,V> with(String fieldName, BiFunction<K, V, Object> valueFunction) {
+	public EvalBuilder<K> with(String fieldName, BiFunction<K, GenericRecord, Object> valueFunction) {
 		Objects.requireNonNull(fieldName, "fieldName");
 		Objects.requireNonNull(valueFunction, "valueFunction");
 		
-		this.expressions.add(new Expression<K,V>(fieldName, valueFunction));
+		this.expressions.add(new Expression<>(fieldName, valueFunction));
 		
 		return this;
 	}
 	
-	public TopologyBuilder<K, V> build() {
+	public TopologyBuilder<K, GenericRecord> build() {
 		return createTopologyBuilder(
 				this.stream
 				.map(
@@ -61,21 +60,5 @@ public class EvalBuilder<K, V extends GenericRecord> extends AbstractTopologyPar
 							return new KeyValue<>(key, value);
 						}));
 	}
-	
-	// ------------------------------------------------------------------------
-	// Expression
-	// ------------------------------------------------------------------------
 
-	@AllArgsConstructor
-	static class Expression<K, V extends GenericRecord> {
-		
-		private final String fieldName;
-		private final BiFunction<K, V, Object> valueFunction;
-		
-		void update(K key, V record) {
-			record.set(
-					this.fieldName, 
-					this.valueFunction.apply(key, record));
-		}
-	}
 }

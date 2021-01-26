@@ -23,6 +23,7 @@ import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 
 @Singleton
+// TODO add tests
 class ImpulseStreamProcessor extends AbstractProcessorFactory {
 	
 	static ImpulseRecord createImpulseRecordFrom(ImpulseSourceRecord source) {
@@ -52,6 +53,13 @@ class ImpulseStreamProcessor extends AbstractProcessorFactory {
 				.tradingDirection(tradingDirection)
 				.lastTradingDirection(null)
 				.build();
+	}
+	
+	static TradingDirection identifyLastTrend(ImpulseRecord lastRecord) {
+
+		return lastRecord.getTradingDirection() == TradingDirection.NEUTRAL? 
+				lastRecord.getLastTrend() : 
+				lastRecord.getTradingDirection();
 	}
 	
 	@Inject
@@ -97,14 +105,16 @@ class ImpulseStreamProcessor extends AbstractProcessorFactory {
 		//   change
 		//     into ImpulseRecord[timeRange=DAY]
 		//
-		// transaction
+		// sequence
 		//   groupBy key.symbol
-		//   startsWith true
-		//   endsWith false
-		//   maxRecords 2
-		//   emit ALL
-		//   as TransactionRecord<ImpulseRecord>
+		//   size 2
+		//   as
+		//     values[1].lastTradingDirection = values[0].tradingDirection
+		//     values[1].lastTrend = identifyTrend(values[0])
+		//     return values[1]
 		//
+		// to
+		//   topic
 		// --------------------------------------------------------------------
 		
 		TopologyBuilder.init(builder)
@@ -148,8 +158,13 @@ class ImpulseStreamProcessor extends AbstractProcessorFactory {
 			.size(2)
 			.as(
 					(key, values) -> {
+						ImpulseRecord lastRecord = values.get(0);
 						ImpulseRecord currentRecord = values.get(1);
-						currentRecord.setLastTradingDirection(values.get(0).getTradingDirection());
+						currentRecord.setLastTradingDirection(lastRecord.getTradingDirection());
+						currentRecord.setLastTrend(identifyLastTrend(lastRecord));
+						// note that the changes above get stored at the
+						// sequence so that we can access at the next call
+						// when currentRecord is lastRecord
 						return currentRecord;
 					},
 					ImpulseRecord.class,

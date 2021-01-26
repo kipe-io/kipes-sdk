@@ -6,14 +6,13 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 
-abstract class AbstractTopologyPartBuilder<K,V, B extends AbstractTopologyPartBuilder<K,V, B>> {
+abstract class AbstractTopologyPartBuilder<K,V> {
 
 	protected final StreamsBuilder streamsBuilder;
 	protected final KStream<K,V> stream;
 	protected final Serde<K> keySerde;
 	protected final Serde<V> valueSerde;
-
-	private String topicsBaseName;
+	protected final String topicsBaseName;
 
 	/**
 	 * All values must be non-null, otherwise a NullPointerException will be 
@@ -28,7 +27,8 @@ abstract class AbstractTopologyPartBuilder<K,V, B extends AbstractTopologyPartBu
 			StreamsBuilder streamsBuilder,
 			KStream<K, V> stream, 
 			Serde<K> keySerde, 
-			Serde<V> valueSerde)
+			Serde<V> valueSerde,
+			String topicsBaseName)
 	{
 		Objects.requireNonNull(streamsBuilder, "streamsBuilder");
 		Objects.requireNonNull(stream, "stream");
@@ -39,12 +39,7 @@ abstract class AbstractTopologyPartBuilder<K,V, B extends AbstractTopologyPartBu
 		this.stream = stream;
 		this.keySerde = keySerde;
 		this.valueSerde = valueSerde;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public final B withTopicsBaseName(String topicsBaseName) {
-		this.topicsBaseName = topicsBaseName;
-		return (B)this;
+		this.topicsBaseName = topicsBaseName; 
 	}
 	
 	protected String getTopicsBaseName() {

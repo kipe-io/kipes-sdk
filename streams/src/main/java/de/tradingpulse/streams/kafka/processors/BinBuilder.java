@@ -7,6 +7,7 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.GenericRecord;
+import de.tradingpulse.common.utils.MathUtils;
 
 /**
  * Discretizes the values of a field into another.
@@ -15,7 +16,7 @@ import de.tradingpulse.common.stream.recordtypes.GenericRecord;
  * <b>Pseudo DSL</b>
  * <pre>
  *   from
- *     {SOURCE[K:V]}
+ *     {SOURCE[K:GenericRecord]}
  *   
  *   <b>bin</b>
  *     <b>field</b> fieldName
@@ -23,13 +24,12 @@ import de.tradingpulse.common.stream.recordtypes.GenericRecord;
  *     <b>newField</b> fieldName     
  *   
  *   to
- *     {TARGET[K:V]}
+ *     {TARGET[K:GenericRecord]}
  * </pre>
  * 
  * @param <K> the key type
- * @param <V> the GenericRecord type
  */
-public class BinBuilder<K, V extends GenericRecord> extends AbstractTopologyPartBuilder<K, V, BinBuilder<K,V>> {
+public class BinBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecord> {
 
 	private String fieldName;
 	private Double span;
@@ -37,14 +37,15 @@ public class BinBuilder<K, V extends GenericRecord> extends AbstractTopologyPart
 	
 	BinBuilder(
 			StreamsBuilder streamsBuilder, 
-			KStream<K, V> stream, 
+			KStream<K, GenericRecord> stream, 
 			Serde<K> keySerde, 
-			Serde<V> valueSerde) 
+			Serde<GenericRecord> valueSerde,
+			String topicsBaseName) 
 	{
-		super(streamsBuilder, stream, keySerde, valueSerde);
+		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 	}
 
-	public BinBuilder<K,V> field(String fieldName) {
+	public BinBuilder<K> field(String fieldName) {
 		Objects.requireNonNull(fieldName, "fieldName");
 		
 		this.fieldName = fieldName;
@@ -52,20 +53,20 @@ public class BinBuilder<K, V extends GenericRecord> extends AbstractTopologyPart
 		return this;
 	}
 
-	public BinBuilder<K,V> span(double span) {
+	public BinBuilder<K> span(double span) {
 		this.span = span;
 		
 		return this;
 	}
 
-	public BinBuilder<K,V> newField(String newFieldName) {
+	public BinBuilder<K> newField(String newFieldName) {
 		
 		this.newFieldName = newFieldName;
 		
 		return this;
 	}
 	
-	public TopologyBuilder<K,V> build() {
+	public TopologyBuilder<K,GenericRecord> build() {
 		Objects.requireNonNull(this.fieldName, "fieldName");
 		Objects.requireNonNull(this.span, "span");
 		
@@ -77,10 +78,14 @@ public class BinBuilder<K, V extends GenericRecord> extends AbstractTopologyPart
 				this.streamsBuilder, 
 				this.stream, 
 				this.keySerde, 
-				this.valueSerde)
+				this.valueSerde,
+				this.topicsBaseName)
 				.with(
 						targetFieldName, 
-						(key,value) -> Math.round(value.getDouble(sourceFieldName) / binSpan) * binSpan )
+						(key,value) -> 
+							MathUtils.round(
+								MathUtils.round(value.getDouble(sourceFieldName) / binSpan, 0)
+								* binSpan, MathUtils.getPrecision(binSpan)))
 				.build();
 	}
 	

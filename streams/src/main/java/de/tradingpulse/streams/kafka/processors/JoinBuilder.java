@@ -41,7 +41,7 @@ import org.apache.kafka.streams.state.Stores;
  * @param <OV> value type of the right stream
  * @param <VR> value type of the joined stream
  */
-public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V, JoinBuilder <K,V, OV, VR>>{
+public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V>{
 	
 	private final KStream<K,OV> otherStream;
 	private final Serde<OV> otherValueSerde;
@@ -56,9 +56,10 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V,
 			Serde<K> keySerde, 
 			Serde<V> valueSerde, 
 			KStream<K, OV> otherStream,
-			Serde<OV> otherValueSerde)
+			Serde<OV> otherValueSerde,
+			String topicsBaseName)
 	{
-		super(streamsBuilder, stream, keySerde, valueSerde);
+		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 		
 		Objects.requireNonNull(otherStream, "otherStream");
 		Objects.requireNonNull(otherValueSerde, "otherValueSerde");

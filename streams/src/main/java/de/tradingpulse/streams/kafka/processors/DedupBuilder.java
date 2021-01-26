@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * @param <GK> the group key's type (see {@link #groupBy(BiFunction, Serde)})
  * @param <DV> the dedupValue's type (see {@link #advanceBy(BiFunction)})
  */
-public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V, DedupBuilder<K,V, GK, DV>> {
+public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> {
 
 	private BiFunction<K,V, GK> groupKeyFunction;
 	private Serde<GK> groupKeySerde;
@@ -60,9 +60,10 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V, 
 			StreamsBuilder streamsBuilder, 
 			KStream<K, V> stream, 
 			Serde<K> keySerde, 
-			Serde<V> valueSerde) 
+			Serde<V> valueSerde,
+			String topicsBaseName) 
 	{
-		super(streamsBuilder, stream, keySerde, valueSerde);
+		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 	}
 
 	/**

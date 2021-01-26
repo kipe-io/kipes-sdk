@@ -12,6 +12,8 @@ import de.tradingpulse.stage.backtest.recordtypes.BacktestResultRecord;
 import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
+import de.tradingpulse.streams.kafka.processors.expressions.stats.Count;
+import de.tradingpulse.streams.kafka.processors.recordtypes.TableRecord;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 
@@ -44,6 +46,7 @@ public class BacktestResultAnalyticsProcessor extends AbstractProcessorFactory {
 				backtestStreamsFacade.getBacktestResultDailyStream());
 	}
 	
+	@SuppressWarnings("unchecked")
 	void createTopology(
 			String topic,
 			KStream<SymbolTimestampKey, BacktestResultRecord> backtestResults) 
@@ -68,9 +71,21 @@ public class BacktestResultAnalyticsProcessor extends AbstractProcessorFactory {
 		//   count()
 		//   by strategyKey, tradingDirection, revBin
 		//
+		// table
+		//
 		// to
 		//   backtestAnalytics
 		// --------------------------------------------------------------------
+		//
+		// Note to convert the table into TSV
+		// ----------------------------------
+		// 1) find the last offset
+		//
+		//    $ kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list 127.0.0.1:9092 --topic stg-backtest-backtest_analytics --time -1 --offsets 1
+		//
+		// 2) with that partition and offset
+		//
+		//   $ kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic stg-backtest-backtest_analytics --partition PARTITION --offset OFFSET-1 | jq -rc '.rows | values[] | {revBin: .value.fields.revBin, count: .value.fields.count[1]} | map(.) | @tsv ' -
 		
 		TopologyBuilder
 		.init(streamBuilder)
@@ -87,7 +102,7 @@ public class BacktestResultAnalyticsProcessor extends AbstractProcessorFactory {
 						GenericRecord.create()
 						.with("symbol", value.getKey().getSymbol())
 						.with("strategyKey", value.getStrategyKey())
-						.with("tradingDirection", value.getTradingDirection())
+						.with("tradingDirection", value.getTradingDirection().name())
 						.with("entryTimestamp", value.getEntryTimestamp())
 						.with("exitTimestamp", value.getKey().getTimestamp())
 						.with("entry", value.getEntry())
@@ -96,15 +111,32 @@ public class BacktestResultAnalyticsProcessor extends AbstractProcessorFactory {
 			.asValueType(
 					jsonSerdeRegistry.getSerde(GenericRecord.class))
 		
+		.withTopicsBaseName(topic)
+		
 		.eval()
 			.with("revenueRatio", (key, value) -> value.getDouble("revenue") / value.getDouble("entry"))
 			.build()
 		
 		.bin()
 			.field("revenueRatio")
-			.span(0.1)
+			.span(0.01)
 			.newField("revBin")
-			.build();
+			.build()
+			
+		.stats()
+			.with(Count.count())
+			.groupBy("revBin")
+			.build(jsonSerdeRegistry.getSerde(String.class))
+		
+		.table()
+			.build(
+					jsonSerdeRegistry.getSerde(String.class),
+					jsonSerdeRegistry.getSerde(
+							(Class<TableRecord<String,GenericRecord>>)
+							(Class<?>) TableRecord.class))
+			
+		.to(topic);
+		
 	}
 
 }

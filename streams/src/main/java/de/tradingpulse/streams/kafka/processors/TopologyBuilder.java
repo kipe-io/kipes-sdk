@@ -298,8 +298,8 @@ public class TopologyBuilder <K,V> {
 				this.streamsBuilder, 
 				this.stream, 
 				this.keySerde, 
-				this.valueSerde)
-				.withTopicsBaseName(this.topicsBaseName);
+				this.valueSerde,
+				this.topicsBaseName);
 	}
 	
 	/**
@@ -337,8 +337,8 @@ public class TopologyBuilder <K,V> {
 				this.keySerde, 
 				this.valueSerde, 
 				otherStream, 
-				otherValueSerde)
-			.withTopicsBaseName(topicsBaseName);
+				otherValueSerde,
+				this.topicsBaseName);
 	}
 
 
@@ -361,8 +361,8 @@ public class TopologyBuilder <K,V> {
 				this.streamsBuilder, 
 				(KStream<K,A>)this.stream, 
 				this.keySerde, 
-				(Serde<A>)this.valueSerde)
-				.withTopicsBaseName(this.topicsBaseName);
+				(Serde<A>)this.valueSerde,
+				this.topicsBaseName);
 	}
 	
 	/**
@@ -382,8 +382,8 @@ public class TopologyBuilder <K,V> {
 				this.streamsBuilder, 
 				this.stream, 
 				this.keySerde, 
-				this.valueSerde)
-				.withTopicsBaseName(topicsBaseName);
+				this.valueSerde,
+				this.topicsBaseName);
 	}
 	
 	/**
@@ -401,8 +401,8 @@ public class TopologyBuilder <K,V> {
 				this.streamsBuilder, 
 				this.stream, 
 				this.keySerde, 
-				this.valueSerde)
-				.withTopicsBaseName(topicsBaseName);
+				this.valueSerde,
+				this.topicsBaseName);
 	}
 	
 	/**
@@ -413,17 +413,17 @@ public class TopologyBuilder <K,V> {
 	 *  a new initialized EvalBuilder
 	 */
 	@SuppressWarnings("unchecked")
-	public <G extends GenericRecord> EvalBuilder<K,G> eval() {
+	public EvalBuilder<K> eval() {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
 		
 		return new EvalBuilder<>(
 				this.streamsBuilder, 
-				(KStream<K,G>)this.stream, 
+				(KStream<K,GenericRecord>)this.stream, 
 				this.keySerde, 
-				(Serde<G>)this.valueSerde)
-				.withTopicsBaseName(topicsBaseName);
+				(Serde<GenericRecord>)this.valueSerde,
+				this.topicsBaseName);
 	}
 	
 	/**
@@ -435,17 +435,59 @@ public class TopologyBuilder <K,V> {
 	 *  a new initialized BinBuilder
 	 */
 	@SuppressWarnings("unchecked")
-	public <G extends GenericRecord> BinBuilder<K,G> bin() {
+	public BinBuilder<K> bin() {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
 		
 		return new BinBuilder<>(
 				this.streamsBuilder, 
-				(KStream<K,G>)this.stream, 
+				(KStream<K,GenericRecord>)this.stream, 
 				this.keySerde, 
-				(Serde<G>)this.valueSerde)
-				.withTopicsBaseName(topicsBaseName);
+				(Serde<GenericRecord>)this.valueSerde,
+				this.topicsBaseName);
 		
+	}
+	
+	/**
+	 * Creates Statistics calculated based on the incoming records.
+	 * 
+	 * @param <G> GenericRecord
+	 * @return
+	 *  a new initialized StatsBuilder
+	 */
+	@SuppressWarnings("unchecked")
+	public StatsBuilder<K> stats() {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		
+		return new StatsBuilder<>(
+				this.streamsBuilder, 
+				(KStream<K,GenericRecord>)this.stream, 
+				this.keySerde, 
+				(Serde<GenericRecord>)this.valueSerde,
+				this.topicsBaseName);
+		
+	}
+	
+	/**
+	 * Creates a stream Tables of incoming GenericRecords.
+	 *  
+	 * @return
+	 * 	a new initialized TableBuilder
+	 */
+	@SuppressWarnings("unchecked")
+	public TableBuilder<K> table() {
+		Objects.requireNonNull(this.stream, "stream");
+		Objects.requireNonNull(this.keySerde, "keySerde");
+		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		
+		return new TableBuilder<>(
+				this.streamsBuilder, 
+				(KStream<K,GenericRecord>)this.stream, 
+				this.keySerde, 
+				(Serde<GenericRecord>)this.valueSerde,
+				this.topicsBaseName);
 	}
 }

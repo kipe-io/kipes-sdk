@@ -22,7 +22,7 @@
 
 # impulse screen signals for a specific symbol and time range
 
-	SELECT key->symbol AS impulse_screen_symbol, CONCAT(TIMESTAMPTOSTRING(timerangeTimestamp, 'yyyy-MM-dd', 'UTC'), ' (', CAST(timerangeTimestamp AS VARCHAR), ')') as day, entrySignal, exitSignal, longrangeImpulseRecord->lastTradingDirection AS longLast, longrangeImpulseRecord->tradingDirection AS longCurrent, shortrangeImpulseRecord->lastTradingDirection AS shortLast, shortrangeImpulseRecord->tradingDirection AS shortCurrent FROM impulse_trading_screen WHERE key->symbol='ZM' AND timerangeTimestamp >= 1580169600000 - 5*86400000 AND timerangeTimestamp <= 1581292800000 + 1*86400000 EMIT CHANGES;
+	SELECT key->symbol AS impulse_screen_symbol, CONCAT(TIMESTAMPTOSTRING(timerangeTimestamp, 'yyyy-MM-dd', 'UTC'), ' (', CAST(timerangeTimestamp AS VARCHAR), ')') as day, entrySignal, exitSignal, longrangeImpulseRecord->lastTrend AS longLastTrend, longrangeImpulseRecord->lastTradingDirection AS longLast, longrangeImpulseRecord->tradingDirection AS longCurrent, shortrangeImpulseRecord->lastTrend AS shortLastTrend, shortrangeImpulseRecord->lastTradingDirection AS shortLast, shortrangeImpulseRecord->tradingDirection AS shortCurrent FROM impulse_trading_screen WHERE key->symbol='ZM' AND timerangeTimestamp >= 1580169600000 - 5*86400000 AND timerangeTimestamp <= 1581292800000 + 1*86400000 EMIT CHANGES;
 
 
 

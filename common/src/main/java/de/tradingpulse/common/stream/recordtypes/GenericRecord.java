@@ -103,4 +103,9 @@ public class GenericRecord {
 		Number n = getNumber(fieldName);
 		return n == null? null : n.doubleValue();
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <K,V> Map<K,V> getMap(String fieldName) {
+		return (Map<K,V>) get(fieldName);
+	}
 }

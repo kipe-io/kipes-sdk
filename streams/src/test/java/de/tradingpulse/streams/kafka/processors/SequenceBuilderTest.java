@@ -13,7 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-class SequenceBuilderIntegrationTest extends AbstractTopologyTest {
+class SequenceBuilderTest extends AbstractTopologyTest {
 
 	private static final String SOURCE = "source";
 	private static final String TARGET = "target";
@@ -49,8 +49,9 @@ class SequenceBuilderIntegrationTest extends AbstractTopologyTest {
 						for(TestRecord record : records) {
 							sum += record.getValue();
 							ts = record.getTimestamp();
+							record.count += 1; // changes the stored record!
 						}
-						return new TestRecord(ts, key, sum);
+						return new TestRecord(ts, key, sum, records.get(0).count);
 					},
 					TestRecord.class,
 					serdes.getSerde(TestRecord.class))
@@ -93,11 +94,13 @@ class SequenceBuilderIntegrationTest extends AbstractTopologyTest {
 		assertEquals("key", r.key);
 		assertEquals(30, r.timestamp);
 		assertEquals(1+2+3, r.value);
+		assertEquals(1, r.count);
 		
 		// and the second record is #4 with the sum of 2..4
 		r = this.targetTopic.readValue();
 		assertEquals(40, r.timestamp);
 		assertEquals(2+3+4, r.value);
+		assertEquals(2, r.count);
 	}
 
 	@Test
@@ -118,12 +121,14 @@ class SequenceBuilderIntegrationTest extends AbstractTopologyTest {
 		assertEquals("key_A", r.key);
 		assertEquals(25, r.timestamp);
 		assertEquals(1+2+3, r.value);
+		assertEquals(1, r.count);
 		
 		// and the second record is #B3 with the sum of 10..30
 		r = this.targetTopic.readValue();
 		assertEquals("key_B", r.key);
 		assertEquals(30, r.timestamp);
 		assertEquals(10+20+30, r.value);
+		assertEquals(1, r.count);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -131,7 +136,7 @@ class SequenceBuilderIntegrationTest extends AbstractTopologyTest {
 	// ------------------------------------------------------------------------
 
 	private void send(String key, Integer value, long timestamp) {
-		this.sourceTopic.pipeInput(key, new TestRecord(timestamp, key, value));
+		this.sourceTopic.pipeInput(key, new TestRecord(timestamp, key, value, 0));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -146,6 +151,7 @@ class SequenceBuilderIntegrationTest extends AbstractTopologyTest {
 		long timestamp;
 		String key;
 		Integer value;
+		Integer count;
 	}
 
 }

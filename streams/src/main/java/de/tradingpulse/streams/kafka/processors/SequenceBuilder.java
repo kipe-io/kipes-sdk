@@ -53,7 +53,8 @@ import io.micronaut.core.serialize.exceptions.SerializationException;
  * @param <GK>
  * @param <VR>
  */
-public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K, V, SequenceBuilder<K, V, GK, VR>>{
+// TODO: document potential record changing behavior of the aggregateFunction 
+public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K, V>{
 
 	private BiFunction<K,V, GK> groupKeyFunction;
 	private Serde<GK> groupKeySerde;
@@ -64,9 +65,10 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 			StreamsBuilder streamsBuilder, 
 			KStream<K, V> stream, 
 			Serde<K> keySerde, 
-			Serde<V> valueSerde) 
+			Serde<V> valueSerde,
+			String topicsBaseName) 
 	{
-		super(streamsBuilder, stream, keySerde, valueSerde);
+		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 	}
 
 	/**
@@ -101,9 +103,11 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 		this.sequenceSize = size;
 		return this;
 	}
-	
+		
 	/**
-	 * 
+	 * The aggregateFunction to apply to the complete sequence. Note that it is
+	 * possible to alter the sequence records for later aggregations.
+	 *  
 	 * @param aggregateFunction
 	 * @param aggregateSerde
 	 * @return
@@ -120,7 +124,7 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 		
 		final String stateStoreName = getProcessorStoreTopicName(getTopicsBaseName()+"-sequence");
 		
-		StoreBuilder<KeyValueStore<GK, List<List<V>>>> dedupStoreBuilder =
+		StoreBuilder<KeyValueStore<GK, List<V>>> dedupStoreBuilder =
 				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(stateStoreName),
 						this.groupKeySerde,
 						new SequencesSerde<>(valueClass));
@@ -153,7 +157,7 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 		private final int sequenceSize;
 		private final BiFunction<GK,List<V>, VR> aggregateFunction;
 		
-		KeyValueStore<GK, List<List<V>>> stateStore;
+		KeyValueStore<GK, List<V>> stateStore;
 
 		SequenceTransformer(
 				String stateStoreName,
@@ -170,17 +174,17 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 		@Override
 		@SuppressWarnings("unchecked")
 		public void init(ProcessorContext context) {
-			this.stateStore = (KeyValueStore<GK, List<List<V>>>)context.getStateStore(stateStoreName);
+			this.stateStore = (KeyValueStore<GK, List<V>>)context.getStateStore(stateStoreName);
 		}
 
 		@Override
 		public KeyValue<K,VR> transform(K key, V value) {
 			final GK groupKey = this.groupKeyFunction.apply(key, value);
-			List<List<V>> groupSequences = this.stateStore.get(groupKey);
+			List<V> groupSequence = this.stateStore.get(groupKey);
 			
-			if(groupSequences == null) {
+			if(groupSequence == null) {
 				// we see that group for the very first time
-				groupSequences = new LinkedList<>();
+				groupSequence = new LinkedList<>();
 				
 				// TODO: the group store grows indefinitly
 				// outdated group keys aren't evicted, we might want to add
@@ -188,25 +192,21 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 				// up old keys
 			}
 			
-			// add the value to all sequences
-			groupSequences.forEach(sequence -> 
-					sequence.add(value));
-
-			// each value also starts a new sequence
-			List<V> newSequence = new LinkedList<>();
-			newSequence.add(value);
-			groupSequences.add(newSequence);
+			groupSequence.add(value);
 			
 			// aggregate the first sequence if it has all the records needed
-			if(groupSequences.get(0).size() < this.sequenceSize) {
-				this.stateStore.put(groupKey, groupSequences);
+			if(groupSequence.size() < this.sequenceSize) {
+				this.stateStore.put(groupKey, groupSequence);
 				return null;
 			}
 			
-			List<V> completedSequence = groupSequences.remove(0);
-			this.stateStore.put(groupKey, groupSequences);
-
-			return new KeyValue<>(key, this.aggregateFunction.apply(groupKey, completedSequence));
+			KeyValue<K,VR> returnValue = new KeyValue<>(key, this.aggregateFunction.apply(groupKey, groupSequence));
+			
+			// we store now as the aggregateFunction may had altered the incoming records
+			groupSequence.remove(0);
+			this.stateStore.put(groupKey, groupSequence);
+			
+			return returnValue;
 		}
 
 		@Override
@@ -216,7 +216,7 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 		
 	}
 	
-	static class SequencesSerde<T> implements Serializer<List<List<T>>>, Deserializer<List<List<T>>>, Serde<List<List<T>>> {
+	static class SequencesSerde<T> implements Serializer<List<T>>, Deserializer<List<T>>, Serde<List<T>> {
 
 	    private final ObjectMapper mapper;
 		private final CollectionType valueType;
@@ -224,15 +224,13 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 		public SequencesSerde(Class<T> type) {
 			this.mapper = new ObjectMapper();
 			
-			CollectionType innerCollectionType = mapper.getTypeFactory()
-					.constructCollectionType(List.class, type);
 			
 			this.valueType = mapper.getTypeFactory()
-					.constructCollectionType(List.class, innerCollectionType);
+					.constructCollectionType(List.class, type);
 		}
 		
 		@Override
-		public List<List<T>> deserialize(String topic, byte[] data) {
+		public List<T> deserialize(String topic, byte[] data) {
 	        if (data == null) {
 	            return null;
 	        }
@@ -245,7 +243,7 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 		}
 
 		@Override
-		public byte[] serialize(String topic, List<List<T>> data) {
+		public byte[] serialize(String topic, List<T> data) {
 	        if (data == null) {
 	            return null;
 	        }
@@ -263,12 +261,12 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 	    }
 
 		@Override
-		public Serializer<List<List<T>>> serializer() {
+		public Serializer<List<T>> serializer() {
 			return this;
 		}
 
 		@Override
-		public Deserializer<List<List<T>>> deserializer() {
+		public Deserializer<List<T>> deserializer() {
 			return this;
 		}
 

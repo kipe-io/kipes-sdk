@@ -27,6 +27,7 @@ public class ImpulseRecord extends AbstractIncrementalAggregateRecord {
 
 	private TradingDirection tradingDirection;
 	private TradingDirection lastTradingDirection;
+	private TradingDirection lastTrend;
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	public TradingDirection getChangeTradingDirection() {
