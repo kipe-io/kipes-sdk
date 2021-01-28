@@ -26,6 +26,36 @@ public class GenericRecord {
 	private Map<String, Object> fields = new HashMap<>();
 	
 	/**
+	 * Returns a shallow copy.
+	 * 
+	 * @return
+	 * 	a shallow copy.
+	 */
+	public GenericRecord copy() {
+		GenericRecord copy = new GenericRecord();
+		copy.fields.putAll(this.fields);
+		
+		return this;
+	}
+	
+	/**
+	 * Adds the fields from the other GenericRecord if those fields unknown at
+	 * this object.
+	 * 
+	 * @param other the GenericObject to add the unknown fields from
+	 * 
+	 * @return
+	 * 	this object
+	 */
+	public GenericRecord withNewFieldsFrom(GenericRecord other) {
+		Objects.requireNonNull(other, "other");
+		
+		other.fields.forEach(this.fields::putIfAbsent);
+		
+		return this;
+	}
+	
+	/**
 	 * Returns the value of the given field.
 	 * 
 	 * @param fieldName the field's name to return the value for

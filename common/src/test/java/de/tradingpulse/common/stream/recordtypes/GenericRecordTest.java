@@ -25,6 +25,22 @@ class GenericRecordTest {
 	}
 	
 	// ------------------------------------------------------------------------
+	// tests withNewFieldsFrom
+	// ------------------------------------------------------------------------
+
+	@Test
+	void test_withNewFieldsFrom() {
+		r.with(FIELD, VALUE);
+		r.withNewFieldsFrom(GenericRecord.create()
+				.with(FIELD, OTHER_VALUE)		// will be ignored
+				.with("otherField", "new"));	// will be added
+		
+		assertEquals(VALUE, r.get(FIELD));
+		assertEquals("new", r.get("otherField"));
+		
+	}
+	
+	// ------------------------------------------------------------------------
 	// tests set/get/remove
 	// ------------------------------------------------------------------------
 

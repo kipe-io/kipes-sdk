@@ -18,7 +18,7 @@ import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 
 @Singleton
-public class BacktestResultAnalyticsProcessor extends AbstractProcessorFactory {
+class BacktestResultAnalyticsProcessor extends AbstractProcessorFactory {
 	
 	private static final String TOPIC_BACKTEST_ANALYTICS = BacktestStageConstants.STAGE_NAME + "-backtest_analytics";
 	

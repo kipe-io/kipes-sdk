@@ -20,6 +20,18 @@ public class SystemsProcessorsFacade {
 	@Inject
 	private ImpulseStreamProcessor impulseIncrementalStreamProcessor;
 
+	@Inject
+	private TrendEMAProcessor trendEMAProcessor;
+	
+	@Inject
+	private TrendMACDProcessor trendMACDProcessor;
+	
+	@Inject
+	private TrendSSTOCProcessor trendSSTOCProcessor;
+
+	@Inject
+	private TrendAggregatorProcessor trendAggregatorProcessor;
+
 	@PostConstruct
 	void postConstruct() {
 		LOG.info("initialized");
