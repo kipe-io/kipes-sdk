@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.tradingpulse.stage.tradingscreens.streams.TrendsValueStream;
 import io.micronaut.context.annotation.Context;
 
 @Singleton
@@ -16,6 +17,9 @@ import io.micronaut.context.annotation.Context;
 public class TradingScreensProcessorsFacade {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(TradingScreensProcessorsFacade.class);
+	
+	@Inject
+	private TrendsValueProcessor trendsValueProcessor;
 	
 	@Inject
 	private ImpulseTradingScreenProcessor impulseIncrementalStreamProcessor;

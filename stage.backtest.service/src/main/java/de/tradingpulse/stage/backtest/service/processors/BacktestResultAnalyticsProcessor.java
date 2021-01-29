@@ -1,5 +1,7 @@
 package de.tradingpulse.stage.backtest.service.processors;
 
+import java.time.Duration;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -7,6 +9,7 @@ import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.GenericRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 import de.tradingpulse.stage.backtest.BacktestStageConstants;
 import de.tradingpulse.stage.backtest.recordtypes.BacktestResultRecord;
 import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;

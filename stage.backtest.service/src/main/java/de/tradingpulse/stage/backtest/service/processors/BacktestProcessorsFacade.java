@@ -17,7 +17,7 @@ import io.micronaut.context.annotation.Requires;
 public class BacktestProcessorsFacade {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BacktestProcessorsFacade.class);
-		
+	
 	@Inject
 	private SignalExecutionProcessor signalExecutionProcessor;
 	
