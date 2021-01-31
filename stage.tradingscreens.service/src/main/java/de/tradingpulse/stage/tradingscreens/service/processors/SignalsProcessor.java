@@ -6,6 +6,7 @@ import static de.tradingpulse.stage.tradingscreens.recordtypes.SignalType.ENTRY_
 import static de.tradingpulse.stage.tradingscreens.recordtypes.SignalType.EXIT_LONG;
 import static de.tradingpulse.stage.tradingscreens.recordtypes.SignalType.EXIT_SHORT;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,9 +21,11 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.tradingpulse.common.stream.recordtypes.GenericRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
+import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
 import de.tradingpulse.stage.tradingscreens.recordtypes.EntrySignal;
 import de.tradingpulse.stage.tradingscreens.recordtypes.ExitSignal;
 import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
@@ -40,6 +43,9 @@ import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 public class SignalsProcessor extends AbstractProcessorFactory {
 	
 	@Inject
+	SystemsStreamsFacade systemsStreamsFacade;
+	
+	@Inject
 	TradingScreensStreamsFacade tradingScreensStreamsFacade;
 
 	@Inject
@@ -50,11 +56,14 @@ public class SignalsProcessor extends AbstractProcessorFactory {
 
 	@Override
 	protected void initProcessors() {
-		createTopology(tradingScreensStreamsFacade.getImpulseTradingScreenStream());
+		createTopology(
+				tradingScreensStreamsFacade.getImpulseTradingScreenStream(),
+				tradingScreensStreamsFacade.getTrendsStream());
 	}
 	
 	void createTopology(
-			KStream<SymbolTimestampKey, ImpulseTradingScreenRecord> impulseTradingScreenStream )
+			KStream<SymbolTimestampKey, ImpulseTradingScreenRecord> impulseTradingScreenStream,
+			KStream<SymbolTimestampKey, GenericRecord> trendsStream )
 	{
 		// --------------------------------------------------------------------
 		// from
@@ -70,6 +79,13 @@ public class SignalsProcessor extends AbstractProcessorFactory {
 		//   groupBy key.symbol, strategyKey
 		//   advanceBy signalType
 		//   emitFirst
+		//
+		// join
+		//   trends_value
+		//   on {keys}
+		//   window size 0 retention 2 years 1 day
+		//   as SignalRecord
+		//      signalRecord.shortRangeTrendsValue = ...
 		//
 		// to
 		//   signals_daily
@@ -102,7 +118,16 @@ public class SignalsProcessor extends AbstractProcessorFactory {
 					(key, value) ->
 						value.getSignalType().name())
 			.emitFirst()
-			
+		
+		.<GenericRecord, SignalRecord> join(
+				trendsStream,
+				jsonSerdeRegistry.getSerde(GenericRecord.class))
+			.withWindowSize(Duration.ZERO)
+			.withRetentionPeriod(Duration.ofMillis(this.retentionMs + 86400000L ))
+			.as(
+					(signal, trends) -> signal.deepClone()
+								.withTrendsFrom(trends),
+					jsonSerdeRegistry.getSerde(SignalRecord.class))
 		.to(
 				TradingScreensStreamsFacade.TOPIC_SIGNAL_DAILY);
 	}

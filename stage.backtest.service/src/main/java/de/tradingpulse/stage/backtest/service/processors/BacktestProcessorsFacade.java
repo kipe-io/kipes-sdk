@@ -24,8 +24,8 @@ public class BacktestProcessorsFacade {
 	@Inject
 	private BacktestResultProcessor backtestResultProcessor;
 	
-	@Inject
-	private BacktestResultAnalyticsProcessor backtestResultAnalyticsProcessor;
+//	@Inject
+//	private BacktestResultAnalyticsProcessor backtestResultAnalyticsProcessor;
 	
 	@PostConstruct
 	void postConstruct() {

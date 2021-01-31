@@ -55,6 +55,11 @@ public class GenericRecord {
 		return this;
 	}
 	
+	public GenericRecord withValueFrom(String fieldName, GenericRecord other) {
+		set(fieldName, other.get(fieldName));
+		return this;
+	}
+		
 	/**
 	 * Returns the value of the given field.
 	 * 

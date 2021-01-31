@@ -17,9 +17,9 @@ import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import io.micronaut.context.annotation.Factory;
 
 @Factory
-public class TrendsValueStream extends AbstractStreamFactory {
+public class TrendsStream extends AbstractStreamFactory {
 	
-	static final String TOPIC_TRENDS_VALUE = TradingScreensStageConstants.STAGE_NAME + "-" + "trends_value";
+	static final String TOPIC_TRENDS = TradingScreensStageConstants.STAGE_NAME + "-" + "trends";
 
 	@Inject
 	private JsonSerdeRegistry jsonSerdeRegistry;
@@ -27,16 +27,16 @@ public class TrendsValueStream extends AbstractStreamFactory {
 	@Override
 	protected String[] getTopicNames() {
 		return new String[] {
-				TOPIC_TRENDS_VALUE
+				TOPIC_TRENDS
 		};
 	}
 	
 	@Singleton
-    @Named(TOPIC_TRENDS_VALUE)
+    @Named(TOPIC_TRENDS)
     KStream<SymbolTimestampKey, GenericRecord> trendsValueStream(final ConfiguredStreamBuilder builder) {
 		
 		return builder
-				.stream(TOPIC_TRENDS_VALUE, Consumed.with(
+				.stream(TOPIC_TRENDS, Consumed.with(
 						jsonSerdeRegistry.getSerde(SymbolTimestampKey.class), 
 						jsonSerdeRegistry.getSerde(GenericRecord.class))
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));

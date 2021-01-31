@@ -53,6 +53,9 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 		// to
 		//		backtestresult_daily	
 		// --------------------------------------------------------------------
+		// Note: to export the results to TSV (you need to exit with CTRL-C)
+		// kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic stg-backtest-backtestresult_daily --from-beginning | jq -r '[.key.symbol,.entryTimestamp,.key.timestamp,.strategyKey,.tradingDirection,.longRangeTrends.ema,.longRangeTrends.macdHistogram,.longRangeTrends.macdLinesSlope,.longRangeTrends.macdValue,.longRangeTrends.sstocSlope,.longRangeTrends.sstocValue,.shortRangeTrends.ema,.shortRangeTrends.macdHistogram,.shortRangeTrends.macdLinesSlope,.shortRangeTrends.macdValue,.shortRangeTrends.sstocSlope,.shortRangeTrends.sstocValue,.entry,.exit] | @tsv' - > ~/Desktop/signal_execs.tsv
+		// --------------------------------------------------------------------
 		
 		TopologyBuilder
 		.init(streamBuilder)
@@ -112,6 +115,8 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 							.high(high)
 							.low(low)
 							.exit(exit)
+							.shortRangeTrends(entryRecord.getSignalRecord().getShortRangeTrends())
+							.longRangeTrends(entryRecord.getSignalRecord().getLongRangeTrends())
 							.build(); 
 					})
 			.asValueType(

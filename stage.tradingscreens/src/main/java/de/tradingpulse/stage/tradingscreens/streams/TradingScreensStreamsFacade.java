@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 
 import org.apache.kafka.streams.kstream.KStream;
 
+import de.tradingpulse.common.stream.recordtypes.GenericRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
@@ -15,9 +16,9 @@ import lombok.Getter;
 @Getter
 public class TradingScreensStreamsFacade {
 	
-	@Inject @Named(TrendsValueStream.TOPIC_TRENDS_VALUE)
-    private KStream<SymbolTimestampKey, SignalRecord> trendsValueStream;
-	public static final String TOPIC_TRENDS_VALUE = TrendsValueStream.TOPIC_TRENDS_VALUE;
+	@Inject @Named(TrendsStream.TOPIC_TRENDS)
+    private KStream<SymbolTimestampKey, GenericRecord> trendsStream;
+	public static final String TOPIC_TRENDS = TrendsStream.TOPIC_TRENDS;
 	
 	@Inject @Named(SignalStream.TOPIC_SIGNAL_DAILY)
     private KStream<SymbolTimestampKey, SignalRecord> signalDailyStream;

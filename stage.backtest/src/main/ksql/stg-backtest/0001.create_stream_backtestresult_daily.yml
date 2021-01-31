@@ -12,6 +12,8 @@ ksql:
         low DOUBLE,
         exit DOUBLE,
         revenue DOUBLE,
+        shortRangeTrends TRENDS,
+        longRangeTrends TRENDS,
         maxPotentialRevenue DOUBLE,
         durationMS BIGINT
     ) WITH (

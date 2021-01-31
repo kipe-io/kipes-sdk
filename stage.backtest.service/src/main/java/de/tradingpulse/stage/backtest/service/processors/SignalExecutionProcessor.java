@@ -119,7 +119,7 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 		//
 		// transform
 		//   into {createContinuousDailySignalRecords}
-		//   as {SymbolTimestampKey, SignalRecord}
+		//   as {SymbolTimestampKey, GenericRecord}
 		//
 		// transform
 		//   into key.timestamp += 1 day
@@ -127,7 +127,7 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 		//
 		// inner join
 		//   ohlcv_daily
-		//   on signal_daily.key.symbol = ohlcv_daily.key.symbol
+		//   on signal_daily.key.symbol = ohlcv_daily.key.symbol                # implies a rekey
 		//   window before 0 after 7 days retention 2 years 1 day
 		//   as SignalExecutionRecord
 		//
@@ -139,6 +139,7 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 		//   signal_execution_daily
 		// --------------------------------------------------------------------
 		
+		// prepare rekeyed ohlcv stream {key.symbol, ohlcv}
 		KStream<String, OHLCVRecord> ohlcvRekeyed = TopologyBuilder.init(streamBuilder)
 				.withTopicsBaseName(SourceDataStreamsFacade.TOPIC_OHLCV_DAILY)
 				.from(
@@ -153,6 +154,9 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 				.asKeyType(jsonSerdeRegistry.getSerde(String.class))
 				.getStream();
 				
+		
+		// main topology ------------------------------------------------------
+		
 		
 		TopologyBuilder.init(streamBuilder)
 		.withTopicsBaseName(TradingScreensStreamsFacade.TOPIC_SIGNAL_DAILY)

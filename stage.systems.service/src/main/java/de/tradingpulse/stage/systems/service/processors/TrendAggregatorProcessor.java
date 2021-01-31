@@ -9,6 +9,7 @@ import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.GenericRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
+import de.tradingpulse.stage.systems.recordtypes.Trends;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
@@ -90,8 +91,19 @@ class TrendAggregatorProcessor extends AbstractProcessorFactory {
 			.withWindowSize(Duration.ZERO)
 			.withRetentionPeriod(Duration.ofMillis(this.retentionMs + 86400000L))
 			.as(
-					(trendEMA, trendMACD) -> trendEMA.copy()
-						.withNewFieldsFrom(trendMACD),
+					(trendEMA, trendMACD) -> GenericRecord.create()
+						.withValueFrom("key", trendEMA)
+						.withValueFrom("timeRange", trendEMA)
+						.withValueFrom("timeRangeTimestamp", trendEMA)
+						.with("trends", Trends.builder()
+								
+								.ema(trendEMA.getString("trendEMA"))
+								
+								.macdHistogram(trendMACD.getString("trendMACDHistogram"))
+								.macdLinesSlope(trendMACD.getString("trendMACDLinesSlope"))
+								.macdValue(trendMACD.getString("trendMACDValue"))
+								
+								.build()),
 						jsonSerdeRegistry.getSerde(GenericRecord.class))
 			
 		.withTopicsBaseName(topic+"_ema_macd_sstoc")
@@ -103,8 +115,15 @@ class TrendAggregatorProcessor extends AbstractProcessorFactory {
 			.withWindowSize(Duration.ZERO)
 			.withRetentionPeriod(Duration.ofMillis(this.retentionMs + 86400000L))
 			.as(
-					(trendEMAandMACD, trendSSTOC) -> trendEMAandMACD.copy()
-						.withNewFieldsFrom(trendSSTOC),
+					(trendEMAandMACD, trendSSTOC) -> {
+						GenericRecord r = trendEMAandMACD.copy();
+						Trends trends = r.get("trends");
+						
+						trends.setSstocSlope(trendSSTOC.getString("trendSSTOCSlope"));
+						trends.setSstocValue(trendSSTOC.getString("trendSSTOCValue"));
+						
+						return r;
+					},
 						jsonSerdeRegistry.getSerde(GenericRecord.class))
 		
 		.to(topic);

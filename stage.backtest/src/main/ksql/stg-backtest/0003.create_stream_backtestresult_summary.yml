@@ -1,0 +1,55 @@
+ksql:
+    CREATE TABLE backtestresult_summary
+    WITH (
+        KAFKA_TOPIC = 'stg-backtest-ksql-backtestresult_summary',
+        VALUE_FORMAT = 'JSON'
+    ) AS
+        SELECT
+            strategyKey, 
+            tradingDirection, 
+            longRangeTrends -> ema AS lrt_ema, 
+            longRangeTrends -> macdHistogram AS lrt_macdHistogram, 
+            longRangeTrends -> macdLinesSlope AS lrt_macdLinesSlope, 
+            longRangeTrends -> macdValue AS lrt_macdValue, 
+            longRangeTrends -> sstocSlope AS lrt_sstocSlope, 
+            longRangeTrends -> sstocValue AS lrt_sstocValue, 
+            shortRangeTrends -> ema AS srt_ema, 
+            shortRangeTrends -> macdHistogram AS srt_macdHistogram, 
+            shortRangeTrends -> macdLinesSlope AS srt_macdLinesSlope, 
+            shortRangeTrends -> macdValue AS srt_macdValue, 
+            shortRangeTrends -> sstocSlope AS srt_sstocSlope, 
+            shortRangeTrends -> sstocValue AS srt_sstocValue, 
+            SUM(entry) as sumInvest, 
+            SUM(revenue) as rev, 
+            SUM(revenue)/SUM(entry) as revRatio, 
+            SUM(maxPotentialRevenue) as maxPotentialRevenue, 
+            SUM(maxPotentialRevenue)/SUM(entry) as maxPotentialRevenueRatio, 
+            SUM(durationMS)/1000/60/60/24 as durationOnExit, 
+            COUNT(*) as numPositionsOnExit 
+        FROM
+            backtestresult_daily
+        WHERE 
+            true 
+        GROUP BY 
+            strategyKey, 
+            tradingDirection, 
+            longRangeTrends -> ema, 
+            longRangeTrends -> macdHistogram, 
+            longRangeTrends -> macdLinesSlope, 
+            longRangeTrends -> macdValue, 
+            longRangeTrends -> sstocSlope, 
+            longRangeTrends -> sstocValue, 
+            shortRangeTrends -> ema, 
+            shortRangeTrends -> macdHistogram, 
+            shortRangeTrends -> macdLinesSlope, 
+            shortRangeTrends -> macdValue, 
+            shortRangeTrends -> sstocSlope, 
+            shortRangeTrends -> sstocValue 
+        EMIT CHANGES;
+    
+streamsProperties:
+   auto.offset.reset: earliest
+   
+rollback:
+    ksql:
+        DROP TABLE signal_execution_daily DELETE TOPIC;

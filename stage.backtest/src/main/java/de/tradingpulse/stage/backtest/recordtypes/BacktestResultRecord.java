@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
+import de.tradingpulse.stage.systems.recordtypes.Trends;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -29,6 +30,8 @@ public class BacktestResultRecord extends AbstractIncrementalAggregateRecord {
 	private Double high;
 	private Double low;
 	private Double exit;
+	private Trends shortRangeTrends;
+	private Trends longRangeTrends;
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	public Double getRevenue() {

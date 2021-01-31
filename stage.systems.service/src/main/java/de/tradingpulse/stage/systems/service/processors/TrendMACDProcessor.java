@@ -122,7 +122,7 @@ class TrendMACDProcessor extends AbstractProcessorFactory {
 						.with("key", macd.getKey())
 						.with("timeRange", macd.getTimeRange().name())
 						.with("timeRangeTimestamp", macd.getTimeRangeTimestamp())
-						.with("trendMacdHistogram", evaluateTrendMACDHistogram(macd).name())
+						.with("trendMACDHistogram", evaluateTrendMACDHistogram(macd).name())
 						.with("trendMACDLinesSlope", evaluateTrendMACDLinesSlope(macd).name())
 						.with("trendMACDValue", evaluateTrendMACDValue(macd).name()))
 			.asValueType(
