@@ -1,4 +1,4 @@
-package de.tradingpulse.stage.tradingscreens.service.processors;
+package de.tradingpulse.stage.tradingscreens.service.strategies;
 
 import static de.tradingpulse.stage.tradingscreens.recordtypes.SignalType.*;
 import static de.tradingpulse.common.stream.recordtypes.TradingDirection.LONG;
@@ -22,7 +22,7 @@ import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalType;
-import de.tradingpulse.stage.tradingscreens.service.processors.SignalsProcessor.MomentumStrategy;
+import de.tradingpulse.stage.tradingscreens.service.strategies.MomentumStrategy;
 
 
 class MomentumStrategyTest {
