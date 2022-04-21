@@ -25,7 +25,6 @@ import org.apache.kafka.streams.state.Stores;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 import de.tradingpulse.streams.recordtypes.TransactionRecord;
 
 /**
@@ -63,7 +62,7 @@ import de.tradingpulse.streams.recordtypes.TransactionRecord;
  * @param <V> the input value type
  * @param <GK> the groupKey type
  */
-public class TransactionBuilder<K,V extends AbstractIncrementalAggregateRecord, GK> 
+public class TransactionBuilder<K,V, GK> 
 extends AbstractTopologyPartBuilder<K, V>
 {
 	private BiFunction<K,V, GK> groupKeyFunction;
@@ -223,7 +222,7 @@ extends AbstractTopologyPartBuilder<K, V>
 	// TransactionTransformer
 	// ------------------------------------------------------------------------
 
-	static class TransactionTransformer <K,V extends AbstractIncrementalAggregateRecord, GK> 
+	static class TransactionTransformer <K,V, GK> 
 	implements Transformer<K,V, KeyValue<K, TransactionRecord<GK, V>>>
 	{
 		private static final Logger LOG = LoggerFactory.getLogger(TransactionTransformer.class);
@@ -265,7 +264,7 @@ extends AbstractTopologyPartBuilder<K, V>
 
 			if(transactionRecord == null && startsWith(key, value)) {
 				// store empty? yea, startswith? yea, create TransactionRecord add value
-				transactionRecord = TransactionRecord.createFrom(value);
+				transactionRecord = new TransactionRecord<GK, V>();
 				transactionRecord.setGroupKey(groupKey);
 				
 				currentTXNType = START;

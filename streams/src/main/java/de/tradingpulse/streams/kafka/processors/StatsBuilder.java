@@ -15,7 +15,7 @@ import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.state.KeyValueStore;
 
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 
 /**
  * Calculates statistics of incoming GenericRecords.

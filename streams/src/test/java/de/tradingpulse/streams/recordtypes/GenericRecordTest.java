@@ -1,4 +1,4 @@
-package de.tradingpulse.common.stream.recordtypes;
+package de.tradingpulse.streams.recordtypes;
 
 import static org.junit.jupiter.api.Assertions.*;
 

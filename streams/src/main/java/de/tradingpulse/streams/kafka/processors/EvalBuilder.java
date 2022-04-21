@@ -10,7 +10,7 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 
 /**
  * <br>

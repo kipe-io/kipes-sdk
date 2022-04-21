@@ -14,6 +14,7 @@ import org.apache.kafka.streams.kstream.KStream;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 
+// TODO documentation
 public class TopologyTestContext {
 
 	private static final Properties CONFIG = new Properties();

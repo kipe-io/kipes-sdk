@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 import de.tradingpulse.streams.test.kafka.TopologyTestContext;
 
 class EvalBuilderTest extends AbstractGenericRecordProcessorTopologyTest {

@@ -6,8 +6,8 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
 import de.tradingpulse.common.utils.MathUtils;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 
 /**
  * Discretizes the values of a field into another.

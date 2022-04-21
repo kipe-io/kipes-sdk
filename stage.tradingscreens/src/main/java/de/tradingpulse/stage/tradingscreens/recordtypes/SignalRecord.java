@@ -2,8 +2,8 @@ package de.tradingpulse.stage.tradingscreens.recordtypes;
 
 import de.tradingpulse.common.stream.aggregates.DeepCloneable;
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
 import de.tradingpulse.stage.systems.recordtypes.Trends;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

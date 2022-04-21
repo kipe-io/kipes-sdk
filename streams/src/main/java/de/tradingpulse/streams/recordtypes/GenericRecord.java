@@ -1,4 +1,4 @@
-package de.tradingpulse.common.stream.recordtypes;
+package de.tradingpulse.streams.recordtypes;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -3,6 +3,7 @@ package de.tradingpulse.streams.test.kafka;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+// TODO documentation
 public abstract class AbstractTopologyTest {
 	
 	/** one day in milliseconds */

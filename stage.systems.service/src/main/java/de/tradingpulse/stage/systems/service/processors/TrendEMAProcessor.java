@@ -7,7 +7,6 @@ import javax.inject.Singleton;
 
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
@@ -15,6 +14,7 @@ import de.tradingpulse.stages.indicators.recordtypes.DoubleRecord;
 import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 

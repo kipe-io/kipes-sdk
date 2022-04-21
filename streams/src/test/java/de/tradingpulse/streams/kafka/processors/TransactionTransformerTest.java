@@ -21,8 +21,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
-import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.streams.kafka.processors.TransactionBuilder.EmitType;
 import de.tradingpulse.streams.kafka.processors.TransactionBuilder.TransactionTransformer;
 import de.tradingpulse.streams.recordtypes.TransactionRecord;
@@ -31,13 +29,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import lombok.experimental.SuperBuilder;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionTransformerTest {
 
 	private static final String KEY = "key";
-	private static final String SYMBOL = "symbol";
 	
 	private static final String START = "START";
 	private static final String ONGOING = "ongoing";
@@ -388,10 +384,7 @@ class TransactionTransformerTest {
 	 * </pre> 
 	 */
 	private TestValue createTestValue(String value) {
-		return TestValue.builder()
-				.key(new SymbolTimestampKey(SYMBOL, System.currentTimeMillis()))
-				.value(value)
-				.build();
+		return new TestValue(value);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -399,12 +392,11 @@ class TransactionTransformerTest {
 	// ------------------------------------------------------------------------
 
 	@Data
-	@EqualsAndHashCode(callSuper = true)
-	@ToString(callSuper = true)
+	@EqualsAndHashCode
+	@ToString
 	@NoArgsConstructor
 	@AllArgsConstructor
-	@SuperBuilder
-	private static class TestValue extends AbstractIncrementalAggregateRecord {
+	private static class TestValue {
 		private String value;
 	}
 }

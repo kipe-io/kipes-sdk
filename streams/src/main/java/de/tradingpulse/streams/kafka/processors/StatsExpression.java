@@ -1,6 +1,6 @@
 package de.tradingpulse.streams.kafka.processors;
 
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 
 public abstract class StatsExpression extends Expression<String, GenericRecord> {
 

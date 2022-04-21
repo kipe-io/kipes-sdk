@@ -7,7 +7,6 @@ import javax.inject.Singleton;
 
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
 import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
@@ -19,6 +18,7 @@ import de.tradingpulse.stage.tradingscreens.service.strategies.SwingMarketTurnPo
 import de.tradingpulse.stage.tradingscreens.streams.TradingScreensStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 

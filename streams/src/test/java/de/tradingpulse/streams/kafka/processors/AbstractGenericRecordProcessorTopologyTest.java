@@ -3,7 +3,7 @@ package de.tradingpulse.streams.kafka.processors;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 import de.tradingpulse.streams.test.kafka.AbstractTopologyTest;
 import de.tradingpulse.streams.test.kafka.TopologyTestContext;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;

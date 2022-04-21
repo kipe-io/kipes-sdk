@@ -59,6 +59,7 @@
 		<module>stage.backtest</module>
 		<module>stage.backtest.service</module>
 		<module>connector.iexcloud</module>
+		<module>optimus</module>
 	</modules>
 
 	<dependencyManagement>
@@ -72,6 +73,11 @@
 				<groupId>com.squareup.retrofit2</groupId>
 				<artifactId>retrofit</artifactId>
 				<version>${retrofit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-math3</artifactId>
+				<version>3.5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.kafka</groupId>

@@ -2,7 +2,7 @@ package de.tradingpulse.streams.kafka.processors;
 
 import java.util.function.BiFunction;
 
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 

@@ -14,8 +14,7 @@ import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.To;
 import org.slf4j.LoggerFactory;
 
-import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 
 /**
  * A builder to easily setup KStream topologies. Clients normally interact by
@@ -352,16 +351,16 @@ public class TopologyBuilder <K,V> {
 	 * 	a new initialized TransactionBuilder
 	 */
 	@SuppressWarnings("unchecked")
-	public <GK, A extends AbstractIncrementalAggregateRecord> TransactionBuilder<K,A, GK> transaction() {
+	public <GK> TransactionBuilder<K,V, GK> transaction() {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
 		
-		return (TransactionBuilder<K,A, GK>)new TransactionBuilder<>(
+		return (TransactionBuilder<K,V, GK>)new TransactionBuilder<>(
 				this.streamsBuilder, 
-				(KStream<K,A>)this.stream, 
+				(KStream<K,V>)this.stream, 
 				this.keySerde, 
-				(Serde<A>)this.valueSerde,
+				(Serde<V>)this.valueSerde,
 				this.topicsBaseName);
 	}
 	

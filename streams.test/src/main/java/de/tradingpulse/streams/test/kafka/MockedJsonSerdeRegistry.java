@@ -11,6 +11,7 @@ import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.context.BeanContext;
 import io.micronaut.core.reflect.ClassUtils;
 
+// TODO documentation
 public class MockedJsonSerdeRegistry extends JsonSerdeRegistry {
 	static JsonSerdeRegistry create() {
 		return new MockedJsonSerdeRegistry(mock(BeanContext.class));

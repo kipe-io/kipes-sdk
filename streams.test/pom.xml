@@ -16,12 +16,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>de.tradingpulse</groupId>
-			<artifactId>common</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>

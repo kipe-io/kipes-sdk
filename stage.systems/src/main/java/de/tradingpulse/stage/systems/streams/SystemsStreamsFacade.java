@@ -6,9 +6,9 @@ import javax.inject.Singleton;
 
 import org.apache.kafka.streams.kstream.KStream;
 
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 import lombok.Getter;
 
 @Singleton

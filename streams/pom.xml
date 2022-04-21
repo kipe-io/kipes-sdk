@@ -15,11 +15,11 @@
 	</parent>
 
 	<dependencies>
-		<dependency>
+		<!-- dependency>
 			<groupId>de.tradingpulse</groupId>
 			<artifactId>common</artifactId>
 			<version>${project.parent.version}</version>
-		</dependency>
+		</dependency-->
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>

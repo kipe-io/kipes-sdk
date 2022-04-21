@@ -2,7 +2,6 @@ package de.tradingpulse.streams.kafka.processors;
 
 import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
 
-import java.util.Hashtable;
 import java.util.Objects;
 
 import org.apache.kafka.common.serialization.Serde;
@@ -15,7 +14,7 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
-import de.tradingpulse.common.stream.recordtypes.GenericRecord;
+import de.tradingpulse.streams.recordtypes.GenericRecord;
 import de.tradingpulse.streams.kafka.processors.recordtypes.TableRecord;
 
 // TODO documentation
