@@ -21,11 +21,11 @@
 FROM openjdk:16
 
 # install kafka
-RUN curl -o /tmp/kafka.tgz https://downloads.apache.org/kafka/2.6.0/kafka_2.13-2.6.0.tgz && \
+RUN curl -o /tmp/kafka.tgz https://downloads.apache.org/kafka/3.1.0/kafka_2.13-3.1.0.tgz && \
     tar xzf /tmp/kafka.tgz -C /opt/ && \
     rm -f /tmp/kafka.tgz
     
-ENV KAFKA_BASE /opt/kafka_2.13-2.6.0
+ENV KAFKA_BASE /opt/kafka_2.13-3.1.0
 
 ENV PATH="${KAFKA_BASE}/bin:${PATH}"
 

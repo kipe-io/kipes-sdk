@@ -8,7 +8,7 @@ networks:
 services:
 
   ksqldb:
-    image: confluentinc/ksqldb-server:0.13.0
+    image: confluentinc/ksqldb-server:0.24.0
     hostname: ksqldb
     container_name: ksqldb
     ports:
@@ -27,7 +27,7 @@ services:
       KSQL_KSQL_EXTENSION_DIR: "/opt/ksqldb/extensions"
 
   ksqldb-cli:
-    image: confluentinc/ksqldb-cli:0.13.0
+    image: confluentinc/ksqldb-cli:0.24.0
     container_name: ksqldb-cli
     depends_on:
       - ksqldb
