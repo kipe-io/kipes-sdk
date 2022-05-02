@@ -6,10 +6,12 @@ import static org.mockito.Mockito.reset;
 
 import org.apache.kafka.common.serialization.Serde;
 
-import io.micronaut.configuration.kafka.serde.JsonSerde;
+import io.micronaut.configuration.kafka.serde.JsonObjectSerde;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.context.BeanContext;
 import io.micronaut.core.reflect.ClassUtils;
+import io.micronaut.jackson.databind.JacksonDatabindMapper;
+import io.micronaut.json.JsonObjectSerializer;
 
 // TODO documentation
 public class MockedJsonSerdeRegistry extends JsonSerdeRegistry {
@@ -18,11 +20,13 @@ public class MockedJsonSerdeRegistry extends JsonSerdeRegistry {
 	}
 	
 	private final BeanContext beanContextMock;
+	private final JsonObjectSerializer objectSerializer;
 	
 	public MockedJsonSerdeRegistry(BeanContext mock) {
 		super(mock);
 		
 		this.beanContextMock = mock;
+		this.objectSerializer = new JsonObjectSerializer(new JacksonDatabindMapper());
 	}
 
 	@Override
@@ -33,8 +37,8 @@ public class MockedJsonSerdeRegistry extends JsonSerdeRegistry {
 		reset(beanContextMock);
 		
 		lenient()
-		.when(beanContextMock.createBean(JsonSerde.class, type))
-		.thenReturn(new JsonSerde<>(type));
+		.when(beanContextMock.createBean(JsonObjectSerde.class, type))
+		.thenReturn(new JsonObjectSerde<T>(this.objectSerializer, type));
 		
 		return super.getSerde(type);
 	}
