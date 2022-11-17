@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>common</artifactId>
+	<artifactId>optimus</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
@@ -17,10 +17,15 @@
 	<dependencies>
 		<dependency>
 			<groupId>de.tradingpulse</groupId>
-			<artifactId>streams</artifactId>
+			<artifactId>common</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-		
+		<dependency>
+			<groupId>de.tradingpulse.stage</groupId>
+			<artifactId>backtest</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
@@ -34,19 +39,14 @@
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka-streams</artifactId>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
 		</dependency>
-		
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
+
 	</dependencies>
+
 </project>

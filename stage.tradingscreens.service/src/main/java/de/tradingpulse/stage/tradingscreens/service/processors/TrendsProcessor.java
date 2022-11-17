@@ -2,8 +2,8 @@ package de.tradingpulse.stage.tradingscreens.service.processors;
 
 import java.time.Duration;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.apache.kafka.streams.kstream.KStream;
 

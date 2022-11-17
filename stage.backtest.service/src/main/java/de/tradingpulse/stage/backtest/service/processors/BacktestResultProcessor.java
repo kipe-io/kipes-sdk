@@ -1,8 +1,5 @@
 package de.tradingpulse.stage.backtest.service.processors;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
@@ -16,6 +13,8 @@ import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
 import de.tradingpulse.streams.recordtypes.TransactionRecord;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 public class BacktestResultProcessor extends AbstractProcessorFactory {
@@ -66,7 +65,7 @@ public class BacktestResultProcessor extends AbstractProcessorFactory {
 		
 		.withTopicsBaseName(BacktestStreamsFacade.TOPIC_SIGNAL_EXECUTION_DAILY)
 		
-		.<String, SignalExecutionRecord> transaction()
+		.<String> transaction()
 			.groupBy(
 					(key, value) ->
 						value.getKey().getSymbol() + "-" + value.getSignalRecord().getStrategyKey(), 

@@ -1,14 +1,13 @@
 package de.tradingpulse.stage.systems.streams;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import de.tradingpulse.streams.recordtypes.GenericRecord;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import lombok.Getter;
 
 @Singleton

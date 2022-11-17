@@ -4,9 +4,6 @@ import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProce
 
 import java.util.concurrent.ExecutionException;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.KeyValueStore;
@@ -22,6 +19,8 @@ import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 public class SSTOCProcessor extends AbstractProcessorFactory {

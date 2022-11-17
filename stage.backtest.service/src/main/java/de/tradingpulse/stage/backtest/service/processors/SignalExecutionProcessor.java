@@ -4,9 +4,6 @@ import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.KStream;
 
@@ -26,6 +23,8 @@ import de.tradingpulse.streams.kafka.processors.TransactionBuilder.EmitType;
 import de.tradingpulse.streams.recordtypes.TransactionRecord;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 public class SignalExecutionProcessor extends AbstractProcessorFactory {
@@ -169,7 +168,7 @@ public class SignalExecutionProcessor extends AbstractProcessorFactory {
 		
 		// into a stream of TransactionRecords<SignalRecords> per symbol and day (of the SignalRecord ending the transaction)
 		// the TransactionRecords contain two SignalRecords starting and ending the transaction
-		.<String, SignalRecord> transaction()
+		.<String> transaction()
 			.startsWith(
 					(key, value) ->
 						value.getSignalType().is(SignalType.Type.ENTRY))

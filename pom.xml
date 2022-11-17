@@ -12,13 +12,13 @@
 	<parent>
 		<groupId>io.micronaut</groupId>
 		<artifactId>micronaut-parent</artifactId>
-		<version>2.2.2</version>
+		<version>3.4.3</version>
 	</parent>
 
 	<properties>
 		<lombok.version>1.18.12</lombok.version>
 		<maven.version>3.6.0</maven.version>
-		<micronaut.version>2.0.3</micronaut.version>
+		<micronaut.version>3.4.3</micronaut.version>
 		<mockito.version>3.6.28</mockito.version>
 		<release.version>11</release.version>
 		<retrofit.version>2.9.0</retrofit.version>
@@ -45,9 +45,9 @@
 	</repositories>
 
 	<modules>
-		<module>common</module>
 		<module>streams</module>
 		<module>streams.test</module>
+		<module>common</module>
 		<module>stage.sourcedata</module>
 		<module>stage.sourcedata.service</module>
 		<module>stage.indicators</module>
@@ -141,6 +141,10 @@
 					</configuration>
 				</plugin>
 				<plugin>
+					<groupId>io.micronaut.build</groupId>
+					<artifactId>micronaut-maven-plugin</artifactId>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
 					<version>3.0.0-M3</version>
@@ -232,6 +236,20 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
 					<version>3.2.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>3.1.0</version>
+					<executions>
+						<execution>
+							<id>default-shade</id>
+							<phase>package</phase>
+							<goals>
+								<goal>shade</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

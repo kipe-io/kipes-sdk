@@ -2,9 +2,6 @@ package de.tradingpulse.stage.tradingscreens.service.processors;
 
 import java.time.Duration;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.systems.recordtypes.ImpulseRecord;
 import de.tradingpulse.stage.systems.streams.SystemsStreamsFacade;
@@ -14,6 +11,8 @@ import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 class ImpulseTradingScreenProcessor extends AbstractProcessorFactory {

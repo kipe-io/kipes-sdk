@@ -4,9 +4,6 @@ import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProce
 
 import java.util.concurrent.ExecutionException;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.kstream.Transformer;
@@ -21,6 +18,8 @@ import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 class OHLCVDailyProcessor extends AbstractProcessorFactory {

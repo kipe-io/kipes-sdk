@@ -2,9 +2,6 @@ package de.tradingpulse.stage.sourcedata.service.processors;
 
 import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Materialized;
@@ -19,6 +16,8 @@ import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
 import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 class OHLCVWeeklyProcessor extends AbstractProcessorFactory {

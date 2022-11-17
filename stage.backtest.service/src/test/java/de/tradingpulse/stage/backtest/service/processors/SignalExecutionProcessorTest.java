@@ -71,7 +71,7 @@ class SignalExecutionProcessorTest {
 	private TransactionRecord<String, SignalRecord> createTransactionRecord(long entryMs, long exitMs) {
 		TransactionRecord<String, SignalRecord> r = new TransactionRecord<>();
 		
-		r.setKey(new SymbolTimestampKey(SYMBOL, entryMs));
+//TODO remove		r.setKey(new SymbolTimestampKey(SYMBOL, entryMs));
 		r.addUnique(createSignalRecord(SignalType.ENTRY_LONG, entryMs));
 		r.addUnique(createSignalRecord(SignalType.EXIT_LONG, exitMs));
 		return r;

@@ -1,14 +1,8 @@
 package de.tradingpulse.stage.backtest.service.processors;
 
-import java.time.Duration;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
-import de.tradingpulse.common.stream.recordtypes.TradingDirection;
 import de.tradingpulse.stage.backtest.BacktestStageConstants;
 import de.tradingpulse.stage.backtest.recordtypes.BacktestResultRecord;
 import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;
@@ -19,6 +13,8 @@ import de.tradingpulse.streams.kafka.processors.recordtypes.TableRecord;
 import de.tradingpulse.streams.recordtypes.GenericRecord;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 class BacktestResultAnalyticsProcessor extends AbstractProcessorFactory {

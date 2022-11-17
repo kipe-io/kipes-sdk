@@ -1,8 +1,5 @@
 package de.tradingpulse.stage.systems.service.processors;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.apache.kafka.streams.kstream.KStream;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
@@ -15,6 +12,8 @@ import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
 import de.tradingpulse.streams.recordtypes.GenericRecord;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 class TrendSSTOCProcessor extends AbstractProcessorFactory {

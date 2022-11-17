@@ -9,11 +9,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
 import org.apache.kafka.clients.admin.NewTopic;
 
 import io.micronaut.context.annotation.Value;
+import jakarta.inject.Inject;
 
 /**
  * Provides base functionality around streams.
