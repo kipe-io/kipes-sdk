@@ -15,6 +15,6 @@
 
     <logger name="de.tradingpulse" level="DEBUG" />
     <logger name="de.tradingpulse.streams" level="INFO" />
-    <logger name="de.tradingpulse.streams.kafka.processors.DedupBuilder" level="INFO" />
+    <logger name="io.kipe.streams.kafka.processors.DedupBuilder" level="INFO" />
     
 </configuration>

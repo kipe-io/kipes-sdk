@@ -11,7 +11,7 @@ import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TimeRange;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalType;
-import de.tradingpulse.streams.recordtypes.TransactionRecord;
+import io.kipe.streams.recordtypes.TransactionRecord;
 
 class SignalExecutionProcessorTest {
 	

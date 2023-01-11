@@ -2,7 +2,7 @@ package de.tradingpulse.common.stream.recordtypes;
 
 import java.util.function.UnaryOperator;
 
-import de.tradingpulse.common.utils.TimeUtils;
+import io.kipe.common.utils.TimeUtils;
 
 public enum TimeRange {
 

@@ -7,7 +7,7 @@ import de.tradingpulse.common.stream.aggregates.DeepCloneable;
 import de.tradingpulse.common.stream.recordtypes.AbstractIncrementalAggregateRecord;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TimeRange;
-import de.tradingpulse.common.utils.TimeUtils;
+import io.kipe.common.utils.TimeUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

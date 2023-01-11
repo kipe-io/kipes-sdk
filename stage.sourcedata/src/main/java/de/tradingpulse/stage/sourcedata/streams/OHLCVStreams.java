@@ -7,7 +7,7 @@ import org.apache.kafka.streams.kstream.KStream;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.sourcedata.SourceDataStageConstants;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
-import de.tradingpulse.streams.kafka.factories.AbstractStreamFactory;
+import io.kipe.streams.kafka.factories.AbstractStreamFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import io.micronaut.context.annotation.Factory;

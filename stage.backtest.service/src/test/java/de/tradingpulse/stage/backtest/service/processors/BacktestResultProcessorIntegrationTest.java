@@ -11,15 +11,15 @@ import org.junit.jupiter.api.Test;
 
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.common.stream.recordtypes.TimeRange;
-import de.tradingpulse.common.utils.TimeUtils;
 import de.tradingpulse.stage.backtest.recordtypes.BacktestResultRecord;
 import de.tradingpulse.stage.backtest.recordtypes.SignalExecutionRecord;
 import de.tradingpulse.stage.backtest.streams.BacktestStreamsFacade;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalType;
-import de.tradingpulse.streams.test.kafka.AbstractTopologyTest;
-import de.tradingpulse.streams.test.kafka.TopologyTestContext;
+import io.kipe.common.utils.TimeUtils;
+import io.kipe.streams.test.kafka.AbstractTopologyTest;
+import io.kipe.streams.test.kafka.TopologyTestContext;
 
 class BacktestResultProcessorIntegrationTest extends AbstractTopologyTest {
 

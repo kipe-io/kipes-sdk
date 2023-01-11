@@ -5,7 +5,7 @@ import org.apache.kafka.streams.kstream.KStream;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.tradingscreens.recordtypes.ImpulseTradingScreenRecord;
 import de.tradingpulse.stage.tradingscreens.recordtypes.SignalRecord;
-import de.tradingpulse.streams.recordtypes.GenericRecord;
+import io.kipe.streams.recordtypes.GenericRecord;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;

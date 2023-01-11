@@ -1,6 +1,6 @@
 package de.tradingpulse.stage.sourcedata.service.processors;
 
-import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
+import static io.kipe.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
 
 import java.util.concurrent.ExecutionException;
 
@@ -15,7 +15,7 @@ import org.apache.kafka.streams.state.Stores;
 import de.tradingpulse.common.stream.recordtypes.SymbolTimestampKey;
 import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
-import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
+import io.kipe.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import jakarta.inject.Inject;

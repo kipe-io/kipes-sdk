@@ -22,7 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import de.tradingpulse.common.utils.TimeUtils;
+import io.kipe.common.utils.TimeUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 

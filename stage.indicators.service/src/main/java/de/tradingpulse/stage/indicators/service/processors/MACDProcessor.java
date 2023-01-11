@@ -1,6 +1,6 @@
 package de.tradingpulse.stage.indicators.service.processors;
 
-import static de.tradingpulse.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
+import static io.kipe.streams.kafka.factories.TopicNamesFactory.getProcessorStoreTopicName;
 
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
@@ -14,7 +14,7 @@ import de.tradingpulse.stage.sourcedata.recordtypes.OHLCVRecord;
 import de.tradingpulse.stage.sourcedata.streams.SourceDataStreamsFacade;
 import de.tradingpulse.stages.indicators.recordtypes.MACDHistogramRecord;
 import de.tradingpulse.stages.indicators.streams.IndicatorsStreamsFacade;
-import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
+import io.kipe.streams.kafka.factories.AbstractProcessorFactory;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import jakarta.inject.Inject;

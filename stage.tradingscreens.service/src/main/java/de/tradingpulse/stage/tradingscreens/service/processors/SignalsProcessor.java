@@ -13,9 +13,9 @@ import de.tradingpulse.stage.tradingscreens.service.strategies.CompositeStrategy
 import de.tradingpulse.stage.tradingscreens.service.strategies.SwingMarketTurnPotentialEntryStrategy;
 import de.tradingpulse.stage.tradingscreens.service.strategies.SwingMarketTurnPotentialExitStrategy;
 import de.tradingpulse.stage.tradingscreens.streams.TradingScreensStreamsFacade;
-import de.tradingpulse.streams.kafka.factories.AbstractProcessorFactory;
-import de.tradingpulse.streams.kafka.processors.TopologyBuilder;
-import de.tradingpulse.streams.recordtypes.GenericRecord;
+import io.kipe.streams.kafka.factories.AbstractProcessorFactory;
+import io.kipe.streams.kafka.processors.TopologyBuilder;
+import io.kipe.streams.recordtypes.GenericRecord;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import jakarta.inject.Inject;

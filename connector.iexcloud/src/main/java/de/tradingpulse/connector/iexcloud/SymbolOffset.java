@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.tradingpulse.common.utils.TimeUtils;
+import io.kipe.common.utils.TimeUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;

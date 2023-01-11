@@ -1,6 +1,6 @@
 package de.tradingpulse.stage.backtest.recordtypes;
 
-import static de.tradingpulse.common.utils.MathUtils.round;
+import static io.kipe.common.utils.MathUtils.round;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
