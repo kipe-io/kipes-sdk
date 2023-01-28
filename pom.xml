@@ -16,7 +16,7 @@
 	</parent>
 
 	<properties>
-		<lombok.version>1.18.12</lombok.version>
+		<lombok.version>1.18.24</lombok.version>
 		<maven.version>3.6.0</maven.version>
 		<micronaut.version>3.4.3</micronaut.version>
 		<mockito.version>3.6.28</mockito.version>
@@ -271,6 +271,16 @@
 						</arguments>
 					</configuration>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.4.1</version>
+					<configuration>
+						<show>private</show>
+						<nohelp>true</nohelp>
+						<doclint>all,-missing</doclint>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 
@@ -279,6 +289,30 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.4.1</version>
+				<configuration>
+					<show>private</show>
+					<nohelp>true</nohelp>
+					<doclint>all,-missing</doclint>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.4.1</version>
+				<configuration>
+					<stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
+					<show>public</show>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>

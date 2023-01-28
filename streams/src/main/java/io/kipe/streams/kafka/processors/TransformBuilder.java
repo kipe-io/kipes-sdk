@@ -13,28 +13,38 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 
 /**
- * Builder to setup a stream transforming incoming records into zero or more 
+ * Builder to setup a stream transforming incoming records into zero or more
  * outgoing records with transformed keys, values, or both.<br>
  * <br>
  * Clients select the intended transformation by starting with one of the
  * {@code intoXXX(...)} methods followed and finalized  by the related
  * {@code asXXX(...)} method. <br>
  * <br>
+ *
+ * Usage:
+ *
+ * Example:
+ * <pre>
+ *     {@code
+ *     TODO
+ *     }
+ * </pre>
+ *
  * <b>Pseudo DSL</b>
  * <pre>
  *   from
  *     {SOURCE[key:value]}
- *   
+ *
  *   <b>transform</b>
  *     <b>change|new</b>
  *       {FUNCTION(key,value):{newKey,newValue}[]}
  *     <b>as</b>
  *       {newKey,newValue}
- *   
+ *
  *   to
  *     {TARGET[newKey:newValue]}
  * </pre>
- * 
+ *
  * @param <K> the source stream's key type
  * @param <V> the source stream's value type
  * @param <KR> the target stream's key type
@@ -46,7 +56,7 @@ import org.apache.kafka.streams.kstream.KStream;
 // TODO introduce asXXX variants to simplify same key/value type transformations
 // Transform not only supports changing types but also changing quantities. In
 // latter cases it would be nice to have asXXX methods which do not ask for new
-// serdes. 
+// serdes.
 // NOTE: makes sense only if we got sub builders (see to do above)
 
 // TODO add tests
@@ -55,11 +65,18 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
 	private BiFunction<K,V, Iterable<VR>> transformValueFunction;
 	private BiFunction<K,V, Iterable<KR>> transformKeyFunction;
 	private BiFunction<K,V, Iterable<KeyValue<KR,VR>>> transformKeyValueFunction;
-	
+
+	/**
+	 * @param streamsBuilder instance of {@link StreamsBuilder} to build the topology.
+	 * @param stream         incoming stream to transform.
+	 * @param keySerde       key serde for the incoming stream.
+	 * @param valueSerde     value serde for the incoming stream.
+	 * @param topicsBaseName base name for the output topics.
+	 */
 	TransformBuilder(
-			StreamsBuilder streamsBuilder, 
-			KStream<K, V> stream, 
-			Serde<K> keySerde, 
+			StreamsBuilder streamsBuilder,
+			KStream<K, V> stream,
+			Serde<K> keySerde,
 			Serde<V> valueSerde,
 			String topicsBaseName)
 	{
@@ -70,9 +87,15 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
 	// transform values
 	// ------------------------------------------------------------------------
 
+    /**
+     * Transform the value of the incoming stream.
+     *
+     * @param transformValueFunction function to transform the value.
+     * @return this instance.
+     */
 	@SuppressWarnings("unchecked")
 	public TransformBuilder<K,V, K,VR> changeValue(BiFunction<K,V, VR> transformValueFunction) {
-		
+
 		this.transformValueFunction = (key, value) -> {
 			VR result = transformValueFunction.apply(key, value);
 			if(result == null) {
@@ -81,47 +104,90 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
 				return Arrays.asList(transformValueFunction.apply(key, value));
 			}
 		};
-		
+
 		return (TransformBuilder<K,V, K,VR>)this;
 	}
-	
+
+    /**
+     * Transform the value of the incoming stream.
+     *
+     * @param transformValueFunction function to transform the value.
+     * @return this instance.
+     */
 	@SuppressWarnings("unchecked")
 	public TransformBuilder<K,V, K,VR> newValues(BiFunction<K,V, Iterable<VR>> transformValueFunction) {
 		this.transformValueFunction = transformValueFunction;
-		
+
 		return (TransformBuilder<K,V, K,VR>)this;
 	}
 
-	public TopologyBuilder<K,VR> asValueType(Serde<VR> resultValueSerde) {
-		Objects.requireNonNull(this.transformValueFunction, "transformValueFunction");
-		
-		return createTopologyBuilder(
-				this.stream
-				.flatMapValues(
-						(key, value) ->
-							this.transformValueFunction.apply(key,value)), 
-				this.keySerde, 
-				resultValueSerde);
-	}
-	
+    /**
+     * Returns a new {@link TopologyBuilder} with the specified value serde.
+     * <p>
+     * The returned topology builder applies the {@link #transformValueFunction} to the input stream,
+     * <p>
+     * and maps the resulting iterable to a new stream.
+     *
+     * @param resultValueSerde the serde to use for the new stream's values.
+     * @return a new {@link TopologyBuilder} with the specified value serde.
+     * @throws NullPointerException if {@link #transformValueFunction} is null.
+     */
+        public TopologyBuilder<K,VR> asValueType(Serde<VR> resultValueSerde) {
+            Objects.requireNonNull(this.transformValueFunction, "transformValueFunction");
+
+            return createTopologyBuilder(
+                    this.stream
+                    .flatMapValues(
+                            (key, value) ->
+                                this.transformValueFunction.apply(key,value)),
+                    this.keySerde,
+                    resultValueSerde);
+        }
+
 	// ------------------------------------------------------------------------
 	// transform keys
 	// ------------------------------------------------------------------------
-	
+
+    /**
+     * Change the key type of the incoming record.
+     *
+     * <p>This method is the first step to use before calling {@link #asKeyType(Serde)}.
+     *
+     * @param transformKeyFunction a function that takes the current key and value and returns a new key.
+     * @return this TransformBuilder.
+     */
 	@SuppressWarnings("unchecked")
 	public TransformBuilder<K,V, KR,V> changeKey(BiFunction<K,V, KR> transformKeyFunction) {
 		this.transformKeyFunction = (key, value) -> Arrays.asList(transformKeyFunction.apply(key, value));
-		
-		return (TransformBuilder<K,V, KR,V>)this;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public TransformBuilder<K,V, KR,V> newKeys(BiFunction<K,V, Iterable<KR>> transformKeyFunction) {
-		this.transformKeyFunction = transformKeyFunction;
-		
+
 		return (TransformBuilder<K,V, KR,V>)this;
 	}
 
+
+    /**
+     * Create new keys based on the existing key and value.
+     *
+     * <p>This method is the first step to use before calling {@link #asKeyType(Serde)}.
+     *
+     * @param transformKeyFunction a function that takes the current key and value and returns a new keys.
+     * @return this TransformBuilder.
+     */
+	@SuppressWarnings("unchecked")
+	public TransformBuilder<K,V, KR,V> newKeys(BiFunction<K,V, Iterable<KR>> transformKeyFunction) {
+		this.transformKeyFunction = transformKeyFunction;
+
+		return (TransformBuilder<K,V, KR,V>)this;
+	}
+
+    /**
+     * This method is used to finalize the key transformation step and create a new {@link TopologyBuilder}
+     * with the transformed key type, KR.
+     * <p>This method should be called after one of the key transformation methods, {@link #changeKey(BiFunction)} or
+     * {@link #newKeys(BiFunction)}, have been called.
+     *
+     * @param resultKeySerde the {@link Serde} to be used for the transformed key type, KR.
+     * @return a new {@link TopologyBuilder} with the transformed key type, KR.
+     */
 	public TopologyBuilder<KR,V> asKeyType(Serde<KR> resultKeySerde) {
 		Objects.requireNonNull(this.transformKeyFunction, "transformKeyFunction");
 		return createTopologyBuilder(
@@ -129,26 +195,41 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
 				.flatMap(
 						(key, value) -> {
 							List<KeyValue<KR,V>> keyValues = new LinkedList<>();
-							
+
 							this.transformKeyFunction.apply(key,value)
 							.forEach(resultKey -> keyValues.add(new KeyValue<>(resultKey, value)));
-							
+
 							return keyValues;
-						}), 
-				resultKeySerde, 
+						}),
+				resultKeySerde,
 				this.valueSerde);
 	}
-	
+
 	// ------------------------------------------------------------------------
 	// transform keys and values
 	// ------------------------------------------------------------------------
-	
+
+    /**
+     * Transform the key and value of the input stream using the provided {@link BiFunction}.
+     * <p>This method is the first step to use before calling {@link #asKeyValueType(Serde, Serde)}.
+     *
+     * @param transformKeyValueFunction {@link BiFunction} to transform the key and value of the input stream.
+     * @return The current {@link TransformBuilder} instance.
+     */
 	public TransformBuilder<K,V, KR,VR> newKeyValues(BiFunction<K,V, Iterable<KeyValue<KR,VR>>> transformKeyValueFunction) {
 		this.transformKeyValueFunction = transformKeyValueFunction;
 		
 		return this;
 	}
-	
+
+    /**
+     * Transforms the key and value of the input stream using the provided {@link BiFunction} and creates a new {@link TopologyBuilder} with the transformed key and value serdes.
+     * <p> This method should be called after {@link #newKeyValues(BiFunction)}.
+     *
+     * @param resultKeySerde   the serde of the transformed key.
+     * @param resultValueSerde the serde of the transformed value.
+     * @return the new {@link TopologyBuilder} instance with the transformed key and value serdes.
+     */
 	public TopologyBuilder<KR,VR> asKeyValueType(Serde<KR> resultKeySerde, Serde<VR> resultValueSerde) {
 		Objects.requireNonNull(this.transformKeyValueFunction, "transformKeyValueFunction");
 		return createTopologyBuilder(

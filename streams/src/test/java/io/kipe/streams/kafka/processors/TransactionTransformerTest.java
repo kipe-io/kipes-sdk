@@ -30,6 +30,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Test class for {@link TransactionTransformer}.
+ */
 @ExtendWith(MockitoExtension.class)
 class TransactionTransformerTest {
 
@@ -55,6 +58,10 @@ class TransactionTransformerTest {
 	// startsWith
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Test that when a record with a non-starting value is passed in, it is ignored
+	 * and no data is written to the store.
+	 */
 	@Test
 	void test_transform__no_txn_ignores_not_starting_record() {
 		TransactionTransformer<String, TestValue, String> t = createTransactionTransformer();
@@ -68,6 +75,10 @@ class TransactionTransformerTest {
 		// verification happens at afterEach
 	}
 
+	/**
+	 * Test that when a record with a starting value is passed in, it is identified as the start of a new transaction
+	 * and data is written to the store.
+	 */
 	@Test
 	void test_transform__no_txn_identifies_starting_record() {
 		TransactionTransformer<String, TestValue, String> t = createTransactionTransformer();
@@ -84,6 +95,10 @@ class TransactionTransformerTest {
 	// ongoing
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Test that when a record with an ongoing value is passed in and a transaction has been started, it is identified as
+	 * part of the ongoing transaction and data is written to the store.
+	 */
 	@Test
 	void test_transform__started_txn_identifies_ongoing_record() {
 		TransactionTransformer<String, TestValue, String> t = createTransactionTransformer();
@@ -111,6 +126,10 @@ class TransactionTransformerTest {
 	// endsWith
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Test that when a record with an end value is passed in and a transaction has been started, it is identified as
+	 * the end of the ongoing transaction and data is written to the store.
+	 */
 	@Test
 	void test_transform__started_txn_identifies_ending_record() {
 		TransactionTransformer<String, TestValue, String> t = createTransactionTransformer();
@@ -138,6 +157,10 @@ class TransactionTransformerTest {
 	// emit ALL
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Tests that when the TransactionTransformer is configured to emit all
+	 * records, it emits all records in the transaction.
+	 */
 	@Test
 	void test_transform__emits_ALL() {
 		TransactionRecord<String, TestValue> r = 
@@ -151,7 +174,11 @@ class TransactionTransformerTest {
 		assertEquals(ONGOING, r.getRecord(1).value);
 		assertEquals(END, r.getRecord(2).value);
 	}
-	
+
+	/**
+	 * Tests that when the TransactionTransformer is
+	 * configured to emit all records and the start and end records are the same, it emits the single record.
+	 */
 	@Test
 	void test_transform__emits_ALL_when_START_eq_END() {
 		TransactionTransformer<String, TestValue, String> t = createStartEndTransactionTransformer(EmitType.ALL);
@@ -171,6 +198,10 @@ class TransactionTransformerTest {
 	// emit START
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Tests that when the TransactionTransformer is configured to emit
+	 * only the start record, it emits only the start record.
+	 */
 	@Test
 	void test_transform__emits_START() {
 		TransactionRecord<String, TestValue> r = 
@@ -182,7 +213,8 @@ class TransactionTransformerTest {
 		
 		assertEquals(START, r.getRecord(0).value);
 	}
-	
+
+	// TODO
 	@Test
 	void test_transform__emits_START_when_START_eq_END() {
 		TransactionTransformer<String, TestValue, String> t = createStartEndTransactionTransformer(EmitType.START);
@@ -202,6 +234,7 @@ class TransactionTransformerTest {
 	// emit ONGOING
 	// ------------------------------------------------------------------------
 
+	// TODO
 	@Test
 	void test_transform__emits_ONGOING() {
 		TransactionRecord<String, TestValue> r = 
@@ -213,7 +246,8 @@ class TransactionTransformerTest {
 		
 		assertEquals(ONGOING, r.getRecord(0).value);
 	}
-	
+
+	// TODO
 	@Test
 	void test_transform__emits_ONGOING_when_START_eq_END() {
 		TransactionTransformer<String, TestValue, String> t = createStartEndTransactionTransformer(EmitType.ONGOING);
@@ -233,6 +267,11 @@ class TransactionTransformerTest {
 	// emit END
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Test that the transform method emits an END record when EmitType is set to END.
+	 * <p>
+	 * This test uses the doTransaction helper method to create and perform a transaction.
+	 */
 	@Test
 	void test_transform__emits_END() {
 		TransactionRecord<String, TestValue> r = 
@@ -244,7 +283,12 @@ class TransactionTransformerTest {
 		
 		assertEquals(END, r.getRecord(0).value);
 	}
-	
+
+	/**
+	 * Test that the transform method emits an END record when EmitType is set to END and the start and end values are the same.
+	 * <p>
+	 * This test uses the createStartEndTransactionTransformer helper method to create a transformer with the same start and end values.
+	 */
 	@Test
 	void test_transform__emits_END_when_START_eq_END() {
 		TransactionTransformer<String, TestValue, String> t = createStartEndTransactionTransformer(EmitType.END);
@@ -264,6 +308,9 @@ class TransactionTransformerTest {
 	// emit START_AND_END
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Test that the {@link TransactionTransformer#transform} method emits a START and END record when the EmitType is set to START_AND_END.
+	 */
 	@Test
 	void test_transform__emits_START_AND_END() {
 		TransactionRecord<String, TestValue> r = 
@@ -276,7 +323,10 @@ class TransactionTransformerTest {
 		assertEquals(START, r.getRecord(0).value);
 		assertEquals(END, r.getRecord(1).value);
 	}
-	
+
+	/**
+	 * Test that the {@link TransactionTransformer#transform} method emits a START and END record when the EmitType is set to START_AND_END and the start and end values are the same.
+	 */
 	@Test
 	void test_transform__emits_START_AND_END_when_START_eq_END() {
 		TransactionTransformer<String, TestValue, String> t = createStartEndTransactionTransformer(EmitType.START_AND_END);
@@ -295,7 +345,17 @@ class TransactionTransformerTest {
 	// ------------------------------------------------------------------------
 	// utils 
 	// ------------------------------------------------------------------------
-	
+
+	/**
+	 * Perform a transaction using a TransactionTransformer.
+	 * <p>
+	 * It starts by preparing mock stateStore for the transaction, and then calls the transform method on the given TransactionTransformer.
+	 * <p>
+	 * It verifies that the stateStore's put method is called with the correct parameters.
+	 *
+	 * @param t - The TransactionTransformer to use for the transaction.
+	 * @return A TransactionRecord containing the value of the transaction.
+	 */
 	private TransactionRecord<String, TestValue> doTransaction(TransactionTransformer<String, TestValue, String> t) {
 		// start transaction - prep mock
 		when(stateStoreMock.get(KEY)).thenReturn(null);
@@ -324,24 +384,31 @@ class TransactionTransformerTest {
 	}
 
 	/**
+	 * Create a new TransactionTransformer with the following parameters:
 	 * <pre>
-	 * groupKeyFunction   : (key, value) -> key
+	 * groupKeyFunction : (key, value) -> key
 	 * startsWithPredicate: (key, value) -> "START".equals(value.value)
-	 * endsWithPredicate  : (key, value) -> "END".equals(value.value)
-	 * emitType           : ALL
-	 * </pre> 
+	 * endsWithPredicate : (key, value) -> "END".equals(value.value)
+	 * emitType : ALL
+	 * </pre>
+	 *
+	 * @return the created TransactionTransformer
 	 */
 	private TransactionTransformer<String, TestValue, String> createTransactionTransformer() {
 		return createTransactionTransformer(EmitType.ALL);
 	}
-		
+
 	/**
+	 * Create a new TransactionTransformer with the following parameters:
 	 * <pre>
-	 * groupKeyFunction   : (key, value) -> key
+	 * groupKeyFunction : (key, value) -> key
 	 * startsWithPredicate: (key, value) -> "START".equals(value.value)
-	 * endsWithPredicate  : (key, value) -> "END".equals(value.value)
-	 * emitType           : emitType
-	 * </pre> 
+	 * endsWithPredicate : (key, value) -> "END".equals(value.value)
+	 * emitType : emitType
+	 * </pre>
+	 *
+	 * @param emitType The emitType to use for the TransactionTransformer.
+	 * @return the created TransactionTransformer
 	 */
 	private TransactionTransformer<String, TestValue, String> createTransactionTransformer(EmitType emitType) {
 		TransactionTransformer<String, TestValue, String> t = new TransactionTransformer<>(
@@ -355,14 +422,18 @@ class TransactionTransformerTest {
 		
 		return t;
 	}
-	
+
 	/**
+	 * Create a new TransactionTransformer with the following parameters:
 	 * <pre>
 	 * groupKeyFunction   : (key, value) -> key
 	 * startsWithPredicate: (key, value) -> true
 	 * endsWithPredicate  : (key, value) -> true
 	 * emitType           : emitType
-	 * </pre> 
+	 * </pre>
+	 *
+	 * @param emitType The emitType to use for the TransactionTransformer.
+	 * @return the created TransactionTransformer
 	 */
 	private TransactionTransformer<String, TestValue, String> createStartEndTransactionTransformer(EmitType emitType) {
 		TransactionTransformer<String, TestValue, String> t = new TransactionTransformer<>(
@@ -376,7 +447,8 @@ class TransactionTransformerTest {
 		
 		return t;
 	}
-	
+
+	// TODO
 	/**
 	 * <pre>
 	 * key  : { symbol: SYMBOL, timestamp: System.currentTimeMillis() }
@@ -391,6 +463,9 @@ class TransactionTransformerTest {
 	// inner class - TestValue
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Inner class representing a test value.
+	 */
 	@Data
 	@EqualsAndHashCode
 	@ToString

@@ -21,9 +21,10 @@ import io.kipe.streams.recordtypes.GenericRecord;
  * firstly initiating the TopologyBuilder, secondly assigning a KStream, and
  * then transforming the stream with any of the given methods:
  * <pre>
+ * {@code
  *   StreamsBuilder streamsBuilder = ...
  *   KStream<...> sourceStream = ...
- *   
+ *
  *   TopologyBuilder
  *   .init(streamsBuilder)
  *   .from(
@@ -32,29 +33,29 @@ import io.kipe.streams.recordtypes.GenericRecord;
  *      valueSerde)
  *   ...
  *   to(topicName);
+ * }
  * </pre>
- * 
+ *
  * TODO document the exact behavior
  * TODO add tests
  * TODO add developer documentation how to extend
- * TODO develop a plugin concept to dynamically enhance the functionality 
+ * TODO develop a plugin concept to dynamically enhance the functionality
  *
  * @param <K> the key type of the initital stream
  * @param <V> the value type of the initial stream
  */
 public class TopologyBuilder <K,V> {
-	
+
 	/**
-	 * Initiates a new TopologyBuilder.<br>
+	 * Instantiates a new instance of TopologyBuilder.<br>
 	 * <br>
-	 * Please note that the TopologyBuilder still needs to get a stream
-	 * assigned by {@link #from(KStream, Serde, Serde)}. 
-	 * 
-	 * @param <K> the TopologyBuilder's key type
-	 * @param <V> the TopologyBuilder's value type
-	 * @param streamsBuilder a {@link StreamsBuilder} for internal use
-	 * @return
-	 * 	the initiated TopologyBuilder<K,V>
+	 * It's important to note that the {@link StreamsBuilder} must be assigned to the TopologyBuilder
+	 * using the {@link #from(KStream, Serde, Serde)} method before it can be used.
+	 *
+	 * @param <K>            the type of the key in the TopologyBuilder
+	 * @param <V>            the type of the value in the TopologyBuilder
+	 * @param streamsBuilder a required instance of {@link StreamsBuilder} for internal use
+	 * @return an instance of {@link TopologyBuilder}
 	 */
 	public static <K,V> TopologyBuilder<K,V> init(
 			StreamsBuilder streamsBuilder)
@@ -91,23 +92,21 @@ public class TopologyBuilder <K,V> {
 		this.valueSerde = valueSerde;
 		this.topicsBaseName = topicsBaseName;
 	}
-	
+
 	/**
 	 * Returns the current stream.
-	 * 
-	 * @return 
-	 * 	KStream<K,V>
+	 *
+	 * @return the current {@link KStream}.
 	 */
 	public KStream<K,V> getStream() {
 		return this.stream;
 	}
-	
+
 	/**
 	 * Sets the topic base name to derive other topics names from.
-	 * 
-	 * @param topicsBaseName
-	 * @return
-	 * 	this TopologyBuilder<K,V>
+	 *
+	 * @param topicsBaseName the base name for all topics.
+	 * @return this {@link TopologyBuilder}.
 	 */
 	public TopologyBuilder<K,V> withTopicsBaseName(String topicsBaseName) {
 		this.topicsBaseName = topicsBaseName;
@@ -117,14 +116,13 @@ public class TopologyBuilder <K,V> {
 	/**
 	 * Sets the current stream and returns a new TopologyBuilder initiated
 	 * with the current's TopologyBuilder's settings.
-	 * 
-	 * @param <NK> the stream's key type
-	 * @param <NV> the stream's value type
-	 * @param stream the new stream
-	 * @param keySerde the key type {@link Serde}
-	 * @param valueSerde the value type {@link Serde}
-	 * @return
-	 * 	a new initialized TopologyBuilder<NK,NV>
+	 *
+	 * @param <NK>       the stream's key type.
+	 * @param <NV>       the stream's value type.
+	 * @param stream     the new stream.
+	 * @param keySerde   the key type {@link Serde}.
+	 * @param valueSerde the value type {@link Serde}.
+	 * @return a new initialized {@link TopologyBuilder}.
 	 */
 	public <NK,NV> TopologyBuilder<NK,NV> from(
 			KStream<NK,NV> stream, 
@@ -142,9 +140,12 @@ public class TopologyBuilder <K,V> {
 				valueSerde,
 				this.topicsBaseName);
 	}
-	
+
 	/**
-	 * logs each passing record as debug. Logger is the value class. 
+	 * Logs each passing record as debug. Logger is the value class.
+	 *
+	 * @param identifier an identifier to include in the log message.
+	 * @return a new instance of {@link TopologyBuilder} with the logging added to the stream.
 	 */
 	public TopologyBuilder<K,V> logDebug(String identifier) {
 		return new TopologyBuilder<>(
@@ -160,15 +161,13 @@ public class TopologyBuilder <K,V> {
 				this.valueSerde,
 				this.topicsBaseName);
 	}
-	
+
 	/**
 	 * Materializes the current stream into the given topic. The topic has
 	 * to be created before.
-	 * 
-	 * @param topicName the target topic
-	 * @return
-	 * 	a new initialized TopologyBuilder<K,V> which stream is a stream
-	 * 	reading from the topic
+	 *
+	 * @param topicName the target topic.
+	 * @return a new instance of {@link TopologyBuilder} with the stream materialized to the topic.
 	 */
 	public TopologyBuilder<K,V> through(String topicName) {
 		Objects.requireNonNull(this.stream, "stream");
@@ -191,12 +190,10 @@ public class TopologyBuilder <K,V> {
 	
 	/**
 	 * Adjusts a record's timestamp. The given function must return a timestamp
-	 * according to Kafka's requirements 
-	 * (milliseconds since 1970-01-01 00:00:00) 
-	 * 
-	 * @param evalTimestampFunction the function to evaluate the new timestamp from a given key or value
-	 * @return
-	 * 	the new timestamp in milliseconds
+	 * according to Kafka's requirements (milliseconds since 1970-01-01 00:00:00).
+	 *
+	 * @param evalTimestampFunction the function to evaluate the new timestamp from a given key or value.
+	 * @return a new instance of {@link TopologyBuilder} with the record timestamps adjusted.
 	 */
 	public TopologyBuilder<K,V> adjustRecordTimestamps(final BiFunction<K,V, Long> evalTimestampFunction) {
 		Objects.requireNonNull(this.stream, "stream");
@@ -231,13 +228,13 @@ public class TopologyBuilder <K,V> {
 				this.valueSerde,
 				this.topicsBaseName);
 	}
-	
+
 	/**
 	 * Materializes the current stream into the given topic. The topic has
 	 * to be created before. <br>
 	 * <br>
 	 * This is a terminal operation.
-	 * 
+	 *
 	 * @param topicName the target topic.
 	 */
 	public void to(String topicName) {
@@ -251,13 +248,12 @@ public class TopologyBuilder <K,V> {
 				this.keySerde, 
 				this.valueSerde));
 	}
-	
+
 	/**
 	 * Filters the current stream by applying the given predicate.
-	 * 
-	 * @param predicate the {@link Predicate} to filter the current stream
-	 * @return
-	 * 	a new initiated TopologyBuilder<K,V> with the filtered stream
+	 *
+	 * @param predicate the {@link Predicate} to filter the current stream.
+	 * @return a new initiated TopologyBuilder<K,V> with the filtered stream.
 	 */
 	public TopologyBuilder<K,V> filter(Predicate<K, V> predicate) {
 		// TODO introduce FilterBuilder
@@ -278,15 +274,13 @@ public class TopologyBuilder <K,V> {
 				this.valueSerde,
 				this.topicsBaseName);
 	}
-	
+
 	/**
 	 * De-duplicates the records of the current stream.<br>
-	 *  
-	 * @param <GK> the group key type (see {@link DedupBuilder#groupBy(BiFunction, Serde)})
-	 * @param <DK> the group dedup value type (see {@link DedupBuilder#advanceBy(BiFunction)})
-	 * 
-	 * @return
-	 * 	a new initiated {@link DedupBuilder} with the dedup'ed stream 
+	 *
+	 * @param <GK> the group key type (see {@link DedupBuilder#groupBy(BiFunction, Serde)}).
+	 * @param <DK> the group dedup value type (see {@link DedupBuilder#advanceBy(BiFunction)}).
+	 * @return a new initiated {@link DedupBuilder} with the dedup'ed stream.
 	 */
 	public <GK,DV> DedupBuilder<K,V, GK,DV> dedup() {
 		Objects.requireNonNull(this.stream, "stream");
@@ -300,7 +294,7 @@ public class TopologyBuilder <K,V> {
 				this.valueSerde,
 				this.topicsBaseName);
 	}
-	
+
 	/**
 	 * Creates a new KStream by (inner) joining the current stream (left) with
 	 * the given other stream (right). <br>
@@ -310,13 +304,12 @@ public class TopologyBuilder <K,V> {
 	 * name of these topics by calling {@link #withTopicsBaseName(String)} or
 	 * {@link JoinBuilder#withTopicsBaseName(String)} at the returned
 	 * JoinBuilder.<br>
-	 * 
-	 * @param <OV> the other (right) stream's value type
-	 * @param <VR> the resulting stream's value type
-	 * @param otherStream the other (right) stream
-	 * @param otherValueSerde the other stream's value {@link Serde}
-	 * @return
-	 * 	a new initialized JoinBuilder<K,V, OV, VR>
+	 *
+	 * @param <OV>            the other (right) stream's value type.
+	 * @param <VR>            the resulting stream's value type.
+	 * @param otherStream     the other (right) stream.
+	 * @param otherValueSerde the other stream's value {@link Serde}.
+	 * @return a new initialized {@link JoinBuilder}.
 	 */
 	public <OV, VR> JoinBuilder<K,V, OV, VR> join(KStream<K,OV> otherStream, Serde<OV> otherValueSerde) {
 		// TODO move parameters to JoinBuilder
@@ -344,32 +337,30 @@ public class TopologyBuilder <K,V> {
 	/**
 	 * Creates a new stream of TransactionRecords describing transactions found
 	 * in this TopologyBuilder's stream.
-	 * 
-	 * @param <A> actually V as A
-	 * @param <GK> the potential groupKey type, can be Void
-	 * @return
-	 * 	a new initialized TransactionBuilder
+	 *
+	 * @param <A>  actually V as A.
+	 * @param <GK> the potential groupKey type, can be Void.
+	 * @return a new initialized TransactionBuilder.
 	 */
 	@SuppressWarnings("unchecked")
 	public <GK> TransactionBuilder<K,V, GK> transaction() {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
-		
+
 		return (TransactionBuilder<K,V, GK>)new TransactionBuilder<>(
-				this.streamsBuilder, 
-				(KStream<K,V>)this.stream, 
-				this.keySerde, 
+				this.streamsBuilder,
+				(KStream<K,V>)this.stream,
+				this.keySerde,
 				(Serde<V>)this.valueSerde,
 				this.topicsBaseName);
 	}
-	
+
 	/**
 	 * Creates a stream of transformed records.
-	 * 
-	 * @param <VR> the transformed record's type
-	 * @return
-	 * 	a new initialized TransformBuilder
+	 *
+	 * @param <VR> the transformed record's type.
+	 * @return a new initialized {@link TransformBuilder}.
 	 */
 	@SuppressWarnings("unchecked")
 	public <KR,VR> TransformBuilder<K,V, KR,VR> transform() {
@@ -387,8 +378,6 @@ public class TopologyBuilder <K,V> {
 	
 	/**
 	 * Creates a stream of aggregated records.
-	 * 
-	 * 
 	 */
 	@SuppressWarnings("unchecked")
 	public <GK, VR> SequenceBuilder<K,V, GK, VR> sequence() {
@@ -403,13 +392,11 @@ public class TopologyBuilder <K,V> {
 				this.valueSerde,
 				this.topicsBaseName);
 	}
-	
+
 	/**
-	 * Creates a stream from and of GenericRecords with new fields added.
-	 * 
-	 * @param <G> GenericRecord
-	 * @return
-	 *  a new initialized EvalBuilder
+	 * Creates a stream from and of {@link GenericRecord}s with new fields added.
+	 *
+	 * @return a new initialized {@link EvalBuilder}.
 	 */
 	@SuppressWarnings("unchecked")
 	public EvalBuilder<K> eval() {
@@ -424,36 +411,31 @@ public class TopologyBuilder <K,V> {
 				(Serde<GenericRecord>)this.valueSerde,
 				this.topicsBaseName);
 	}
-	
+
 	/**
-	 * Creates a stream from and of GenericRecords with a field of discretized
+	 * Creates a stream from and of {@link GenericRecord}s with a field of discretized
 	 * values (bins).
-	 * 
-	 * @param <G> GenericRecord
-	 * @return
-	 *  a new initialized BinBuilder
+	 *
+	 * @return a new initialized {@link BinBuilder}.
 	 */
 	@SuppressWarnings("unchecked")
 	public BinBuilder<K> bin() {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
-		
+
 		return new BinBuilder<>(
-				this.streamsBuilder, 
-				(KStream<K,GenericRecord>)this.stream, 
-				this.keySerde, 
+				this.streamsBuilder,
+				(KStream<K,GenericRecord>)this.stream,
+				this.keySerde,
 				(Serde<GenericRecord>)this.valueSerde,
 				this.topicsBaseName);
-		
 	}
-	
+
 	/**
 	 * Creates Statistics calculated based on the incoming records.
-	 * 
-	 * @param <G> GenericRecord
-	 * @return
-	 *  a new initialized StatsBuilder
+	 *
+	 * @return a new initialized {@link StatsBuilder}.
 	 */
 	@SuppressWarnings("unchecked")
 	public StatsBuilder<K> stats() {
@@ -471,10 +453,9 @@ public class TopologyBuilder <K,V> {
 	}
 	
 	/**
-	 * Creates a stream Tables of incoming GenericRecords.
-	 *  
-	 * @return
-	 * 	a new initialized TableBuilder
+	 * Creates a stream Tables of incoming {@link GenericRecord}s.
+	 *
+	 * @return a new initialized {@link TableBuilder}.
 	 */
 	@SuppressWarnings("unchecked")
 	public TableBuilder<K> table() {

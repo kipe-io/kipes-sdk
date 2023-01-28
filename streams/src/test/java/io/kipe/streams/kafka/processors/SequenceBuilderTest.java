@@ -14,6 +14,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+/**
+ * Test class for {@link SequenceBuilder}
+ */
 class SequenceBuilderTest extends AbstractTopologyTest {
 
 	private static final String SOURCE = "source";
@@ -21,7 +25,14 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 
 	private TestInputTopic<String, TestRecord> sourceTopic;
 	private TestOutputTopic<String, TestRecord> targetTopic;
-	
+
+	/**
+	 * Initialize the topology for testing.
+	 * <p>
+	 * Creates a Kafka Streams topology with a source topic, a sequence processor, and a target topic.
+	 *
+	 * @param topologyTestContext context for topology testing
+	 */
 	@Override
 	protected void initTopology(TopologyTestContext topologyTestContext) {
 		JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
@@ -61,6 +72,13 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 		
 	}
 
+	/**
+	 * Initialize the test topics for testing.
+	 * <p>
+	 * Creates test input and output topics for testing
+	 *
+	 * @param topologyTestContext context for topology testing
+	 */
 	@Override
 	protected void initTestTopics(TopologyTestContext topologyTestContext) {
 		this.sourceTopic = topologyTestContext.createTestInputTopic(
@@ -79,6 +97,9 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	// tests
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Test case for single group key
+	 */
 	@Test
 	void test_single_group() {
 		// when we send four records for one key
@@ -104,6 +125,9 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 		assertEquals(2, r.count);
 	}
 
+	/**
+	 * Test for handling two groups of records.
+	 */
 	@Test
 	void test_two_groups() {
 		// when we send two record groups 
@@ -136,6 +160,13 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	// utils
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Utility method for sending records to the source topic.
+	 *
+	 * @param key       the key of the record
+	 * @param value     the value of the record
+	 * @param timestamp the timestamp of the record
+	 */
 	private void send(String key, Integer value, long timestamp) {
 		this.sourceTopic.pipeInput(key, new TestRecord(timestamp, key, value, 0));
 	}
@@ -144,7 +175,9 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	// records
 	// ------------------------------------------------------------------------
 
-
+	/**
+	 * Data class for the test records.
+	 */
 	@AllArgsConstructor
 	@NoArgsConstructor
 	@Data

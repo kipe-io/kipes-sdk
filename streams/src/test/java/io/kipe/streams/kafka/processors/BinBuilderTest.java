@@ -13,8 +13,20 @@ import io.kipe.streams.kafka.processors.TopologyBuilder;
 import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 
+/**
+ * Test class for {@link TopologyBuilder#bin()} method.
+ * Test the discretization of input values using the bin method.
+ */
 class BinBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 
+	/**
+	 * Overrides the addGenericRecordProcessor method to build the topology
+	 * with bin method.
+	 *
+	 * @param builder             the topology builder to use.
+	 * @param topologyTestContext the test context to use.
+	 * @return the builder with the bin method added.
+	 */
 	@Override
 	protected TopologyBuilder<String, GenericRecord> addGenericRecordProcessor(
 			TopologyBuilder<String, GenericRecord> builder, 
@@ -31,6 +43,12 @@ class BinBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 	// tests
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Test the discretization of input values using the bin method.
+	 *
+	 * @param inputValue       the value to be discretized.
+	 * @param discretizedValue the expected discretized value.
+	 */
 	@ParameterizedTest
 	@MethodSource("createTestData")
 	void test_bin_discretizes(double inputValue, double discretizedValue) {
@@ -43,7 +61,12 @@ class BinBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 		GenericRecord r = this.targetTopic.readValue();
 		assertEquals(discretizedValue, r.get("input"));		
 	}
-	
+
+	/**
+	 * Creates test data for the test_bin_discretizes method.
+	 *
+	 * @return the test data.
+	 */
 	static Stream<Arguments> createTestData() {
 		return Stream.of(
 				of(-5.01, -5.0),

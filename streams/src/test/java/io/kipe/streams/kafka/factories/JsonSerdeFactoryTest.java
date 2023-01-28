@@ -13,8 +13,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+/**
+ * Test class for {@link JsonSerdeFactory}.
+ */
 class JsonSerdeFactoryTest {
 
+	/**
+	 * Test for serde with generic class without generics
+	 */
 	@Test
 	void test_serde__generic_class_without_generics() {
 		GenericClass<String> gco = new GenericClass<>("value");
@@ -31,6 +37,9 @@ class JsonSerdeFactoryTest {
 		assertEquals(gco.getValue(), deseGco.getValue());
 	}
 
+	/**
+	 * Test for serde with generic class with generics
+	 */
 	@Test
 	void test_serde__generic_class_with_generics() {
 		GenericClass<String> gco = new GenericClass<>("value");
@@ -50,12 +59,20 @@ class JsonSerdeFactoryTest {
 	// GenericClass
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Data class for testing {@link JsonSerdeFactory}
+	 *
+	 * @param <T>
+	 */
 	@Data
 	@EqualsAndHashCode
 	@NoArgsConstructor
 	@AllArgsConstructor
 	private static class GenericClass<T> {
-		
+
+		/**
+		 * Annotation for handling class information during deserialization.
+		 */
 		@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "className")
 		private T value;
 	}

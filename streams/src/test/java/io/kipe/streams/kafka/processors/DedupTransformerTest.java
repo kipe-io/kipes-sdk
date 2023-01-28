@@ -17,6 +17,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.kipe.streams.kafka.processors.DedupBuilder.DedupTransformer;
 
+
+/**
+ * Test class for {@link DedupTransformer}.
+ */
 @ExtendWith(MockitoExtension.class)
 class DedupTransformerTest {
 
@@ -33,6 +37,12 @@ class DedupTransformerTest {
 	// transform - groupBy
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Test method for {@link DedupTransformer#transform(Object, Object)} with a group by function.
+	 *
+	 * This test method verifies that the first value with a given key is emitted, but subsequent values with the same key
+	 * are not.
+	 */
 	@Test
 	void test_transform__with_groupKeyFunction_emits_first_value() {
 		DedupTransformer<String,String, String,String> t = createGroupByDedupTransformer();
@@ -49,7 +59,12 @@ class DedupTransformerTest {
 		assertEquals(key, kv.key);
 		assertEquals(value, kv.value);
 	}
-	
+
+	/**
+	 * Test method for {@link DedupTransformer#transform(Object, Object)} with a group by function.
+	 *
+	 * This test method verifies that subsequent values with the same key are not emitted.
+	 */
 	@Test
 	void test_transform__with_groupKeyFunction_dedups_second_value() {
 		DedupTransformer<String,String, String,String> t = createGroupByDedupTransformer();
@@ -70,7 +85,12 @@ class DedupTransformerTest {
 		
 		assertNull(kv);
 	}
-	
+
+	/**
+	 * Test method for {@link DedupTransformer#transform(Object, Object)} with a group by function.
+	 *
+	 * This test method verifies that values with different keys are emitted.
+	 */
 	@Test
 	void test_transform__with_groupKeyFunction_emits_other_key() {
 		DedupTransformer<String,String, String,String> t = createGroupByDedupTransformer();
@@ -98,6 +118,10 @@ class DedupTransformerTest {
 	// transform - groupDedup
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Test the transform method with a groupDedup function.
+	 * Expects the first value to be emitted.
+	 */
 	@Test
 	void test_transform__with_groupDedupFunction_emits_first_value() {
 		DedupTransformer<String,String, String,String> t = createGroupDedupDedupTransformer();
@@ -114,7 +138,11 @@ class DedupTransformerTest {
 		assertEquals(key, kv.key);
 		assertEquals(value, kv.value);
 	}
-	
+
+	/**
+	 * Test the transform method with a groupDedup function.
+	 * Expects the same value to be deduplicated and not emitted.
+	 */
 	@Test
 	void test_transform__with_groupDedupFunction_dedups_same_value() {
 		DedupTransformer<String,String, String,String> t = createGroupDedupDedupTransformer();
@@ -134,7 +162,12 @@ class DedupTransformerTest {
 		
 		assertNull(kv);
 	}
-	
+
+	/**
+	 * Test for the transform method with a group dedup function.
+	 * <p>
+	 * Asserts that the method returns a KeyValue with the correct key and value when the state store has a different value for the key.
+	 */
 	@Test
 	void test_transform__with_groupDedupFunction_emits_other_value() {
 		DedupTransformer<String,String, String,String> t = createGroupDedupDedupTransformer();
@@ -157,7 +190,12 @@ class DedupTransformerTest {
 		assertEquals(key, kv.key);
 		assertEquals(v2, kv.value);
 	}
-	
+
+	/**
+	 * Test for the transform method with a group dedup function.
+	 * <p>
+	 * Asserts that the method returns a KeyValue with the correct key and value when the input key is different from the key in the state store.
+	 */
 	@Test
 	void test_transform__with_groupDedupFunction_emits_other_key() {
 		DedupTransformer<String,String, String,String> t = createGroupDedupDedupTransformer();
@@ -181,15 +219,39 @@ class DedupTransformerTest {
 		assertEquals(value, kv.value);
 	}
 
+	/**
+	 * Test for the transform method with a group dedup function.
+	 * <p>
+	 * Asserts that the method returns null when the state store has no value for the key.
+	 */
+	@Test
+	void test_transform__with_groupDedupFunction_returns_null_when_no_value_in_state_store() {
+		DedupTransformer<String, String, String, String> t = createGroupDedupDedupTransformer();
+
+		String key = "key";
+		String v1 = "v1";
+
+		when(stateStoreMock.get(key)).thenReturn(null);
+		doNothing().when(stateStoreMock).put(key, v1);
+
+		KeyValue<String, String> kv = t.transform(key, v1);
+
+		assertNull(kv);
+	}
+
 	// ------------------------------------------------------------------------
 	// utils
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Creates and returns an instance of the  {@link DedupTransformer} class, with the following configuration:
 	 * <pre>
-	 * groupKeyFunction  : (key, value) -> key
+	 * groupKeyFunction : (key, value) -> key
 	 * groupDedupFunction: null
 	 * </pre>
+	 * The stateStore property of the  {@link DedupTransformer} instance is set to the stateStoreMock object.
+	 *
+	 * @return an instance of the  {@link DedupTransformer} class with the above configuration.
 	 */
 	private DedupTransformer<String,String, String,String> createGroupByDedupTransformer() {
 		DedupTransformer<String,String, String,String> t = new DedupTransformer<>(
@@ -202,10 +264,14 @@ class DedupTransformerTest {
 	}
 
 	/**
+	 * Creates and returns an instance of the {@link DedupTransformer} class, with the following configuration:
 	 * <pre>
-	 * groupKeyFunction  : (key, value) -> key
+	 * groupKeyFunction : (key, value) -> key
 	 * groupDedupFunction: (key, value) -> value
 	 * </pre>
+	 * The stateStore property of the DedupTransformer instance is set to the stateStoreMock object.
+	 *
+	 * @return an instance of the  {@link DedupTransformer} class with the above configuration.
 	 */
 	private DedupTransformer<String,String, String,String> createGroupDedupDedupTransformer() {
 		DedupTransformer<String,String, String,String> t = new DedupTransformer<>(

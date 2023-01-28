@@ -33,7 +33,10 @@ public abstract class AbstractStreamFactory {
 	// ------------------------------------------------------------------------
 	// init
 	// ------------------------------------------------------------------------
-	
+
+	/**
+	 * Initializes all topics specified by {@link #getTopicNames()} and creates them if necessary.
+	 */
 	@PostConstruct
 	void postConstruct() throws Exception {
 		initTopics();
@@ -46,18 +49,25 @@ public abstract class AbstractStreamFactory {
 	protected void doPostConstruct() throws Exception {
 		// empty for overwriting purposes
 	}
-	
+
 	/**
 	 * Initializes all topics which names will be given by {@link #getTopicNames()}.
-	 * 
+	 *
 	 * The method will create the topics if necessary.
-	 * @throws ExecutionException 
-	 * @throws InterruptedException 
+	 * @throws ExecutionException
+	 * @throws InterruptedException
 	 */
 	protected void initTopics() throws InterruptedException, ExecutionException {
 		ensureTopics(getTopicNames());
 	}
-	
+
+	/**
+	 * Ensures that all topics specified in the topicNames parameter exist.
+	 *
+	 * @param topicNames the topics to ensure exist.
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	protected void ensureTopics(String...topicNames) throws InterruptedException, ExecutionException {
 		Set<NewTopic> newTopics = Arrays.stream(topicNames)
 				.map(this::createNewTopic)
@@ -65,7 +75,13 @@ public abstract class AbstractStreamFactory {
 		
 		topicManager.ensureTopics(newTopics);
 	}
-	
+
+	/**
+	 * Creates a new topic with the specified name and the replication factor and retention time
+	 * specified by the class's replicationFactor and retentionMs fields.
+	 *
+	 * @param topicName the name of the topic.
+	 */
 	protected NewTopic createNewTopic(String topicName) {
 		// TODO externalize config
 		//
@@ -104,7 +120,7 @@ public abstract class AbstractStreamFactory {
 	 * notably for those it needs to create.
 	 * 
 	 * See {@link #getTopicNamesForDeletion()} to overwrite those which need
-	 * to get deleted (in case you use that feature) 
+	 * to get deleted (in case you use that feature) .
 	 */
 	protected abstract String[] getTopicNames();
 
@@ -116,7 +132,13 @@ public abstract class AbstractStreamFactory {
 	protected Set<String> getTopicNamesForDeletion() {
 		return new HashSet<>(Arrays.asList(getTopicNames()));
 	}
-	
+
+	/**
+	 * Deletes all topics by calling the deleteTopics method on the topicManager object.
+	 *
+	 * @throws InterruptedException if the thread is interrupted while waiting for the deletion to complete.
+	 * @throws ExecutionException   if there is an exception thrown during the deletion process.
+	 */
 	public void deleteAllTopics() throws InterruptedException, ExecutionException {
 		Set<String> topicNames = getTopicNamesForDeletion();
 				
@@ -126,7 +148,12 @@ public abstract class AbstractStreamFactory {
 	// ------------------------------------------------------------------------
 	// get/set
 	// ------------------------------------------------------------------------
-	
+
+	/**
+	 * Getter method for the topicManager object.
+	 *
+	 * @return the topicManager object.
+	 */
 	public TopicManager getTopicManager() {
 		return this.topicManager;
 	}

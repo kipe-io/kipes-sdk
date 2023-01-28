@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 /**
- * Simple construct to update a GenericRecord field from a function.
+ * Simple construct to update a {@link GenericRecord} field from a function.
  *
  * @param <K> the key type
  * @param <V> the GenericRecord
@@ -20,7 +20,14 @@ public class Expression<K, V extends GenericRecord> {
 	protected BiFunction<K, V, Object> valueFunction;
 	
 	protected Expression() {}
-	
+
+	/**
+	 * The update method is used to update the specified field in the
+	 * {@link GenericRecord} object with the new value returned by the valueFunction
+	 *
+	 * @param key    the key of the record
+	 * @param record the GenericRecord object to update
+	 **/
 	void update(K key, V record) {
 		record.set(
 				this.fieldName, 

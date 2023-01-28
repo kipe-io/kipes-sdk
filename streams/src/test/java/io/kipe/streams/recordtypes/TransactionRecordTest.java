@@ -16,6 +16,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Test class for {@link TransactionRecord}.
+ */
 class TransactionRecordTest {
 
 	private static final String GROUP_KEY = "groupKey";
@@ -35,7 +38,7 @@ class TransactionRecordTest {
 //		assertEquals(value.getKey(), record.getKey());
 //		assertFalse(record.getRecords().contains(value));
 //	}
-	
+
 	// ------------------------------------------------------------------------
 	// tests addUnique
 	// ------------------------------------------------------------------------
@@ -50,10 +53,13 @@ class TransactionRecordTest {
 //		});
 //	}
 
+	/**
+	 * Test that {@link TransactionRecord#addUnique(Object)} throws a {@link NullPointerException} when the value is null.
+	 */
 	@Test
 	void test_addUnique__fails_on_value_null() {
 		TransactionRecord<Void, TestValue> record = createTransactionRecord();
-		
+
 		assertThrows(NullPointerException.class, () -> {
 			record.addUnique(null);
 		});
@@ -69,16 +75,22 @@ class TransactionRecordTest {
 //		});
 //	}
 
+	/**
+	 * Test that {@link TransactionRecord#addUnique(Object)} adds a value to the records.
+	 */
 	@Test
 	void test_addUnique__adds_value() {
 		TransactionRecord<Void, TestValue> record = createTransactionRecord();
 		TestValue value = createTestValue(VALUE);
 
 		record.addUnique(value);
-		
+
 		assertTrue(record.getRecords().contains(value));
 	}
 
+	/**
+	 * Test that {@link TransactionRecord#addUnique(Object)} ignores adding already stored values.
+	 */
 	@Test
 	void test_addUnique__ignores_adding_already_stored_values() {
 		TransactionRecord<Void, TestValue> record = createTransactionRecord();
@@ -86,10 +98,10 @@ class TransactionRecordTest {
 
 		record.addUnique(value);
 		record.addUnique(value);
-		
+
 		assertEquals(1, record.getRecords().size());
 	}
-	
+
 //	@Test
 //	void test_addUnique__updates_this_timestamp() {
 //		TransactionRecord<Void, TestValue> record = createTransactionRecord();
@@ -103,41 +115,47 @@ class TransactionRecordTest {
 //		assertTrue(thisTimestamp < record.getKey().getTimestamp());
 //		assertEquals(record.getKey().getTimestamp(), value.getKey().getTimestamp());
 //	}
-	
+
 	// ------------------------------------------------------------------------
 	// tests getRecord
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Test that {@link TransactionRecord#getRecords()} throws a IndexOutOfBoundsException when accessed index is out of bounds.
+	 */
 	@Test
 	void test_getRecord__throws_IndexOutOfBoundsException() {
 		TransactionRecord<Void, TestValue> record = createTransactionRecord();
-		
+
 		TestValue v1 = createTestValue("1");
 		TestValue v2 = createTestValue("2");
 		TestValue v3 = createTestValue("3");
-		
+
 		record.addUnique(v1);
 		record.addUnique(v2);
 		record.addUnique(v3);
-		
+
 		assertEquals(3, record.getRecords().size());
-		
+
 		assertThrows(IndexOutOfBoundsException.class, () -> record.getRecord(3));
 		assertThrows(IndexOutOfBoundsException.class, () -> record.getRecord(-4));
 	}
 
+	/**
+	 * Test that {@link TransactionRecord#getRecords()} returns the correct value for a given index.
+	 */
 	@Test
 	void test_getRecord__returns_correct_record() {
 		TransactionRecord<Void, TestValue> record = createTransactionRecord();
-		
+
 		TestValue v1 = createTestValue("1");
 		TestValue v2 = createTestValue("2");
 		TestValue v3 = createTestValue("3");
-		
+
 		record.addUnique(v1);
 		record.addUnique(v2);
 		record.addUnique(v3);
-		
+
 		assertEquals(3, record.getRecords().size());
 
 		assertEquals(v1, record.getRecord(0));
@@ -149,11 +167,14 @@ class TransactionRecordTest {
 		assertEquals(v3, record.getRecord(2));
 		assertEquals(v3, record.getRecord(-1));
 	}
-	
+
 	// ------------------------------------------------------------------------
 	// serde
 	// ------------------------------------------------------------------------
 
+    /**
+     * Test for the serialization and deserialization of the {@link TransactionRecord} class.
+     */
 	@Test
 	void test_serde() throws JsonProcessingException {
 		TransactionRecord<String, TestValue> record = createTransactionRecord();
@@ -161,32 +182,48 @@ class TransactionRecordTest {
 		TestValue value = createTestValue(VALUE);
 
 		record.addUnique(value);
-		
+
 		ObjectMapper mapper = new ObjectMapper();
 		String json = mapper.writeValueAsString(record);
-		
-		TransactionRecord<?,?> r = mapper.readValue(json, TransactionRecord.class); 
+
+		TransactionRecord<?,?> r = mapper.readValue(json, TransactionRecord.class);
 		assertEquals(GROUP_KEY, r.getGroupKey());
 		assertTrue(r.getRecords().contains(value));
-		
+
 	}
-	
+
 	// ------------------------------------------------------------------------
 	// utils
 	// ------------------------------------------------------------------------
 
+	/**
+	 * Create a new instance of {@link TransactionRecord} with generic key and value types.
+	 *
+	 * @param <GK> the generic type for the key
+	 * @param <V>  the generic type for the value
+	 * @return a new instance of {@link TransactionRecord}
+	 */
 	private static <GK,V> TransactionRecord<GK, V> createTransactionRecord() {
 		return new TransactionRecord<GK,V>();
 	}
-	
+
+	/**
+	 * Create a new instance of {@link TestValue} with the given value.
+	 *
+	 * @param value the value to be set in the {@link TestValue} instance.
+	 * @return a new instance of {@link TestValue}.
+	 */
 	private static TestValue createTestValue(String value) {
 		return new TestValue(value);
 	}
-	
+
 	// ------------------------------------------------------------------------
 	// inner class - TestValue
 	// ------------------------------------------------------------------------
 
+    /**
+     * A simple value object used for testing.
+     */
 	@Data
 	@EqualsAndHashCode
 	@ToString(callSuper = true)

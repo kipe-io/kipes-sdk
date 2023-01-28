@@ -19,6 +19,11 @@ import org.slf4j.LoggerFactory;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+/**
+ * TopicManager is a singleton class that provides methods to manage topics in a Kafka cluster.
+ * It uses Apache Kafka AdminClient to communicate with the Kafka cluster.
+ *
+ */
 @Singleton
 public class TopicManager {
 	
@@ -32,7 +37,16 @@ public class TopicManager {
 	public void ensureTopics(NewTopic... newTopics) throws InterruptedException, ExecutionException {
 		ensureTopics(new HashSet<>(Arrays.asList(newTopics)));
 	}
-	
+
+	/**
+	 * This method creates the provided topics in the Kafka cluster.
+	 * It first checks if the topics are already available in the cluster, if not then it creates them.
+	 * It uses the AdminClient to create the topics.
+	 *
+	 * @param newTopics - Set of NewTopic objects that need to be created.
+	 * @throws InterruptedException - when the thread is interrupted while waiting for the AdminClient response.
+	 * @throws ExecutionException   - when the AdminClient fails to create the topics.
+	 */
 	public void ensureTopics(Set<NewTopic> newTopics) throws InterruptedException, ExecutionException {
 		if(adminClient == null) {
 			newTopics.forEach(topic -> LOG.warn("adminClient not injected, skipping creation of topic '{}'", topic));
@@ -57,7 +71,15 @@ public class TopicManager {
 		
 		topicsToBeCreated.forEach(createdTopic -> LOG.info("topic '{}' created", createdTopic.name()));
 	}
-	
+
+	/**
+	 * This method deletes the provided topics from the Kafka cluster.
+	 * It uses the AdminClient to delete the topics.
+	 *
+	 * @param topics - Collection of topic names that need to be deleted.
+	 * @throws InterruptedException - when the thread is interrupted while waiting for the AdminClient response.
+	 * @throws ExecutionException   - when the AdminClient fails to delete the topics.
+	 */
 	public void deleteTopics(Collection<String> topics) throws InterruptedException, ExecutionException {
 		if(adminClient == null) {
 			topics.forEach(topic -> LOG.warn("adminClient not injected, skipping deletion of topic '{}'", topic));
@@ -65,7 +87,15 @@ public class TopicManager {
 		}
 		adminClient.deleteTopics(topics).all().get();
 	}
-	
+
+	/**
+	 * Clears the provided topics from the Kafka cluster.
+	 * It uses the AdminClient to clear the topics.
+	 *
+	 * @param topics - Collection of topic names that need to be deleted.
+	 * @throws InterruptedException - when the thread is interrupted while waiting for the AdminClient response.
+	 * @throws ExecutionException   - when the AdminClient fails to clear the topics.
+	 */
 	public void clearTopics(Collection<String> topics) throws InterruptedException, ExecutionException {
 		if(adminClient == null) {
 			topics.forEach(topic -> LOG.warn("adminClient not injected, skipping cleaning of topic '{}'", topic));
