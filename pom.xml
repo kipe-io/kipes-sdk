@@ -2,13 +2,13 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-
 	<groupId>io.kipe</groupId>
 	<artifactId>parent</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>io.kipe</name>
 	<url>http://placeholder.org</url>
+	<description>Kipes... </description>
 
 	<parent>
 		<groupId>io.micronaut</groupId>
@@ -19,6 +19,11 @@
 	<!-- ================================================================================================= -->
 	<!-- organisational stuff -->
 	<!-- ================================================================================================= -->
+
+	<organization>
+		<name>Placeholder Organization</name>
+		<url>http://placeholder.org</url>
+	</organization>
 
 	<licenses>
 		<license>
@@ -51,13 +56,17 @@
 	</properties>
 
 	<!-- ================================================================================================= -->
-	<!-- build management -->
+	<!-- modules -->
 	<!-- ================================================================================================= -->
 
 	<modules>
 		<module>streams.test</module>
 		<module>streams</module>
 	</modules>
+
+	<!-- ================================================================================================= -->
+	<!-- dependencies -->
+	<!-- ================================================================================================= -->
 
 	<dependencyManagement>
 		<dependencies>
@@ -322,7 +331,7 @@
 
 	<!-- ================================================================================================= -->
 	<!-- distribution management -->
-	<!-- ============== =================================================================================== -->
+	<!-- ================================================================================================= -->
 
 	<scm>
 		<connection>scm:git:git://github.com/kipe-io/kipes-sdk.git</connection>
