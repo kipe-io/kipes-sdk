@@ -188,8 +188,8 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 	 * @param keySerde serde to use for the key of the stream
 	 * @return a topology builder containing a stream with the specified key and value types
 	 */
-	public TopologyBuilder<String, GenericRecord> build(Serde<String> keySerde) {
-		return createTopologyBuilder(
+	public KipesBuilder<String, GenericRecord> build(Serde<String> keySerde) {
+		return createKipesBuilder(
 				asKTable(keySerde)
 				.toStream(),
 				keySerde,

@@ -27,7 +27,7 @@ import io.kipe.streams.recordtypes.GenericRecord;
  *   KStream<String, GenericRecord> stream = builder.stream("input-topic", Consumed.with(Serdes.String(), genericRecordSerde));
  *   EvalBuilder<String> evalBuilder = new EvalBuilder<>(builder, stream, Serdes.String(), genericRecordSerde, "output-topic-base");
  *   evalBuilder.with("fieldName", (key, value) -> { ... });
- *   TopologyBuilder<String, GenericRecord>; topologyBuilder = evalBuilder.build();
+ *   KipesBuilder<String, GenericRecord>; kipesBuilder = evalBuilder.build();
  * }
  * </pre>
  *
@@ -85,12 +85,12 @@ public class EvalBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecord
     }
 
     /**
-     * Build the topology and return a TopologyBuilder object
+     * Build the topology and return a KipesBuilder object
      *
-     * @return the TopologyBuilder object representing the built topology
+     * @return the KipesBuilder object representing the built topology
      */
-    public TopologyBuilder<K, GenericRecord> build() {
-        return createTopologyBuilder(
+    public KipesBuilder<K, GenericRecord> build() {
+        return createKipesBuilder(
                 this.stream
                         .map(
                                 (key, value) -> {

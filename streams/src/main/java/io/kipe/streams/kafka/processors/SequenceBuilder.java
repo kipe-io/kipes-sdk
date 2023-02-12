@@ -30,7 +30,7 @@ import io.micronaut.core.serialize.exceptions.SerializationException;
 /**
  * Builds sequences of records and applies a function to the sequences. Each
  * record starts a new sequence of the configured size. Clients do not instantiate
- * this class directly but use {@link TopologyBuilder#sequence()}.
+ * this class directly but use {@link KipesBuilder#sequence()}.
  *
  * <p><b>Usage</b></p>
  * To use the `SequenceBuilder` class, create an instance of the class, passing in a `StreamsBuilder`, `KStream`, `Serde` for key, `Serde` for value, and a topics base name.
@@ -145,9 +145,9 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
      * @param aggregateFunction the function to apply to the complete sequence of records for each group key.
      * @param valueClass        the class of the input values in the sequence.
      * @param resultValueSerde  the serde for the aggregate value.
-     * @return a new {@link TopologyBuilder} with the aggregate value as the value type.
+     * @return a new {@link KipesBuilder} with the aggregate value as the value type.
      */
-    public TopologyBuilder<K, VR> as(
+    public KipesBuilder<K, VR> as(
             BiFunction<GK, List<V>, VR> aggregateFunction,
             Class<V> valueClass,
             Serde<VR> resultValueSerde) {
@@ -165,7 +165,7 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
         this.streamsBuilder.addStateStore(dedupStoreBuilder);
 
 
-        return createTopologyBuilder(
+        return createKipesBuilder(
                 this.stream
                         .transform(
                                 () -> new SequenceTransformer<>(

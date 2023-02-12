@@ -63,9 +63,9 @@ public class TableBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 	 *
 	 * @param resultKeySerde   The {@link Serde} to use for the key of the resulting stream.
 	 * @param resultValueSerde The {@link Serde} to use for the value of the resulting stream.
-	 * @return A {@link TopologyBuilder} for the resulting stream.
+	 * @return A {@link KipesBuilder} for the resulting stream.
 	 */
-	public TopologyBuilder<String,TableRecord<K,GenericRecord>> build(
+	public KipesBuilder<String,TableRecord<K,GenericRecord>> build(
 			Serde<String> resultKeySerde,
 			Serde<TableRecord<K,GenericRecord>> resultValueSerde)
 	{
@@ -81,7 +81,7 @@ public class TableBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 						resultValueSerde);
 		this.streamsBuilder.addStateStore(tableStoreBuilder);
 		
-		return createTopologyBuilder(
+		return createKipesBuilder(
 				stream.transform(
 						() -> new TableTransformer<K>(
 								stateStoreName), 

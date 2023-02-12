@@ -6,7 +6,6 @@ import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.junit.jupiter.api.Test;
 
-import io.kipe.streams.kafka.processors.TopologyBuilder;
 import io.kipe.streams.test.kafka.AbstractTopologyTest;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
@@ -37,7 +36,7 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	protected void initTopology(TopologyTestContext topologyTestContext) {
 		JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
 		
-		TopologyBuilder.init(topologyTestContext.getStreamsBuilder())
+		KipesBuilder.init(topologyTestContext.getStreamsBuilder())
 		.from( 
 				topologyTestContext.createKStream(
 						SOURCE, 

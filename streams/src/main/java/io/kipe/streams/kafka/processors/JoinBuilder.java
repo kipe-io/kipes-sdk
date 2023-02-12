@@ -13,7 +13,7 @@ import org.apache.kafka.streams.state.Stores;
 
 /**
  * Builder to setup a (inner) join of two streams. Clients do not instantiate
- * this class directly but use {@link TopologyBuilder#join(KStream, Serde)}.
+ * this class directly but use {@link KipesBuilder#join(KStream, Serde)}.
  *
  * <p><b>Usage</b></p>
  * The JoinBuilder class provides a way to join two streams in Kafka Streams. It allows the clients
@@ -157,10 +157,10 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V>
 	 *
 	 * @param joiner           the {@link ValueJoiner} used to combine the values from the current and other streams
 	 * @param resultValueSerde the {@link Serde} to be used for the result value
-	 * @return a TopologyBuilder with the joined stream
+	 * @return a KipesBuilder with the joined stream
 	 * @throws NullPointerException if any of the required parameters (topicsBaseName, joiner, resultValueSerde) are null
 	 */
-	public TopologyBuilder<K,VR> as(ValueJoiner<V, OV, VR> joiner, Serde<VR> resultValueSerde) {
+	public KipesBuilder<K,VR> as(ValueJoiner<V, OV, VR> joiner, Serde<VR> resultValueSerde) {
 		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");
 		
 		if(this.windowSizeBefore == null) {
@@ -199,7 +199,7 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V>
 						.withValueSerde(this.valueSerde)
 						.withOtherValueSerde(this.otherValueSerde));
 		
-		return createTopologyBuilder(
+		return createKipesBuilder(
 				joinedStream, 
 				this.keySerde, 
 				resultValueSerde);

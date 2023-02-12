@@ -10,7 +10,6 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.junit.jupiter.api.Test;
 
 import io.kipe.common.utils.TimeUtils;
-import io.kipe.streams.kafka.processors.TopologyBuilder;
 import io.kipe.streams.test.kafka.AbstractTopologyTest;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
@@ -46,7 +45,7 @@ class JoinBuilderTest extends AbstractTopologyTest {
 	protected void initTopology(TopologyTestContext topologyTestContext) {
 		JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
 		
-		TopologyBuilder<?,?> builder = TopologyBuilder.init(topologyTestContext.getStreamsBuilder());
+		KipesBuilder<?,?> builder = KipesBuilder.init(topologyTestContext.getStreamsBuilder());
 		
 		// setup time adjusted left stream
 		KStream<String, TestRecord> leftStream = builder

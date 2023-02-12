@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-import io.kipe.streams.kafka.processors.TopologyBuilder;
 import io.kipe.streams.kafka.processors.expressions.stats.Count;
 import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
@@ -19,13 +18,13 @@ class StatsBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 	 * It uses the Count.count() method to count the number of records in each group
 	 * It groups the records by 'group' field and returns the topology builder.
 	 *
-	 * @param builder             TopologyBuilder<String, GenericRecord>
+	 * @param builder             KipesBuilder<String, GenericRecord>
 	 * @param topologyTestContext TopologyTestContext
-	 * @return TopologyBuilder<String, GenericRecord>
+	 * @return KipesBuilder<String, GenericRecord>
 	 */
 	@Override
-	protected TopologyBuilder<String, GenericRecord> addGenericRecordProcessor(
-			TopologyBuilder<String, GenericRecord> builder, 
+	protected KipesBuilder<String, GenericRecord> addGenericRecordProcessor(
+			KipesBuilder<String, GenericRecord> builder, 
 			TopologyTestContext topologyTestContext) 
 	{
 		return builder.stats()

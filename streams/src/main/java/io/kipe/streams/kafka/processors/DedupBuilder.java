@@ -136,9 +136,9 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
      * {@link #withTopicsBaseName(String)}. Additionally, the group key function and group key serde
      * must also be set using {@link #groupBy(KeyValueMapper)} and {@link #withGroupKeySerde(Serde)}, respectively.
      *
-     * @return A new TopologyBuilder initialized with the deduplication stream.
+     * @return A new KipesBuilder initialized with the deduplication stream.
      */
-	public TopologyBuilder<K,V> emitFirst() {
+	public KipesBuilder<K,V> emitFirst() {
 		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName must be set");
 		Objects.requireNonNull(this.groupKeyFunction, "groupBy groupKeyFunction must be set");
 		Objects.requireNonNull(this.groupKeySerde, "groupBy groupKeySerde must be set");
@@ -151,7 +151,7 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 						this.valueSerde);
 		this.streamsBuilder.addStateStore(dedupStoreBuilder);
 		
-		return createTopologyBuilder(
+		return createKipesBuilder(
 				this.stream
 				.transform(
 						() -> new DedupTransformer<>(

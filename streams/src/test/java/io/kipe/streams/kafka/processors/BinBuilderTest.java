@@ -9,12 +9,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import io.kipe.streams.kafka.processors.TopologyBuilder;
 import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 
 /**
- * Test class for {@link TopologyBuilder#bin()} method.
+ * Test class for {@link KipesBuilder#bin()} method.
  * Test the discretization of input values using the bin method.
  */
 class BinBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
@@ -28,8 +27,8 @@ class BinBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 	 * @return the builder with the bin method added.
 	 */
 	@Override
-	protected TopologyBuilder<String, GenericRecord> addGenericRecordProcessor(
-			TopologyBuilder<String, GenericRecord> builder, 
+	protected KipesBuilder<String, GenericRecord> addGenericRecordProcessor(
+			KipesBuilder<String, GenericRecord> builder,
 			TopologyTestContext topologyTestContext) 
 	{
 		return builder

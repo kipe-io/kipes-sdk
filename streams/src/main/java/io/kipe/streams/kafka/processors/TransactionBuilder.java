@@ -143,7 +143,7 @@ extends AbstractTopologyPartBuilder<K, V>
 	}
 	
 	/**
-	 * Assembles the transaction transformer and returns a new TopologyBuilder
+	 * Assembles the transaction transformer and returns a new KipesBuilder
 	 * configured with the resulting TransactionRecord stream.<br>
 	 * <br>
 	 * The processing is backed by a named materialized changelog store. Clients
@@ -151,9 +151,9 @@ extends AbstractTopologyPartBuilder<K, V>
 	 * {@link #withTopicsBaseName(String)} before.
 	 *  
 	 * @return
-	 * 	a new TopologyBuilder
+	 * 	a new KipesBuilder
 	 */
-	public TopologyBuilder<K, TransactionRecord<GK, V>> as(Serde<TransactionRecord<GK, V>> resultValueSerde) {
+	public KipesBuilder<K, TransactionRecord<GK, V>> as(Serde<TransactionRecord<GK, V>> resultValueSerde) {
 		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");		
 		Objects.requireNonNull(this.groupKeyFunction, "groupKeyFunction");
 		Objects.requireNonNull(this.groupKeySerde, "groupKeySerde");
@@ -171,7 +171,7 @@ extends AbstractTopologyPartBuilder<K, V>
 		this.streamsBuilder.addStateStore(dedupStoreBuilder);
 		
 		
-		return createTopologyBuilder(
+		return createKipesBuilder(
 				this.stream
 				.transform(
 						() -> new TransactionTransformer<>(

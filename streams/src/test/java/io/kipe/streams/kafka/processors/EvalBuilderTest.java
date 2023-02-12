@@ -4,12 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-import io.kipe.streams.kafka.processors.TopologyBuilder;
 import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 
 /**
- * This class tests the EvalBuilder class which is a part of the TopologyBuilder in the kipe.streams.kafka.processors package.
+ * This class tests the EvalBuilder class which is a part of the KipesBuilder in the kipe.streams.kafka.processors package.
  * <p>
  * The EvalBuilder class is used to add a transformation step to the topology that performs evaluations on the key and value of the input record.
  * <p>
@@ -17,7 +16,7 @@ import io.kipe.streams.test.kafka.TopologyTestContext;
  * <p>
  * The test case then asserts that the outputs of the EvalBuilder processor have the expected values.
  *
- * @see TopologyBuilder
+ * @see KipesBuilder
  * @see EvalBuilder
  */
 class EvalBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
@@ -28,8 +27,8 @@ class EvalBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
      * Placeholder for the actual builder implementation.
      */
 	@Override
-	protected TopologyBuilder<String, GenericRecord> addGenericRecordProcessor(
-			TopologyBuilder<String, GenericRecord> builder,
+	protected KipesBuilder<String, GenericRecord> addGenericRecordProcessor(
+			KipesBuilder<String, GenericRecord> builder,
 			TopologyTestContext topologyTestContext)
 	{
 		return builder

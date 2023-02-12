@@ -18,14 +18,14 @@ import io.kipe.streams.recordtypes.GenericRecord;
 
 /**
  * A builder to easily setup KStream topologies. Clients normally interact by
- * firstly initiating the TopologyBuilder, secondly assigning a KStream, and
+ * firstly initiating the KipesBuilder, secondly assigning a KStream, and
  * then transforming the stream with any of the given methods:
  * <pre>
  * {@code
  *   StreamsBuilder streamsBuilder = ...
  *   KStream<...> sourceStream = ...
  *
- *   TopologyBuilder
+ *   KipesBuilder
  *   .init(streamsBuilder)
  *   .from(
  *   	sourceStream,
@@ -44,23 +44,23 @@ import io.kipe.streams.recordtypes.GenericRecord;
  * @param <K> the key type of the initital stream
  * @param <V> the value type of the initial stream
  */
-public class TopologyBuilder <K,V> {
+public class KipesBuilder<K,V> {
 
 	/**
-	 * Instantiates a new instance of TopologyBuilder.<br>
+	 * Instantiates a new instance of KipesBuilder.<br>
 	 * <br>
-	 * It's important to note that the {@link StreamsBuilder} must be assigned to the TopologyBuilder
+	 * It's important to note that the {@link StreamsBuilder} must be assigned to the KipesBuilder
 	 * using the {@link #from(KStream, Serde, Serde)} method before it can be used.
 	 *
-	 * @param <K>            the type of the key in the TopologyBuilder
-	 * @param <V>            the type of the value in the TopologyBuilder
+	 * @param <K>            the type of the key in the KipesBuilder
+	 * @param <V>            the type of the value in the KipesBuilder
 	 * @param streamsBuilder a required instance of {@link StreamsBuilder} for internal use
-	 * @return an instance of {@link TopologyBuilder}
+	 * @return an instance of {@link KipesBuilder}
 	 */
-	public static <K,V> TopologyBuilder<K,V> init(
+	public static <K,V> KipesBuilder<K,V> init(
 			StreamsBuilder streamsBuilder)
 	{
-		return new TopologyBuilder<>(streamsBuilder);
+		return new KipesBuilder<>(streamsBuilder);
 	}
 	
 	private final StreamsBuilder streamsBuilder;
@@ -69,7 +69,7 @@ public class TopologyBuilder <K,V> {
 	private Serde<V> valueSerde;
 	private String topicsBaseName;
 	
-	private TopologyBuilder(
+	private KipesBuilder(
 			StreamsBuilder streamsBuilder)
 	{
 		Objects.requireNonNull(streamsBuilder, "streamsBuilder");
@@ -77,7 +77,7 @@ public class TopologyBuilder <K,V> {
 		this.streamsBuilder = streamsBuilder;
 	}
 	
-	private TopologyBuilder(
+	private KipesBuilder(
 			StreamsBuilder streamsBuilder,
 			KStream<K,V> stream, 
 			Serde<K> keySerde, 
@@ -106,25 +106,25 @@ public class TopologyBuilder <K,V> {
 	 * Sets the topic base name to derive other topics names from.
 	 *
 	 * @param topicsBaseName the base name for all topics.
-	 * @return this {@link TopologyBuilder}.
+	 * @return this {@link KipesBuilder}.
 	 */
-	public TopologyBuilder<K,V> withTopicsBaseName(String topicsBaseName) {
+	public KipesBuilder<K,V> withTopicsBaseName(String topicsBaseName) {
 		this.topicsBaseName = topicsBaseName;
 		return this;
 	}
 	
 	/**
-	 * Sets the current stream and returns a new TopologyBuilder initiated
-	 * with the current's TopologyBuilder's settings.
+	 * Sets the current stream and returns a new KipesBuilder initiated
+	 * with the current's KipesBuilder's settings.
 	 *
 	 * @param <NK>       the stream's key type.
 	 * @param <NV>       the stream's value type.
 	 * @param stream     the new stream.
 	 * @param keySerde   the key type {@link Serde}.
 	 * @param valueSerde the value type {@link Serde}.
-	 * @return a new initialized {@link TopologyBuilder}.
+	 * @return a new initialized {@link KipesBuilder}.
 	 */
-	public <NK,NV> TopologyBuilder<NK,NV> from(
+	public <NK,NV> KipesBuilder<NK,NV> from(
 			KStream<NK,NV> stream, 
 			Serde<NK> keySerde, 
 			Serde<NV> valueSerde)
@@ -133,7 +133,7 @@ public class TopologyBuilder <K,V> {
 		Objects.requireNonNull(keySerde, "keySerde");
 		Objects.requireNonNull(valueSerde, "valueSerde");
 		
-		return new TopologyBuilder<>(
+		return new KipesBuilder<>(
 				this.streamsBuilder, 
 				stream, 
 				keySerde, 
@@ -145,10 +145,10 @@ public class TopologyBuilder <K,V> {
 	 * Logs each passing record as debug. Logger is the value class.
 	 *
 	 * @param identifier an identifier to include in the log message.
-	 * @return a new instance of {@link TopologyBuilder} with the logging added to the stream.
+	 * @return a new instance of {@link KipesBuilder} with the logging added to the stream.
 	 */
-	public TopologyBuilder<K,V> logDebug(String identifier) {
-		return new TopologyBuilder<>(
+	public KipesBuilder<K,V> logDebug(String identifier) {
+		return new KipesBuilder<>(
 				this.streamsBuilder, 
 				this.stream.map(
 						(key, value) -> {
@@ -167,9 +167,9 @@ public class TopologyBuilder <K,V> {
 	 * to be created before.
 	 *
 	 * @param topicName the target topic.
-	 * @return a new instance of {@link TopologyBuilder} with the stream materialized to the topic.
+	 * @return a new instance of {@link KipesBuilder} with the stream materialized to the topic.
 	 */
-	public TopologyBuilder<K,V> through(String topicName) {
+	public KipesBuilder<K,V> through(String topicName) {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
@@ -180,7 +180,7 @@ public class TopologyBuilder <K,V> {
 						this.keySerde, 
 						this.valueSerde));
 		
-		return new TopologyBuilder<>(
+		return new KipesBuilder<>(
 				this.streamsBuilder,
 				topicBackedStream,
 				this.keySerde,
@@ -193,15 +193,15 @@ public class TopologyBuilder <K,V> {
 	 * according to Kafka's requirements (milliseconds since 1970-01-01 00:00:00).
 	 *
 	 * @param evalTimestampFunction the function to evaluate the new timestamp from a given key or value.
-	 * @return a new instance of {@link TopologyBuilder} with the record timestamps adjusted.
+	 * @return a new instance of {@link KipesBuilder} with the record timestamps adjusted.
 	 */
-	public TopologyBuilder<K,V> adjustRecordTimestamps(final BiFunction<K,V, Long> evalTimestampFunction) {
+	public KipesBuilder<K,V> adjustRecordTimestamps(final BiFunction<K,V, Long> evalTimestampFunction) {
 		Objects.requireNonNull(this.stream, "stream");
 		Objects.requireNonNull(this.keySerde, "keySerde");
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
 		Objects.requireNonNull(evalTimestampFunction, "evalTimestampFunction");
 		
-		return new TopologyBuilder<>(
+		return new KipesBuilder<>(
 				this.streamsBuilder, 
 				this.stream.transform(
 						() -> new Transformer<K,V, KeyValue<K,V>>() {
@@ -253,9 +253,9 @@ public class TopologyBuilder <K,V> {
 	 * Filters the current stream by applying the given predicate.
 	 *
 	 * @param predicate the {@link Predicate} to filter the current stream.
-	 * @return a new initiated TopologyBuilder<K,V> with the filtered stream.
+	 * @return a new initiated KipesBuilder<K,V> with the filtered stream.
 	 */
-	public TopologyBuilder<K,V> filter(Predicate<K, V> predicate) {
+	public KipesBuilder<K,V> filter(Predicate<K, V> predicate) {
 		// TODO introduce FilterBuilder
 		// JoinBuilder, TransactionBuilder provide the pattern. This 
 		// TopologyBuild should not know the details of how this manipulation
@@ -266,7 +266,7 @@ public class TopologyBuilder <K,V> {
 		Objects.requireNonNull(this.valueSerde, "valueSerde");
 		Objects.requireNonNull(predicate, "predicate");
 		
-		return new TopologyBuilder<>(
+		return new KipesBuilder<>(
 				this.streamsBuilder,
 				this.stream
 					.filter(predicate),
@@ -336,7 +336,7 @@ public class TopologyBuilder <K,V> {
 
 	/**
 	 * Creates a new stream of TransactionRecords describing transactions found
-	 * in this TopologyBuilder's stream.
+	 * in this KipesBuilder's stream.
 	 *
 	 * @param <A>  actually V as A.
 	 * @param <GK> the potential groupKey type, can be Void.

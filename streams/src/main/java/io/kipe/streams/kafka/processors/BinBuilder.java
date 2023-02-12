@@ -27,7 +27,7 @@ import io.kipe.streams.recordtypes.GenericRecord;
  *   <li>{@link #newField(String)} to set the new field name for the binned field. If not set, the original field name will be used.</li>
  * </ul>
  * Finally, you can call the {@link #build()} method to build the topology that performs the binning operation and returns a
- * {@link TopologyBuilder} object.
+ * {@link KipesBuilder} object.
  * <p>
  * <b>Example:</b>
  * For example, the following code snippet shows how to use this class to discretize a field called
@@ -126,10 +126,10 @@ public class BinBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecord>
 	/**
 	 * Builds the topology for binning the input stream.
 	 *
-	 * @return The TopologyBuilder for the binned stream.
+	 * @return The KipesBuilder for the binned stream.
 	 * @throws IllegalStateException if fieldName or span have not been set.
 	 */
-	public TopologyBuilder<K,GenericRecord> build() {
+	public KipesBuilder<K,GenericRecord> build() {
 		Objects.requireNonNull(this.fieldName, "fieldName");
 		Objects.requireNonNull(this.span, "span");
 		

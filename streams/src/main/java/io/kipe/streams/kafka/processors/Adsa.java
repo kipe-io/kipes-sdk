@@ -1,6 +1,5 @@
 package io.kipe.streams.kafka.processors;
 
-import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
@@ -19,7 +18,7 @@ public class Adsa {
                 "dedup-topic"
         );
 
-        TopologyBuilder<String, String> deduped = dedupBuilder
+        KipesBuilder<String, String> deduped = dedupBuilder
                 .groupBy((key, value) -> value, Serdes.String())
                 .advanceBy((key, value) -> value)
                 .emitFirst();

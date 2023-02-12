@@ -122,20 +122,20 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
 	}
 
     /**
-     * Returns a new {@link TopologyBuilder} with the specified value serde.
+     * Returns a new {@link KipesBuilder} with the specified value serde.
      * <p>
      * The returned topology builder applies the {@link #transformValueFunction} to the input stream,
      * <p>
      * and maps the resulting iterable to a new stream.
      *
      * @param resultValueSerde the serde to use for the new stream's values.
-     * @return a new {@link TopologyBuilder} with the specified value serde.
+     * @return a new {@link KipesBuilder} with the specified value serde.
      * @throws NullPointerException if {@link #transformValueFunction} is null.
      */
-        public TopologyBuilder<K,VR> asValueType(Serde<VR> resultValueSerde) {
+        public KipesBuilder<K,VR> asValueType(Serde<VR> resultValueSerde) {
             Objects.requireNonNull(this.transformValueFunction, "transformValueFunction");
 
-            return createTopologyBuilder(
+            return createKipesBuilder(
                     this.stream
                     .flatMapValues(
                             (key, value) ->
@@ -180,17 +180,17 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
 	}
 
     /**
-     * This method is used to finalize the key transformation step and create a new {@link TopologyBuilder}
+     * This method is used to finalize the key transformation step and create a new {@link KipesBuilder}
      * with the transformed key type, KR.
      * <p>This method should be called after one of the key transformation methods, {@link #changeKey(BiFunction)} or
      * {@link #newKeys(BiFunction)}, have been called.
      *
      * @param resultKeySerde the {@link Serde} to be used for the transformed key type, KR.
-     * @return a new {@link TopologyBuilder} with the transformed key type, KR.
+     * @return a new {@link KipesBuilder} with the transformed key type, KR.
      */
-	public TopologyBuilder<KR,V> asKeyType(Serde<KR> resultKeySerde) {
+	public KipesBuilder<KR,V> asKeyType(Serde<KR> resultKeySerde) {
 		Objects.requireNonNull(this.transformKeyFunction, "transformKeyFunction");
-		return createTopologyBuilder(
+		return createKipesBuilder(
 				this.stream
 				.flatMap(
 						(key, value) -> {
@@ -223,16 +223,16 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
 	}
 
     /**
-     * Transforms the key and value of the input stream using the provided {@link BiFunction} and creates a new {@link TopologyBuilder} with the transformed key and value serdes.
+     * Transforms the key and value of the input stream using the provided {@link BiFunction} and creates a new {@link KipesBuilder} with the transformed key and value serdes.
      * <p> This method should be called after {@link #newKeyValues(BiFunction)}.
      *
      * @param resultKeySerde   the serde of the transformed key.
      * @param resultValueSerde the serde of the transformed value.
-     * @return the new {@link TopologyBuilder} instance with the transformed key and value serdes.
+     * @return the new {@link KipesBuilder} instance with the transformed key and value serdes.
      */
-	public TopologyBuilder<KR,VR> asKeyValueType(Serde<KR> resultKeySerde, Serde<VR> resultValueSerde) {
+	public KipesBuilder<KR,VR> asKeyValueType(Serde<KR> resultKeySerde, Serde<VR> resultValueSerde) {
 		Objects.requireNonNull(this.transformKeyValueFunction, "transformKeyValueFunction");
-		return createTopologyBuilder(
+		return createKipesBuilder(
 				this.stream
 				.flatMap(
 						(key, value) -> 

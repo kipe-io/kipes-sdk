@@ -3,7 +3,6 @@ package io.kipe.streams.kafka.processors;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 
-import io.kipe.streams.kafka.processors.TopologyBuilder;
 import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.AbstractTopologyTest;
 import io.kipe.streams.test.kafka.TopologyTestContext;
@@ -13,7 +12,7 @@ import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
  * Abstract class for testing topologies that process {@link GenericRecord}s.
  * This class provides common functionality for creating test input and output topics,
  * and for initializing the topology under test.
- * Subclasses should provide a concrete implementation of the {@link #addGenericRecordProcessor(TopologyBuilder, TopologyTestContext)} method
+ * Subclasses should provide a concrete implementation of the {@link #addGenericRecordProcessor(KipesBuilder, TopologyTestContext)} method
  * to add the specific processor being tested to the topology.
  */
 public abstract class AbstractGenericRecordProcessorTopologyTest extends AbstractTopologyTest {
@@ -33,7 +32,7 @@ public abstract class AbstractGenericRecordProcessorTopologyTest extends Abstrac
 	protected void initTopology(TopologyTestContext topologyTestContext) {
 		JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
 
-		TopologyBuilder<String, GenericRecord> builder = TopologyBuilder.init(topologyTestContext.getStreamsBuilder())
+		KipesBuilder<String, GenericRecord> builder = KipesBuilder.init(topologyTestContext.getStreamsBuilder())
 		.from( 
 				topologyTestContext.createKStream(
 						SOURCE, 
@@ -55,8 +54,8 @@ public abstract class AbstractGenericRecordProcessorTopologyTest extends Abstrac
 	 * @param topologyTestContext the context for the test.
 	 * @return the topology builder.
 	 */
-	protected abstract TopologyBuilder<String, GenericRecord> addGenericRecordProcessor(
-			TopologyBuilder<String, GenericRecord> builder, 
+	protected abstract KipesBuilder<String, GenericRecord> addGenericRecordProcessor(
+			KipesBuilder<String, GenericRecord> builder,
 			TopologyTestContext topologyTestContext);
 
 	/**
