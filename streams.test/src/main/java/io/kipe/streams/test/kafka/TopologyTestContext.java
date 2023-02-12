@@ -112,7 +112,6 @@ public class TopologyTestContext {
 	 */
 	public TopologyTestDriver initTopologyTestDriver() {
 		Topology build = this.streamBuilder.build();
-		System.out.println(build.describe());
 		this.driver = new TopologyTestDriver(build, CONFIG);
 		return driver;
 	}
