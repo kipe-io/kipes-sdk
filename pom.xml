@@ -2,13 +2,31 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+
 	<groupId>io.kipe</groupId>
 	<artifactId>parent</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-
 	<name>io.kipe</name>
 	<url>http://placeholder.org</url>
+
+	<parent>
+		<groupId>io.micronaut</groupId>
+		<artifactId>micronaut-parent</artifactId>
+		<version>3.4.3</version>
+	</parent>
+
+	<!-- ================================================================================================= -->
+	<!-- organisational stuff -->
+	<!-- ================================================================================================= -->
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<developers>
 		<developer>
@@ -18,43 +36,36 @@
 		</developer>
 	</developers>
 
-	<parent>
-		<groupId>io.micronaut</groupId>
-		<artifactId>micronaut-parent</artifactId>
-		<version>3.4.3</version>
-	</parent>
+	<!-- ================================================================================================= -->
+	<!-- global properties -->
+	<!-- ================================================================================================= -->
 
 	<properties>
 		<lombok.version>1.18.26</lombok.version>
 		<maven.version>3.8.1</maven.version>
 		<micronaut.version>3.8.3</micronaut.version>
-		<mockito.version>3.6.28</mockito.version>
-		<!--        <mockito.version>5.1.1</mockito.version>-->
+		<mockito.version>5.1.1</mockito.version>
 		<release.version>11</release.version>
 		<retrofit.version>2.9.0</retrofit.version>
 		<micronaut.env>local</micronaut.env>
 	</properties>
 
-	<profiles>
-		<profile>
-			<id>local</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<micronaut.env>local</micronaut.env>
-			</properties>
-		</profile>
-	</profiles>
+	<!-- ================================================================================================= -->
+	<!-- build management -->
+	<!-- ================================================================================================= -->
 
 	<modules>
 		<module>streams.test</module>
 		<module>streams</module>
 	</modules>
 
-	<!-- Placeholder dependencies -->
 	<dependencyManagement>
 		<dependencies>
+
+			<!-- ============================================================================================= -->
+			<!-- EXTERNAL DEPENDENCIES -->
+			<!-- ============================================================================================= -->
+
 			<dependency>
 				<groupId>com.squareup.retrofit2</groupId>
 				<artifactId>converter-jackson</artifactId>
@@ -76,6 +87,16 @@
 				<version>${kafka.version}</version>
 				<scope>provided</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>${lombok.version}</version>
+			</dependency>
+
+			<!-- ============================================================================================= -->
+			<!-- TEST DEPENDENCIES -->
+			<!-- ============================================================================================= -->
+
 			<dependency>
 				<groupId>org.apache.kafka</groupId>
 				<artifactId>kafka-streams-test-utils</artifactId>
@@ -100,44 +121,17 @@
 				<version>${mockito.version}</version>
 				<scope>test</scope>
 			</dependency>
-			<dependency>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok</artifactId>
-				<version>${lombok.version}</version>
-			</dependency>
-			<!--            <dependency>-->
-			<!--                <groupId>org.apache.maven.plugins</groupId>-->
-			<!--                <artifactId>maven-dependency-plugin</artifactId>-->
-			<!--                <version>3.5.0</version>-->
-			<!--                <type>maven-plugin</type>-->
-			<!--            </dependency>-->
+
 		</dependencies>
 	</dependencyManagement>
 
-	<!--     Placeholder build plugins -->
+	<!-- ================================================================================================= -->
+	<!-- build management -->
+	<!-- ================================================================================================= -->
+
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!--                <plugin>-->
-				<!--                    <groupId>com.spotify</groupId>-->
-				<!--                    <artifactId>dockerfile-maven-plugin</artifactId>-->
-				<!--                    <version>1.4.13</version>-->
-				<!--                    <executions>-->
-				<!--                        <execution>-->
-				<!--                            <id>default</id>-->
-				<!--                            <goals>-->
-				<!--                                <goal>build</goal>-->
-				<!--                                <goal>push</goal>-->
-				<!--                            </goals>-->
-				<!--                        </execution>-->
-				<!--                    </executions>-->
-				<!--                    <configuration>-->
-				<!--                        <repository>ageworks/${project.artifactId}</repository>-->
-				<!--                        <buildArgs>-->
-				<!--                            <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>-->
-				<!--                        </buildArgs>-->
-				<!--                    </configuration>-->
-				<!--                </plugin>-->
 				<plugin>
 					<groupId>io.micronaut.build</groupId>
 					<artifactId>micronaut-maven-plugin</artifactId>
@@ -162,7 +156,6 @@
 						</execution>
 					</executions>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
@@ -326,5 +319,27 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<!-- ================================================================================================= -->
+	<!-- distribution management -->
+	<!-- ============== =================================================================================== -->
+
+	<scm>
+		<connection>scm:git:git://github.com/kipe-io/kipes-sdk.git</connection>
+		<developerConnection>scm:git:ssh://github.com/kipe-io/kipes-sdk.git</developerConnection>
+		<url>https://github.com/kipe-io/kipes-sdk.git/tree/master</url>
+		<!--        <tag>log-0.2</tag>-->
+	</scm>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 
 </project>
