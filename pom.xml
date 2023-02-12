@@ -1,13 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.tradingpulse</groupId>
+	<groupId>io.kipe</groupId>
 	<artifactId>parent</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
+
+	<name>io.kipe</name>
+	<url>http://placeholder.org</url>
+
+	<developers>
+		<developer>
+			<id>placeholder-developer-id</id>
+			<name>Placeholder Developer</name>
+			<email>placeholder-developer-email</email>
+		</developer>
+	</developers>
 
 	<parent>
 		<groupId>io.micronaut</groupId>
@@ -16,10 +25,11 @@
 	</parent>
 
 	<properties>
-		<lombok.version>1.18.24</lombok.version>
-		<maven.version>3.6.0</maven.version>
-		<micronaut.version>3.4.3</micronaut.version>
+		<lombok.version>1.18.26</lombok.version>
+		<maven.version>3.8.1</maven.version>
+		<micronaut.version>3.8.3</micronaut.version>
 		<mockito.version>3.6.28</mockito.version>
+		<!--        <mockito.version>5.1.1</mockito.version>-->
 		<release.version>11</release.version>
 		<retrofit.version>2.9.0</retrofit.version>
 		<micronaut.env>local</micronaut.env>
@@ -37,31 +47,12 @@
 		</profile>
 	</profiles>
 
-	<repositories>
-		<repository>
-			<id>jcenter.bintray.com</id>
-			<url>https://jcenter.bintray.com</url>
-		</repository>
-	</repositories>
-
 	<modules>
-		<module>streams</module>
 		<module>streams.test</module>
-		<module>common</module>
-		<module>stage.sourcedata</module>
-		<module>stage.sourcedata.service</module>
-		<module>stage.indicators</module>
-		<module>stage.indicators.service</module>
-		<module>stage.systems</module>
-		<module>stage.systems.service</module>
-		<module>stage.tradingscreens</module>
-		<module>stage.tradingscreens.service</module>
-		<module>stage.backtest</module>
-		<module>stage.backtest.service</module>
-		<module>connector.iexcloud</module>
-		<module>optimus</module>
+		<module>streams</module>
 	</modules>
 
+	<!-- Placeholder dependencies -->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -77,7 +68,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-math3</artifactId>
-				<version>3.5</version>
+				<version>3.6.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.kafka</groupId>
@@ -94,7 +85,7 @@
 			<dependency>
 				<groupId>org.awaitility</groupId>
 				<artifactId>awaitility</artifactId>
-				<version>4.0.3</version>
+				<version>4.2.0</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -114,32 +105,39 @@
 				<artifactId>lombok</artifactId>
 				<version>${lombok.version}</version>
 			</dependency>
+			<!--            <dependency>-->
+			<!--                <groupId>org.apache.maven.plugins</groupId>-->
+			<!--                <artifactId>maven-dependency-plugin</artifactId>-->
+			<!--                <version>3.5.0</version>-->
+			<!--                <type>maven-plugin</type>-->
+			<!--            </dependency>-->
 		</dependencies>
 	</dependencyManagement>
 
+	<!--     Placeholder build plugins -->
 	<build>
 		<pluginManagement>
 			<plugins>
-				<plugin>
-					<groupId>com.spotify</groupId>
-					<artifactId>dockerfile-maven-plugin</artifactId>
-					<version>1.4.13</version>
-					<executions>
-						<execution>
-							<id>default</id>
-							<goals>
-								<goal>build</goal>
-								<goal>push</goal>
-							</goals>
-						</execution>
-					</executions>
-					<configuration>
-						<repository>ageworks/${project.artifactId}</repository>
-						<buildArgs>
-							<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
-						</buildArgs>
-					</configuration>
-				</plugin>
+				<!--                <plugin>-->
+				<!--                    <groupId>com.spotify</groupId>-->
+				<!--                    <artifactId>dockerfile-maven-plugin</artifactId>-->
+				<!--                    <version>1.4.13</version>-->
+				<!--                    <executions>-->
+				<!--                        <execution>-->
+				<!--                            <id>default</id>-->
+				<!--                            <goals>-->
+				<!--                                <goal>build</goal>-->
+				<!--                                <goal>push</goal>-->
+				<!--                            </goals>-->
+				<!--                        </execution>-->
+				<!--                    </executions>-->
+				<!--                    <configuration>-->
+				<!--                        <repository>ageworks/${project.artifactId}</repository>-->
+				<!--                        <buildArgs>-->
+				<!--                            <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>-->
+				<!--                        </buildArgs>-->
+				<!--                    </configuration>-->
+				<!--                </plugin>-->
 				<plugin>
 					<groupId>io.micronaut.build</groupId>
 					<artifactId>micronaut-maven-plugin</artifactId>
@@ -147,7 +145,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.0.0-M3</version>
+					<version>3.2.1</version>
 					<executions>
 						<execution>
 							<id>enforce-maven</id>
@@ -168,13 +166,18 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
-					<version>3.1.0</version>
+					<version>3.2.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
+					<version>3.10.1</version>
 					<configuration>
+						<!--                        <source>1.11</source>-->
+						<!--                        <target>1.11</target>-->
+						<!--                        <configuration>-->
+						<release>11</release>
+						<!--                        </configuration>-->
 						<useIncrementalCompilation>true</useIncrementalCompilation>
 						<annotationProcessorPaths>
 							<path>
@@ -225,22 +228,22 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
-					<version>3.0.0-M1</version>
+					<version>3.0.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-install-plugin</artifactId>
-					<version>3.0.0-M1</version>
+					<version>3.1.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.3.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-shade-plugin</artifactId>
-					<version>3.1.0</version>
+					<version>3.4.1</version>
 					<executions>
 						<execution>
 							<id>default-shade</id>
@@ -254,7 +257,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>3.9.1</version>
+					<version>3.12.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
@@ -263,7 +266,7 @@
 						<executable>java</executable>
 						<arguments>
 							<argument>-classpath</argument>
-							<classpath />
+							<classpath/>
 							<argument>-XX:TieredStopAtLevel=1</argument>
 							<argument>-Dcom.sun.management.jmxremote</argument>
 							<argument>-Dmicronaut.environments=${micronaut.env}</argument>
@@ -271,16 +274,10 @@
 						</arguments>
 					</configuration>
 				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.4.1</version>
-					<configuration>
-						<show>private</show>
-						<nohelp>true</nohelp>
-						<doclint>all,-missing</doclint>
-					</configuration>
-				</plugin>
+				<!--                <plugin>-->
+				<!--                    <artifactId>maven-dependency-plugin</artifactId>-->
+				<!--                    <version>3.5.0</version>-->
+				<!--                </plugin>-->
 			</plugins>
 		</pluginManagement>
 
@@ -288,31 +285,46 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.2.1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.5.0</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.4.1</version>
-				<configuration>
-					<show>private</show>
-					<nohelp>true</nohelp>
-					<doclint>all,-missing</doclint>
-				</configuration>
+				<!--            <executions>-->
+				<!--                <execution>-->
+				<!--                    <id> maven-javadocs </id>-->
+				<!--                    <goals>-->
+				<!--                        <goal> jar </goal>-->
+				<!--                    </goals>-->
+				<!--                </execution>-->
+				<!--            </executions>-->
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.3.0</version>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.14.2</version>
+				<!--                <reportSets>-->
+				<!--                    <reportSet>-->
+				<!--                        <reports>-->
+				<!--                            <report>dependency-updates-report</report>-->
+				<!--                            <report>plugin-updates-report</report>-->
+				<!--                            <report>property-updates-report</report>-->
+				<!--                        </reports>-->
+				<!--                    </reportSet>-->
+				<!--                </reportSets>-->
 			</plugin>
 		</plugins>
 	</build>
 
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.4.1</version>
-				<configuration>
-					<stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
-					<show>public</show>
-				</configuration>
-			</plugin>
-		</plugins>
-	</reporting>
 </project>

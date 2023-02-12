@@ -1,5 +1,1 @@
-# README
-
-## TODOs
-
-- remove micronaut dependencies
+# kipe.io.streams
