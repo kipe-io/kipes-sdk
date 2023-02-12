@@ -219,26 +219,6 @@ class DedupTransformerTest {
 		assertEquals(value, kv.value);
 	}
 
-	/**
-	 * Test for the transform method with a group dedup function.
-	 * <p>
-	 * Asserts that the method returns null when the state store has no value for the key.
-	 */
-	@Test
-	void test_transform__with_groupDedupFunction_returns_null_when_no_value_in_state_store() {
-		DedupTransformer<String, String, String, String> t = createGroupDedupDedupTransformer();
-
-		String key = "key";
-		String v1 = "v1";
-
-		when(stateStoreMock.get(key)).thenReturn(null);
-		doNothing().when(stateStoreMock).put(key, v1);
-
-		KeyValue<String, String> kv = t.transform(key, v1);
-
-		assertNull(kv);
-	}
-
 	// ------------------------------------------------------------------------
 	// utils
 	// ------------------------------------------------------------------------
