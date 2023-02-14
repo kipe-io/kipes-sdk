@@ -18,22 +18,35 @@ import io.kipe.streams.kafka.processors.recordtypes.TableRecord;
 import io.kipe.streams.recordtypes.GenericRecord;
 
 /**
- * TableBuilder is a Kafka Streams topology component that groups incoming data by a key.
+ * A builder for constructing table component that groups incoming data by a key. Clients do not instantiate this class
+ * directly but use {@link KipesBuilder#table()}.
  * <p>
  * The key is an empty string, so all data will be grouped into a single table.
  * <p>
  * The table is stored in a state store and can be accessed and modified through the transformer.
- *
- * Usage:
- *
+ * <p>
  * Example:
- * <pre>
- *     {@code
- *     TODO
- *     }
- * </pre>
+ * <pre>{@code
+ * KStream<String, String> stream = streamsBuilder.stream("input-topic");
+ * Serde<String> keySerde = Serdes.String();
+ * Serde<String> valueSerde = Serdes.String();
  *
- * @param <K> The key type of the input stream
+ * TableBuilder<String> tableBuilder = new TableBuilder<>(
+ *         builder,
+ *         stream,
+ *         keySerde,
+ *         genericRecordSerde,
+ *         "topicsBaseName"
+ * );
+ *
+ * tableBuilder.build();}</pre>
+ * <p>
+ * In this example, a Kafka Stream with a String key and value is created and the key and value serialization and
+ * deserialization is defined using the keySerde and valueSerde objects. The TableBuilder is then instantiated with the
+ * streamsBuilder, stream, keySerde and valueSerde as arguments, and the build method is called to create the topology
+ * component that groups incoming data by key and stores it in a state store accessible through the transformer.
+ *
+ * @param <K> The key type of the input stream.
  */
 public class TableBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecord> {
 
@@ -95,7 +108,9 @@ public class TableBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 	// ------------------------------------------------------------------------
 
 	/**
-	 * {@link TableTransformer} is a class that implements the {@link Transformer} interface. It takes in a key and value of generic types and returns a {@link KeyValue} object containing a string key and a {@link TableRecord} object.
+	 * {@link TableTransformer} is a class that implements the {@link Transformer} interface. It takes in a key and
+	 * value of generic types and returns a {@link KeyValue} object containing a string key and a {@link TableRecord}
+	 * object.
 	 * <p>
 	 * The {@link TableTransformer} class is used for grouping and storing records in a table like structure.
 	 */
@@ -126,7 +141,8 @@ public class TableBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 		}
 
 		/**
-		 * Transforms the input key and value by storing them in a table like structure represented by the {@link TableRecord} object.
+		 * Transforms the input key and value by storing them in a table like structure represented by the
+		 * {@link TableRecord} object.
 		 *
 		 * @param key   the key to be stored.
 		 * @param value the value to be stored.
@@ -148,7 +164,8 @@ public class TableBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 		}
 
 		/**
-		 * Closes the transformer. Currently, no action is performed in this method.
+		 * Closes the transformer. Currently, no action is performed in this
+		 * method.
 		 */
 		@Override
 		public void close() {

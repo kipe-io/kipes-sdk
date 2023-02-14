@@ -98,7 +98,7 @@ public class JsonSerdeFactory {
 		 * Configure this class.
 		 *
 		 * @param props map of properties used to configure this class. Ignored in this implementation.
-		 * @param isKey whether or not the serializer is being used for a key or value. Ignored in this implementation.
+		 * @param isKey whether the serializer is being used for a key or value. Ignored in this implementation.
 		 */
 	    @Override
 	    public void configure(final Map<String, ?> props, final boolean isKey) {

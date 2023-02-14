@@ -39,9 +39,9 @@ class DedupTransformerTest {
 
 	/**
 	 * Test method for {@link DedupTransformer#transform(Object, Object)} with a group by function.
-	 *
-	 * This test method verifies that the first value with a given key is emitted, but subsequent values with the same key
-	 * are not.
+	 * <p>
+	 * This test method verifies that the first value with a given key is emitted, but subsequent values with the same
+	 * key are not.
 	 */
 	@Test
 	void test_transform__with_groupKeyFunction_emits_first_value() {
@@ -62,7 +62,7 @@ class DedupTransformerTest {
 
 	/**
 	 * Test method for {@link DedupTransformer#transform(Object, Object)} with a group by function.
-	 *
+	 * <p>
 	 * This test method verifies that subsequent values with the same key are not emitted.
 	 */
 	@Test
@@ -88,7 +88,7 @@ class DedupTransformerTest {
 
 	/**
 	 * Test method for {@link DedupTransformer#transform(Object, Object)} with a group by function.
-	 *
+	 * <p>
 	 * This test method verifies that values with different keys are emitted.
 	 */
 	@Test
@@ -119,8 +119,7 @@ class DedupTransformerTest {
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Test the transform method with a groupDedup function.
-	 * Expects the first value to be emitted.
+	 * Test the transform method with a groupDedup function. Expects the first value to be emitted.
 	 */
 	@Test
 	void test_transform__with_groupDedupFunction_emits_first_value() {
@@ -140,8 +139,7 @@ class DedupTransformerTest {
 	}
 
 	/**
-	 * Test the transform method with a groupDedup function.
-	 * Expects the same value to be deduplicated and not emitted.
+	 * Test the transform method with a groupDedup function. Expects the same value to be deduplicated and not emitted.
 	 */
 	@Test
 	void test_transform__with_groupDedupFunction_dedups_same_value() {
@@ -166,7 +164,8 @@ class DedupTransformerTest {
 	/**
 	 * Test for the transform method with a group dedup function.
 	 * <p>
-	 * Asserts that the method returns a KeyValue with the correct key and value when the state store has a different value for the key.
+	 * Asserts that the method returns a KeyValue with the correct key and value when the state store has a different
+	 * value for the key.
 	 */
 	@Test
 	void test_transform__with_groupDedupFunction_emits_other_value() {
@@ -194,7 +193,8 @@ class DedupTransformerTest {
 	/**
 	 * Test for the transform method with a group dedup function.
 	 * <p>
-	 * Asserts that the method returns a KeyValue with the correct key and value when the input key is different from the key in the state store.
+	 * Asserts that the method returns a KeyValue with the correct key and value when the input key is different from
+	 * the key in the state store.
 	 */
 	@Test
 	void test_transform__with_groupDedupFunction_emits_other_key() {

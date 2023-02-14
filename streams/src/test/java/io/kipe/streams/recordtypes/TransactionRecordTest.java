@@ -121,7 +121,8 @@ class TransactionRecordTest {
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Test that {@link TransactionRecord#getRecords()} throws a IndexOutOfBoundsException when accessed index is out of bounds.
+	 * Test that {@link TransactionRecord#getRecords()} throws a IndexOutOfBoundsException when accessed index is out of
+	 * bounds.
 	 */
 	@Test
 	void test_getRecord__throws_IndexOutOfBoundsException() {

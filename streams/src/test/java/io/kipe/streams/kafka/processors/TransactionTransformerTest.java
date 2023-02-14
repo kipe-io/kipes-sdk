@@ -59,8 +59,8 @@ class TransactionTransformerTest {
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Test that when a record with a non-starting value is passed in, it is ignored
-	 * and no data is written to the store.
+	 * Test that when a record with a non-starting value is passed in, it is ignored and no data is written to the
+	 * store.
 	 */
 	@Test
 	void test_transform__no_txn_ignores_not_starting_record() {
@@ -96,8 +96,8 @@ class TransactionTransformerTest {
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Test that when a record with an ongoing value is passed in and a transaction has been started, it is identified as
-	 * part of the ongoing transaction and data is written to the store.
+	 * Test that when a record with an ongoing value is passed in and a transaction has been started, it is identified
+	 * as part of the ongoing transaction and data is written to the store.
 	 */
 	@Test
 	void test_transform__started_txn_identifies_ongoing_record() {
@@ -158,8 +158,8 @@ class TransactionTransformerTest {
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Tests that when the TransactionTransformer is configured to emit all
-	 * records, it emits all records in the transaction.
+	 * Tests that when the TransactionTransformer is configured to emit all records, it emits all records in the
+	 * transaction.
 	 */
 	@Test
 	void test_transform__emits_ALL() {
@@ -176,8 +176,8 @@ class TransactionTransformerTest {
 	}
 
 	/**
-	 * Tests that when the TransactionTransformer is
-	 * configured to emit all records and the start and end records are the same, it emits the single record.
+	 * Tests that when the TransactionTransformer is configured to emit all records and the start and end records are
+	 * the same, it emits the single record.
 	 */
 	@Test
 	void test_transform__emits_ALL_when_START_eq_END() {
@@ -199,8 +199,8 @@ class TransactionTransformerTest {
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Tests that when the TransactionTransformer is configured to emit
-	 * only the start record, it emits only the start record.
+	 * Tests that when the TransactionTransformer is configured to emit only the start record, it emits only the start
+	 * record.
 	 */
 	@Test
 	void test_transform__emits_START() {
@@ -285,9 +285,11 @@ class TransactionTransformerTest {
 	}
 
 	/**
-	 * Test that the transform method emits an END record when EmitType is set to END and the start and end values are the same.
+	 * Test that the transform method emits an END record when EmitType is set to END and the start and end values are
+	 * the same.
 	 * <p>
-	 * This test uses the createStartEndTransactionTransformer helper method to create a transformer with the same start and end values.
+	 * This test uses the createStartEndTransactionTransformer helper method to create a transformer with the same start
+	 * and end values.
 	 */
 	@Test
 	void test_transform__emits_END_when_START_eq_END() {
@@ -309,7 +311,8 @@ class TransactionTransformerTest {
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Test that the {@link TransactionTransformer#transform} method emits a START and END record when the EmitType is set to START_AND_END.
+	 * Test that the {@link TransactionTransformer#transform} method emits a START and END record when the EmitType is
+	 * set to START_AND_END.
 	 */
 	@Test
 	void test_transform__emits_START_AND_END() {
@@ -325,7 +328,8 @@ class TransactionTransformerTest {
 	}
 
 	/**
-	 * Test that the {@link TransactionTransformer#transform} method emits a START and END record when the EmitType is set to START_AND_END and the start and end values are the same.
+	 * Test that the {@link TransactionTransformer#transform} method emits a START and END record when the EmitType is
+	 * set to START_AND_END and the start and end values are the same.
 	 */
 	@Test
 	void test_transform__emits_START_AND_END_when_START_eq_END() {
@@ -349,7 +353,8 @@ class TransactionTransformerTest {
 	/**
 	 * Perform a transaction using a TransactionTransformer.
 	 * <p>
-	 * It starts by preparing mock stateStore for the transaction, and then calls the transform method on the given TransactionTransformer.
+	 * It starts by preparing mock stateStore for the transaction, and then calls the transform method on the given
+	 * TransactionTransformer.
 	 * <p>
 	 * It verifies that the stateStore's put method is called with the correct parameters.
 	 *

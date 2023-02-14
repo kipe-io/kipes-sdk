@@ -111,8 +111,7 @@ public class TopologyTestContext {
 	 * here.
 	 */
 	public TopologyTestDriver initTopologyTestDriver() {
-		Topology build = this.streamBuilder.build();
-		this.driver = new TopologyTestDriver(build, CONFIG);
+		this.driver = new TopologyTestDriver(this.streamBuilder.build(), CONFIG);
 		return driver;
 	}
 	

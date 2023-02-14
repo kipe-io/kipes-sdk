@@ -14,9 +14,8 @@ import io.kipe.streams.test.kafka.TopologyTestContext;
 class StatsBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 
 	/**
-	 * This method is used to add the stats processor to the topology builder
-	 * It uses the Count.count() method to count the number of records in each group
-	 * It groups the records by 'group' field and returns the topology builder.
+	 * This method is used to add the stats processor to the topology builder It uses the Count.count() method to count
+	 * the number of records in each group It groups the records by 'group' field and returns the topology builder.
 	 *
 	 * @param builder             KipesBuilder<String, GenericRecord>
 	 * @param topologyTestContext TopologyTestContext

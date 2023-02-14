@@ -20,8 +20,7 @@ import io.kipe.streams.recordtypes.GenericRecord;
  * A builder to easily setup KStream topologies. Clients normally interact by
  * firstly initiating the KipesBuilder, secondly assigning a KStream, and
  * then transforming the stream with any of the given methods:
- * <pre>
- * {@code
+ * <pre>{@code
  *   StreamsBuilder streamsBuilder = ...
  *   KStream<...> sourceStream = ...
  *
@@ -32,9 +31,7 @@ import io.kipe.streams.recordtypes.GenericRecord;
  *      keySerde,
  *      valueSerde)
  *   ...
- *   to(topicName);
- * }
- * </pre>
+ *   to(topicName);}</pre>
  *
  * TODO document the exact behavior
  * TODO add tests
@@ -114,8 +111,8 @@ public class KipesBuilder<K,V> {
 	}
 	
 	/**
-	 * Sets the current stream and returns a new KipesBuilder initiated
-	 * with the current's KipesBuilder's settings.
+	 * Sets the current stream and returns a new KipesBuilder initiated with the current's KipesBuilder's
+	 * settings.
 	 *
 	 * @param <NK>       the stream's key type.
 	 * @param <NV>       the stream's value type.
@@ -163,8 +160,7 @@ public class KipesBuilder<K,V> {
 	}
 
 	/**
-	 * Materializes the current stream into the given topic. The topic has
-	 * to be created before.
+	 * Materializes the current stream into the given topic. The topic has to be created before.
 	 *
 	 * @param topicName the target topic.
 	 * @return a new instance of {@link KipesBuilder} with the stream materialized to the topic.
@@ -189,8 +185,8 @@ public class KipesBuilder<K,V> {
 	}
 	
 	/**
-	 * Adjusts a record's timestamp. The given function must return a timestamp
-	 * according to Kafka's requirements (milliseconds since 1970-01-01 00:00:00).
+	 * Adjusts a record's timestamp. The given function must return a timestamp according to Kafka's requirements
+	 * (milliseconds since 1970-01-01 00:00:00).
 	 *
 	 * @param evalTimestampFunction the function to evaluate the new timestamp from a given key or value.
 	 * @return a new instance of {@link KipesBuilder} with the record timestamps adjusted.
@@ -230,8 +226,7 @@ public class KipesBuilder<K,V> {
 	}
 
 	/**
-	 * Materializes the current stream into the given topic. The topic has
-	 * to be created before. <br>
+	 * Materializes the current stream into the given topic. The topic has to be created before. <br>
 	 * <br>
 	 * This is a terminal operation.
 	 *
@@ -279,7 +274,6 @@ public class KipesBuilder<K,V> {
 	 * De-duplicates the records of the current stream.<br>
 	 *
 	 * @param <GK> the group key type (see {@link DedupBuilder#groupBy(BiFunction, Serde)}).
-	 * @param <DK> the group dedup value type (see {@link DedupBuilder#advanceBy(BiFunction)}).
 	 * @return a new initiated {@link DedupBuilder} with the dedup'ed stream.
 	 */
 	public <GK,DV> DedupBuilder<K,V, GK,DV> dedup() {
@@ -296,14 +290,11 @@ public class KipesBuilder<K,V> {
 	}
 
 	/**
-	 * Creates a new KStream by (inner) joining the current stream (left) with
-	 * the given other stream (right). <br>
+	 * Creates a new KStream by (inner) joining the current stream (left) with the given other stream (right). <br>
 	 * <br>
-	 * The join will be backed by two changelog topics for each of the incoming
-	 * records from the left and right stream. Clients have to specify the base
-	 * name of these topics by calling {@link #withTopicsBaseName(String)} or
-	 * {@link JoinBuilder#withTopicsBaseName(String)} at the returned
-	 * JoinBuilder.<br>
+	 * The join will be backed by two changelog topics for each of the incoming records from the left and right stream.
+	 * Clients have to specify the base name of these topics by calling {@link #withTopicsBaseName(String)} or
+	 * {@link KipesBuilder#withTopicsBaseName(String)} at the returned JoinBuilder.<br>
 	 *
 	 * @param <OV>            the other (right) stream's value type.
 	 * @param <VR>            the resulting stream's value type.
@@ -335,12 +326,11 @@ public class KipesBuilder<K,V> {
 
 
 	/**
-	 * Creates a new stream of TransactionRecords describing transactions found
-	 * in this KipesBuilder's stream.
+	 * Creates a new stream of TransactionRecords describing transactions found in this KipesBuilder's stream.
 	 *
 	 * @param <A>  actually V as A.
 	 * @param <GK> the potential groupKey type, can be Void.
-	 * @return a new initialized TransactionBuilder.
+	 * @return a new initialized {@link TransactionBuilder}.
 	 */
 	@SuppressWarnings("unchecked")
 	public <GK> TransactionBuilder<K,V, GK> transaction() {
@@ -378,6 +368,8 @@ public class KipesBuilder<K,V> {
 	
 	/**
 	 * Creates a stream of aggregated records.
+	 *
+	 * @return a new initialized {@link SequenceBuilder}.
 	 */
 	@SuppressWarnings("unchecked")
 	public <GK, VR> SequenceBuilder<K,V, GK, VR> sequence() {

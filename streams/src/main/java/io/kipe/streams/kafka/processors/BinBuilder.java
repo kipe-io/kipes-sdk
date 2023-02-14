@@ -11,50 +11,35 @@ import io.kipe.streams.recordtypes.GenericRecord;
 
 
 /**
- * Discretizes the values of a field into another by using the binning technique. The binning technique
- * groups the continuous values of a field into a fixed number of discrete bins.
+ * A builder for setting up the discretization of field values using the binning techniqu.. Clients do not instantiate
+ * this class directly but use {@link KipesBuilder#bin()}.
  * <p>
- * This class provides a fluent API to define the binning configuration, including the field name to
- * discretize, the bin span and the new field name.
- * <p>
- * <b>Usage:</b>
- * To use this class, you first need to create an instance of it by passing the required parameters such as
- * `StreamsBuilder`, `KStream`, key and value `Serde`, and a `topicsBaseName`. Then, you can call the following
- * methods to set the binning configuration:
- * <ul>
- *   <li>{@link #field(String)} to set the field to be binned.</li>
- *   <li>{@link #span(double)} to set the bin span.</li>
- *   <li>{@link #newField(String)} to set the new field name for the binned field. If not set, the original field name will be used.</li>
- * </ul>
- * Finally, you can call the {@link #build()} method to build the topology that performs the binning operation and returns a
- * {@link KipesBuilder} object.
- * <p>
+ * Discretizes the continuous values of a field into fixed bins, providing a fluent API for defining binning
+ * configuration such as the field name, bin span, and new field name. To use, create an instance of BinBuilder with the
+ * required parameters, then set the binning configuration using field(), span(), and newField(), and finally call
+ * build() to build the topology.
  * <b>Example:</b>
- * For example, the following code snippet shows how to use this class to discretize a field called
- * "price" into bins with a span of 10 and store the result in a new field called "price_bin":
- * <pre>
- * {@code
- * BinBuilder<String> binBuilder = new BinBuilder<>(streamsBuilder, stream, keySerde, valueSerde, "topicName");
- * binBuilder.field("price").span(10).newField("price_bin").build();
- * }
- * </pre>
- *
+ * <pre>{@code
+ * BinBuilder<String> binBuilder = new BinBuilder<>(
+ *         streamsBuilder,
+ *         binStream,
+ *         Serdes.String(),
+ *         genericRecordSerde,
+ *         "topicName"
+ * );
+ * binBuilder
+ *         .field("price")
+ *         .span(10)
+ *         .newField("price_bin")
+ *         .build();}</pre>
  * <br>
- * <b>Pseudo DSL</b>
- * <pre>
- *   from
- *     {SOURCE[K:GenericRecord]}
+ * In this example, the BinBuilder class is utilized to perform binning on the values of a field. The BinBuilder is
+ * created by passing in a StreamsBuilder object, a KStream, a key Serde and a value Serde, and a topic name. The field
+ * to be binned is specified using the .field("price") method, the bin span is set with .span(10), and the name of the
+ * new field is defined with .newField("price_bin"). Finally, the .build() method is called to construct the topology
+ * for the binning operation, which returns a KipesBuilder object.
  *
- *   <b>bin</b>
- *     <b>field</b> fieldName
- *     <b>span</b> value
- *     <b>newField</b> fieldName
- *
- *   to
- *     {TARGET[K:GenericRecord]}
- * </pre>
- *
- * @param <K> the key type
+ * @param <K> the key type.
  */
 public class BinBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecord> {
 

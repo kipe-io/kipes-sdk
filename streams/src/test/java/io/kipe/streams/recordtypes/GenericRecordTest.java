@@ -61,7 +61,6 @@ class GenericRecordTest {
 		
 		assertEquals(VALUE, r.get(FIELD));
 		assertEquals("new", r.get("otherField"));
-		
 	}
 	
 	// ------------------------------------------------------------------------
@@ -120,7 +119,7 @@ class GenericRecordTest {
 	@Test
 	void test_is_serdeable() throws JsonProcessingException {
 		r.set(FIELD, new TestType(VALUE));
-		
+
 		ObjectMapper mapper = new ObjectMapper();
 		String json = mapper.writeValueAsString(r);
 		
