@@ -13,14 +13,12 @@ import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 
 /**
- * Test class for {@link KipesBuilder#bin()} method.
- * Test the discretization of input values using the bin method.
+ * Test class for {@link BinBuilder}. It tests the discretization of input values with the bin method.
  */
 class BinBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 
 	/**
-	 * Overrides the addGenericRecordProcessor method to build the topology
-	 * with bin method.
+	 * Overrides the addGenericRecordProcessor method to build the topology with bin method.
 	 *
 	 * @param builder             the topology builder to use.
 	 * @param topologyTestContext the test context to use.

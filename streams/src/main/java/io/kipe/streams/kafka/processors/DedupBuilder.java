@@ -18,20 +18,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Builder to setup a stream to de-duplicate incoming records. De-duplication
- * can be configured on two levels.
- *
- * First, clients must specify how incoming records are to be grouped
- * (see {@link #groupBy(BiFunction, Serde)}). Incoming records are generally
- * de-duplicated in these groups.
- *
- * Second, client can specify how the stream of records within these groups is
- * de-duplicated (see {@link #advanceBy(BiFunction)}).
+ * A Builder to that is used to de-duplicate incoming records. Clients do not instantiate this class directly but use
+ * {@link KipesBuilder#stats()}
  * <p>
- * <br>
- * <b>Example Usage:</b>
- * <pre>
- * {@code
+ * The de-duplication process can be configured on two levels:
+ * <ol>
+ *     <li>Clients must specify how incoming records are to be grouped (see {@link #groupBy(BiFunction, Serde)}). Incoming records are generally de-duplicated in these groups.</li>
+ *     <li>Client can specify how the stream of records within these groups is de-duplicated (see {@link #advanceBy(BiFunction)}).</li>
+ * </ol>
+ * <b>Example:</b>
+ * <pre>{@code
  *   DedupBuilder<String,String,String,String> dedupBuilder = new DedupBuilder<>(
  *      streamsBuilder,
  *      stream,
@@ -42,30 +38,17 @@ import org.slf4j.LoggerFactory;
  *
  *   dedupBuilder
  *     .groupBy((key, value) -> value, Serdes.String())
- *     .advanceBy((key, value) -> value);
+ *     .advanceBy((key, value) -> value)
+ *     .build();
+ * }</pre>
+ * <p>
+ * In this example, we create a DedupBuilder and pass in a StreamsBuilder, a KStream of strings, and two Serdes of type
+ * String. The dedup-topic parameter is the base name for the topics used by the DedupBuilder. Next, we group the
+ * incoming records by their values and configure the deduplication function to use the record values to determine the
+ * deduplication group. Finally, we call the build method to set up the stream and start the de-duplication process.
  *
- *   KStream<String, String> dedupedStream = dedupBuilder.build();
- * }
- * </pre>
- *
- * <b>Pseudo DSL</b>
- * <pre>
- *   from
- *     {SOURCE[key:value]}
- *
- *   <b>dedup</b>
- *     <b>groupBy</b>
- *       {FUNCTION(key,value):groupKey}
- *     <b>advanceBy</b>
- *       {FUNCTION(key,value):groupDedupValue}
- *     <b>emitFirst</b>
- *
- *   to
- *     {TARGET[key:value]}
- * </pre>
- * 
- * @param <K> the incoming and outgoing streams' key type
- * @param <V> the incoming and outgoing streams' value type
+ * @param <K>  the incoming and outgoing streams' key type
+ * @param <V>  the incoming and outgoing streams' value type
  * @param <GK> the group key's type (see {@link #groupBy(BiFunction, Serde)})
  * @param <DV> the dedupValue's type (see {@link #advanceBy(BiFunction)})
  */
@@ -90,9 +73,8 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 	 * Configures a GroupKeyFunction to group incoming records.
 	 *
 	 * @param groupKeyFunction the function to calculate the GroupKey
-	 * @param groupKeySerde the serde for the GroupKey
-	 * @return
-	 * 	this builder
+	 * @param groupKeySerde    the serde for the GroupKey
+	 * @return this builder
 	 */
 	public DedupBuilder<K,V, GK,DV> groupBy(BiFunction<K,V, GK> groupKeyFunction, Serde<GK> groupKeySerde) {
 		this.groupKeyFunction = groupKeyFunction;
@@ -102,24 +84,20 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 	}
 
 	/**
-	 * Configures a value de-duplication function to identify equal records
-	 * within a group of records (a dedup value group). <br>
+	 * Configures a value de-duplication function to identify equal records within a group of records (a dedup value
+	 * group). <br>
 	 * <br>
-	 * If two records generate the same dedupValue then those records are 
-	 * semantically the same and one of those gets ignored. <br>
+	 * If two records generate the same dedupValue then those records are semantically the same and one of those gets
+	 * ignored. <br>
 	 * <br>
-	 * Furthermore, if the dedupValue changes within the stream of incoming
-	 * records (exactly, within the stream of a single group) then a new
-	 * dedup value group is started. One record of each dedup value group is
-	 * emitted.<br>
+	 * Furthermore, if the dedupValue changes within the stream of incoming records (exactly, within the stream of a
+	 * single group) then a new dedup value group is started. One record of each dedup value group is emitted.<br>
 	 * <br>
-	 * If the dedupValueFunction is not set then the incoming records get
-	 * de-duplicated after the {@link #groupBy(BiFunction, Serde)} function
-	 * only.
-	 * 
+	 * If the dedupValueFunction is not set then the incoming records get de-duplicated after the
+	 * {@link #groupBy(BiFunction, Serde)} function only.
+	 *
 	 * @param dedupValueFunction the function to calculate the dedupValue
-	 * @return
-	 * 	this builder
+	 * @return this builder
 	 */
 	public DedupBuilder<K,V, GK, DV> advanceBy(BiFunction<K,V, DV> dedupValueFunction) {
 		this.dedupValueFunction = dedupValueFunction;
@@ -127,17 +105,17 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 		return this;
 	}
 
-    /**
-     * Assembles a deduplication stream which emits the first value for the specified configuration.
-     * <p>
-     * The stream uses a named materialized changelog store to keep track of the unique values.
-     * <p>
-     * Before calling this method, the client must set the base name for the topics using
-     * {@link #withTopicsBaseName(String)}. Additionally, the group key function and group key serde
-     * must also be set using {@link #groupBy(KeyValueMapper)} and {@link #withGroupKeySerde(Serde)}, respectively.
-     *
-     * @return A new KipesBuilder initialized with the deduplication stream.
-     */
+	/**
+	 * Assembles a deduplication stream which emits the first value for the specified configuration.
+	 * <p>
+	 * The stream uses a named materialized changelog store to keep track of the unique values.
+	 * <p>
+	 * Before calling this method, the client must set the base name for the topics using
+	 * {@link KipesBuilder#withTopicsBaseName(String)}. Additionally, the group key function and group key serde must
+	 * also be set using {@link {@link DedupBuilder#groupBy(BiFunction, Serde)}}.
+	 *
+	 * @return A new KipesBuilder initialized with the deduplication stream.
+	 */
 	public KipesBuilder<K,V> emitFirst() {
 		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName must be set");
 		Objects.requireNonNull(this.groupKeyFunction, "groupBy groupKeyFunction must be set");
@@ -155,49 +133,29 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 				this.stream
 				.transform(
 						() -> new DedupTransformer<>(
-								stateStoreName, 
-								this.groupKeyFunction, 
-								this.dedupValueFunction), 
-						stateStoreName), 
-				this.keySerde, 
+								stateStoreName,
+								this.groupKeyFunction,
+								this.dedupValueFunction),
+						stateStoreName),
+				this.keySerde,
 				this.valueSerde);
-				
+
 	}
-	
+
 	// ------------------------------------------------------------------------
 	// DedupTransformer
 	// ------------------------------------------------------------------------
 
 	/**
-	 * The DedupTransformer class is a stateful implementation of the Transformer interface.
-	 * It can be used to filter out duplicate records in a Kafka stream based on the group key and dedup value.
-	 * <p>
-	 * This transformer uses a KeyValueStore to maintain state of the last seen value for each group key.
-	 * The init() method is used to initialize the state store and can be called multiple times if the transformer is used in a repartitioning context.
-	 * <p>
-	 * The transform() method takes in a key and value pair, applies the provided group key function and dedup value function to extract the group key and dedup value respectively. If a value for the same group key is found in the state store, it compares the dedup value of the stored value with the current value. If they are equal, the record is considered a duplicate and is not emitted, otherwise the current value is emitted and stored as the last seen value for that group key.
-	 * <p>
-	 * If no dedup value function is provided, only the group key is used for deduplication.
-	 * <p>
-	 * The close() method is used to release any resources held by the transformer and is called when the transformer is closed.
-	 *
-	 * @param <K>  The type of the key.
-	 * @param <V>  The type of the value.
-	 * @param <GK> The type of the group key.
-	 * @param <DV> The type of the dedup value.
-	 *
-	 */
-
-	/**
 	 * DedupTransformer is a Kafka Streams {@link Transformer} that deduplicates incoming records based on a
-	 * user-defined grouping key and, optionally, a user-defined value to compare for equality. The
-	 * transformer uses a state store to keep track of the last seen value for each group key, and only
-	 * emits new records if the group key or the comparison value has changed.
+	 * user-defined grouping key and, optionally, a user-defined value to compare for equality. The transformer uses a
+	 * state store to keep track of the last seen value for each group key, and only emits new records if the group key
+	 * or the comparison value has changed.
 	 *
-	 * @param <K>  the key type of the incoming records
-	 * @param <V>  the value type of the incoming records
-	 * @param <GK> the type of the grouping key used for deduplication
-	 * @param <DV> the type of the comparison value used for deduplication
+	 * @param <K>  the key type of the incoming records.
+	 * @param <V>  the value type of the incoming records.
+	 * @param <GK> the type of the grouping key used for deduplication.
+	 * @param <DV> the type of the comparison value used for deduplication.
 	 */
 	static class DedupTransformer<K,V, GK, DV> implements Transformer<K,V, KeyValue<K,V>> {
 
@@ -212,10 +170,13 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 		/**
 		 * Creates a new instance of DedupTransformer
 		 *
-		 * @param stateStoreName     the name of the state store used to keep track of the last seen values for each group key
-		 * @param groupKeyFunction   a user-defined function that takes in a record key and value and returns the group key used for deduplication
-		 * @param groupDedupFunction a user-defined function that takes in a record key and value and returns the comparison value used for deduplication.
-		 *                           If this is set to null, only the group key will be used for deduplication
+		 * @param stateStoreName     the name of the state store used to keep track of the last seen values for each
+		 *                           group key
+		 * @param groupKeyFunction   a user-defined function that takes in a record key and value and returns the group
+		 *                           key used for deduplication
+		 * @param groupDedupFunction a user-defined function that takes in a record key and value and returns the
+		 *                           comparison value used for deduplication. If this is set to null, only the group key
+		 *                           will be used for deduplication
 		 */
 		DedupTransformer(
 				String stateStoreName,
@@ -227,17 +188,10 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 			this.dedupValueFunction = groupDedupFunction;
 		}
 
-
-//		/**
-//		 * Initializes the transformer by getting the state store from the {@link ProcessorContext}
-//		 *
-//		 * @param context the {@link ProcessorContext} for the current Kafka Streams application
-//		 */
-
 		/**
-		 * The `init` method is called by the Kafka Streams library when the topology is initialized.
-		 * In this method, we are getting the state store that was previously created and named in the topology.
-		 * This state store will be used to store the previously seen values for deduplication.
+		 * The is called by the Kafka Streams library when the topology is initialized. We are getting the state store
+		 * that was previously created and named in the topology. This state store will be used to store the previously
+		 * seen values for deduplication.
 		 *
 		 * @param context the ProcessorContext provided by the Kafka Streams library.
 		 */
@@ -248,12 +202,12 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 		}
 
 		/**
-		 * The main method of the transformer, called for each input key-value pair.
-		 * It uses the provided groupKeyFunction and dedupValueFunction to extract the group key and dedup value respectively.
-		 * Then it checks the state store for the presence of the group key, and if present, it compares the dedup value of the previous value with the current value.
-		 * If the dedup value of the previous value is equal to the current value, it means that the current value is a duplicate and it is ignored.
-		 * Otherwise, the current value is considered unique and is emitted.
-		 * The state store is always updated with the latest value for the group key.
+		 * The main method of the transformer, called for each input key-value pair. It uses the provided
+		 * groupKeyFunction and dedupValueFunction to extract the group key and dedup value respectively. Then it checks
+		 * the state store for the presence of the group key, and if present, it compares the dedup value of the
+		 * previous value with the current value. If the dedup value of the previous value is equal to the current
+		 * value, it means that the current value is a duplicate, and it is ignored. Otherwise, the current value is
+		 * considered unique and is emitted. The state store is always updated with the latest value for the group key.
 		 *
 		 * @param key   the input key
 		 * @param value the input value

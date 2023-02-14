@@ -13,42 +13,51 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
 
 /**
- * Builder to setup a stream transforming incoming records into zero or more
- * outgoing records with transformed keys, values, or both.<br>
- * <br>
- * Clients select the intended transformation by starting with one of the
- * {@code intoXXX(...)} methods followed and finalized  by the related
- * {@code asXXX(...)} method. <br>
- * <br>
- *
- * Usage:
- *
+ * A builder for transforming incoming records into zero or more outgoing records with transformed keys, values, or
+ * both. It is not meant to be instantiated directly by clients, but instead accessed through
+ * {@link KipesBuilder#transform()}.
+ * <p>
+ * The intended transformation can be selected by starting with one of the {@code intoXXX(...)} methods followed and
+ * finalized by the related {@code asXXX(...)} method.
+ * <p>
+ * The transformation functions should be specified in {@link BiFunction} format where the first argument is the
+ * incoming key and the second argument is the incoming value. The output of the transformation can be either a
+ * transformed value, a transformed key, a transformed key-value pair or a list of transformed key-value pairs.
+ * <p>
  * Example:
- * <pre>
- *     {@code
- *     TODO
- *     }
+ *
+ * <pre>{@code StreamsBuilder builder = new StreamsBuilder();
+ * KStream<String, Integer> stream = builder.stream("input-topic");
+ * Serde<String> keySerde = Serdes.String();
+ * Serde<Integer> valueSerde = Serdes.Integer();
+ *
+ * TransformBuilder<String, Integer, String, String> transformBuilder =
+ *         new TransformBuilder<>(
+ *                 builder,
+ *                 stream,
+ *                 keySerde,
+ *                 valueSerde,
+ *                 "output-topic"
+ *         );
+ *
+ * transformBuilder
+ *         .changeValue((key, value) -> value.toString())
+ *         .asValueType(Serdes.String());}
  * </pre>
+ * <p>
+ * In this example, we first create an instance of StreamsBuilder and then use it to build a stream from an input topic.
+ * We also define serializers/deserializers (serdes) for the key and value of the input stream.
+ * <p>
+ * Next, we create an instance of the TransformBuilder class and pass the StreamsBuilder, the input stream, and the key
+ * and value serdes to its constructor.
+ * <p>
+ * Finally, we use the changeValue method to specify a transformation function that converts the incoming values from
+ * Integer to String, and then use the asKipesBuilder method to build and return the topology.
  *
- * <b>Pseudo DSL</b>
- * <pre>
- *   from
- *     {SOURCE[key:value]}
- *
- *   <b>transform</b>
- *     <b>change|new</b>
- *       {FUNCTION(key,value):{newKey,newValue}[]}
- *     <b>as</b>
- *       {newKey,newValue}
- *
- *   to
- *     {TARGET[newKey:newValue]}
- * </pre>
- *
- * @param <K> the source stream's key type
- * @param <V> the source stream's value type
- * @param <KR> the target stream's key type
- * @param <VR> the target stream's value type
+ * @param <K>  the source stream's key type.
+ * @param <V>  the source stream's value type.
+ * @param <KR> the target stream's key type.
+ * @param <VR> the target stream's value type.
  */
 // TODO introduce sub builders to improve encapsulation of the individual cases
 // It's currently to easy to combine wrong intoXXX and asXXX variants.
@@ -180,8 +189,8 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
 	}
 
     /**
-     * This method is used to finalize the key transformation step and create a new {@link KipesBuilder}
-     * with the transformed key type, KR.
+     * This method is used to finalize the key transformation step and create a new {@link KipesBuilder} with the
+     * transformed key type, KR.
      * <p>This method should be called after one of the key transformation methods, {@link #changeKey(BiFunction)} or
      * {@link #newKeys(BiFunction)}, have been called.
      *
@@ -218,12 +227,13 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
      */
 	public TransformBuilder<K,V, KR,VR> newKeyValues(BiFunction<K,V, Iterable<KeyValue<KR,VR>>> transformKeyValueFunction) {
 		this.transformKeyValueFunction = transformKeyValueFunction;
-		
+
 		return this;
 	}
 
     /**
-     * Transforms the key and value of the input stream using the provided {@link BiFunction} and creates a new {@link KipesBuilder} with the transformed key and value serdes.
+     * Transforms the key and value of the input stream using the provided {@link BiFunction} and creates a new
+     * {@link KipesBuilder} with the transformed key and value serdes.
      * <p> This method should be called after {@link #newKeyValues(BiFunction)}.
      *
      * @param resultKeySerde   the serde of the transformed key.
@@ -235,11 +245,11 @@ public class TransformBuilder<K,V, KR,VR> extends AbstractTopologyPartBuilder<K,
 		return createKipesBuilder(
 				this.stream
 				.flatMap(
-						(key, value) -> 
-							this.transformKeyValueFunction.apply(key,value)), 
-				resultKeySerde, 
+						(key, value) ->
+							this.transformKeyValueFunction.apply(key,value)),
+				resultKeySerde,
 				resultValueSerde);
-		
+
 	}
 
 }

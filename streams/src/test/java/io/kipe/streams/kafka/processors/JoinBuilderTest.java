@@ -18,9 +18,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * This class is responsible for testing the functionality of the Streams join operator. It creates input topics for left and right records,
- * and an output topic for joined records. The tests in this class cover various scenarios, including cases where the join is successful
- * and cases where it is not successful due to the timestamps of the records not falling within the specified window size.
+ * Test class for the {@link JoinBuilder}. Tests the functionality of the Streams join operator by creating input topics
+ * for left and right records and an output topic for joined records. Tests various join scenarios, including successful
+ * and unsuccessful cases based on record timestamps.
  */
 class JoinBuilderTest extends AbstractTopologyTest {
 
@@ -172,8 +172,8 @@ class JoinBuilderTest extends AbstractTopologyTest {
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Test method for testing timestamps within window. It tests that two messages at the same timestamp
-	 * will yield two join records.
+	 * Test method for testing timestamps within window. It tests that two messages at the same timestamp will yield two
+	 * join records.
 	 */
 	@Test
 	void test_timestamps_within_window__yields_two_joins() {

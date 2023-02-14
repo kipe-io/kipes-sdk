@@ -13,36 +13,32 @@ import org.apache.kafka.streams.kstream.KStream;
 import io.kipe.streams.recordtypes.GenericRecord;
 
 /**
- * EvalBuilder is a class for building Kafka Stream topologies that update
- * fields in GenericRecord value based on expressions provided to the with() method.
+ * A builder that updates fields in a {@link GenericRecord} value based on expressions provided to the
+ * {@link EvalBuilder#with(String, BiFunction)} method. Clients do not instantiate this class directly but use
+ * {@link KipesBuilder#eval()}.
  * <p>
- * <b>Usage:</b>
- * <p>
- * TODO
  *
  * <b>Example:</b>
- * <pre>
- * {@code
- *   StreamsBuilder builder = new StreamsBuilder();
- *   KStream<String, GenericRecord> stream = builder.stream("input-topic", Consumed.with(Serdes.String(), genericRecordSerde));
- *   EvalBuilder<String> evalBuilder = new EvalBuilder<>(builder, stream, Serdes.String(), genericRecordSerde, "output-topic-base");
- *   evalBuilder.with("fieldName", (key, value) -> { ... });
- *   KipesBuilder<String, GenericRecord>; kipesBuilder = evalBuilder.build();
- * }
- * </pre>
+ * <pre>{@code StreamsBuilder builder = new StreamsBuilder();
+ * KStream<String, GenericRecord> stream = builder.stream("input-topic");
+ * EvalBuilder<String> evalBuilder =
+ *         new EvalBuilder<>(
+ *                 builder,
+ *                 stream,
+ *                 Serdes.String(),
+ *                 genericRecordSerde,
+ *                 "output-topic-base"
+ *         );
  *
- * <br>
- * <b>Pseudo DSL</b>
- * <pre>
- *   from
- *     {SOURCE[K:GenericRecord]}
- *
- *   <b>eval</b>
- *     ({FIELD} = {EXPRESSION})+
- *
- *   to
- *     {TARGET[K:GenericRecord]}
- * </pre>
+ * KipesBuilder<String, GenericRecord> kipesBuilder = evalBuilder
+ *         .with("fieldName", (key, value) -> "new-value")
+ *         .build();
+ * }</pre>
+ * <p>
+ * In this example, an instance of EvalBuilder is created using the StreamsBuilder and KStream objects, along with the
+ * serdes for the key and value and the base name for the topics. Then, the with method is called to add an expression
+ * to update the "fieldName" field with the value "new-value". Finally, the build method is called to build the topology
+ * and return a KipesBuilder object.
  *
  * @param <K> the key type
  */
@@ -71,9 +67,9 @@ public class EvalBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecord
     /**
      * Add an expression to update a field in the GenericRecord value.
      *
-     * @param fieldName     the name of the field to update
-     * @param valueFunction a function that takes in the key and value, and returns the new value for the field
-     * @return the EvalBuilder object for method chaining
+     * @param fieldName     the name of the field to update.
+     * @param valueFunction a function that takes in the key and value, and returns the new value for the field.
+     * @return the EvalBuilder object for method chaining.
      */
     public EvalBuilder<K> with(String fieldName, BiFunction<K, GenericRecord, Object> valueFunction) {
         Objects.requireNonNull(fieldName, "fieldName");
@@ -85,9 +81,9 @@ public class EvalBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecord
     }
 
     /**
-     * Build the topology and return a KipesBuilder object
+     * Build the topology and return a KipesBuilder object.
      *
-     * @return the KipesBuilder object representing the built topology
+     * @return the KipesBuilder object representing the built topology.
      */
     public KipesBuilder<K, GenericRecord> build() {
         return createKipesBuilder(

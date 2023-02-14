@@ -52,10 +52,11 @@ public abstract class AbstractStreamFactory {
 
 	/**
 	 * Initializes all topics which names will be given by {@link #getTopicNames()}.
-	 *
+	 * <p>
 	 * The method will create the topics if necessary.
-	 * @throws ExecutionException
-	 * @throws InterruptedException
+	 *
+	 * @throws ExecutionException   if there is an exception thrown during the operation.
+	 * @throws InterruptedException if the thread is interrupted while waiting for the operation to complete.
 	 */
 	protected void initTopics() throws InterruptedException, ExecutionException {
 		ensureTopics(getTopicNames());
@@ -65,8 +66,8 @@ public abstract class AbstractStreamFactory {
 	 * Ensures that all topics specified in the topicNames parameter exist.
 	 *
 	 * @param topicNames the topics to ensure exist.
-	 * @throws InterruptedException
-	 * @throws ExecutionException
+	 * @throws InterruptedException if the thread is interrupted while waiting for the operation to complete.
+	 * @throws ExecutionException   if there is an exception thrown during the operation process.
 	 */
 	protected void ensureTopics(String...topicNames) throws InterruptedException, ExecutionException {
 		Set<NewTopic> newTopics = Arrays.stream(topicNames)
@@ -77,8 +78,8 @@ public abstract class AbstractStreamFactory {
 	}
 
 	/**
-	 * Creates a new topic with the specified name and the replication factor and retention time
-	 * specified by the class's replicationFactor and retentionMs fields.
+	 * Creates a new topic with the specified name and the replication factor and retention time specified by the
+	 * class's replicationFactor and retentionMs fields.
 	 *
 	 * @param topicName the name of the topic.
 	 */
@@ -116,18 +117,18 @@ public abstract class AbstractStreamFactory {
 	}
 	
 	/**
-	 * Returns the topic names for all the topics this factory takes care,
-	 * notably for those it needs to create.
-	 * 
-	 * See {@link #getTopicNamesForDeletion()} to overwrite those which need
-	 * to get deleted (in case you use that feature) .
+	 * Returns the topic names for all the topics this factory takes care, notably for those it needs to create.
+	 * <p>
+	 * See {@link #getTopicNamesForDeletion()} to overwrite those which need to get deleted (in case you use that
+	 * feature) .
+	 *
+	 * @return the topic names
 	 */
 	protected abstract String[] getTopicNames();
 
 	/**
-	 * Returns the raw topic names for all topics which need to get deleted.
-	 * Defaults to {@link #getTopicNames()}. You can overwrite this method
-	 * in order to add changelog topics in case you need to. 
+	 * Returns the raw topic names for all topics which need to get deleted. Defaults to {@link #getTopicNames()}. You
+	 * can overwrite this method in order to add changelog topics in case you need to.
 	 */
 	protected Set<String> getTopicNamesForDeletion() {
 		return new HashSet<>(Arrays.asList(getTopicNames()));

@@ -8,7 +8,7 @@ public abstract class AbstractProcessorFactory extends AbstractStreamFactory {
 	/**
 	 * Returns an empty array of topic names.
 	 *
-	 * @return empty array of topic names
+	 * @return empty array of topic names.
 	 */
 	@Override
 	protected String[] getTopicNames() {
@@ -26,7 +26,7 @@ public abstract class AbstractProcessorFactory extends AbstractStreamFactory {
 	}
 
 	/**
-	 * Abstract method for initializing processors in subclasses
+	 * Abstract method for initializing processors in subclasses.
 	 *
 	 * @throws Exception If an error occurs during processor initialization.
 	 */

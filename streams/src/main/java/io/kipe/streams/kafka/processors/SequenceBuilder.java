@@ -28,53 +28,39 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import io.micronaut.core.serialize.exceptions.SerializationException;
 
 /**
- * Builds sequences of records and applies a function to the sequences. Each
- * record starts a new sequence of the configured size. Clients do not instantiate
- * this class directly but use {@link KipesBuilder#sequence()}.
- *
- * <p><b>Usage</b></p>
- * To use the `SequenceBuilder` class, create an instance of the class, passing in a `StreamsBuilder`, `KStream`, `Serde` for key, `Serde` for value, and a topics base name.
- * Then, configure the `SequenceBuilder` with a group by function and size of sequences.
- * Finally, apply an aggregate function to the complete sequence of records for each group key.
+ * A Builder to create record sequences and applies a function to the sequences. Each record starts a new sequence of
+ * the configured size. Clients do not instantiate this class directly but use {@link KipesBuilder#sequence()}.
+ * <p>
+ * To use the `SequenceBuilder` class, create an instance of the class, passing in a `StreamsBuilder`, `KStream`,
+ * `Serde` for key, `Serde` for value, and a topics base name. Then, configure the `SequenceBuilder` with a group by
+ * function and size of sequences. Finally, apply an aggregate function to the complete sequence of records for each
+ * group key.
  *
  * <p><b>Example</b></p>
  *
- * <pre>
- * {@code
- * StreamsBuilder streamsBuilder = new StreamsBuilder();
+ * <pre>{@code StreamsBuilder streamsBuilder = new StreamsBuilder();
  * KStream<String, String> stream = streamsBuilder.stream("input-topic");
  * Serde<String> stringSerde = Serdes.String();
  *
- * SequenceBuilder<String, String, String, String> sequenceBuilder = new SequenceBuilder<>(
- *     streamsBuilder,
- *     stream,
- *     stringSerde,
- *     stringSerde,
- *     "topics-base-name"
- * );
+ * SequenceBuilder<String, String, String, String> sequenceBuilder =
+ *         new SequenceBuilder<>(
+ *                 streamsBuilder,
+ *                 stream,
+ *                 stringSerde,
+ *                 stringSerde,
+ *                 "topics-base-name"
+ *         );
  *
- * sequenceBuilder.groupBy((key, value) -> value, stringSerde)
- *     .size(5)
- *     .as((key, values) -> values.toString());
- *  }
- *  </pre>
- *
- * <p><b>Pseudo DSL</b></p>
- * <pre>
- *   from
- *     {SOURCE[key:value]}
- *
- *   <b>sequence</b>
- *     <b>groupBy</b>
- *       {FUNCTION[key,value]:groupKey}
- *     <b>size</b>
- *       {INTEGER:1}
- *     <b>as</b>
- *       {FUNCTION[value[]]:aggregate}
- *
- *   to
- *     {TARGET[key:newValue]}
- * </pre>
+ * sequenceBuilder
+ *         .groupBy((key, value) -> value, stringSerde)
+ *         .size(5)
+ *         .as((key, values) -> values.toString(), String.class, Serdes.String());
+ * }</pre>
+ * <p>
+ * In this example, the SequenceBuilder is created with a StreamsBuilder, a KStream, Serde for key, and Serde for value.
+ * The input stream is stream and the topics base name is "topics-base-name". The input records are grouped by the value
+ * in the groupBy method and the size of the sequences is set to 5 in the size method. The as method takes a function
+ * that aggregates the complete sequence of records for each group key and converts the values to a string.
  *
  * @param <K>  The type of the key in the input stream
  * @param <V>  The type of the value in the input stream
@@ -122,9 +108,7 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
     }
 
     /**
-     * Configures the size of the sequences. The given argument must be
-     * greater than 0.
-     * `
+     * Configures the size of the sequences. The given argument must be greater than 0. `
      *
      * @param size the size of the sequences.
      * @return this builder
@@ -139,8 +123,9 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
     }
 
     /**
-     * Applies an aggregate function to the complete sequence of records for each group key. The aggregate function takes in the group key and a list of values and returns a new aggregate value.
-     * Note that it is possible to alter the sequence records for later aggregations.
+     * Applies an aggregate function to the complete sequence of records for each group key. The aggregate function
+     * takes in the group key and a list of values and returns a new aggregate value. Note that it is possible to alter
+     * the sequence records for later aggregations.
      *
      * @param aggregateFunction the function to apply to the complete sequence of records for each group key.
      * @param valueClass        the class of the input values in the sequence.
@@ -184,13 +169,16 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
     // ------------------------------------------------------------------------
 
     /**
-     * SequenceTransformer is a transformer class that aggregates sequences of values into a single value using a BiFunction.
+     * SequenceTransformer is a transformer class that aggregates sequences of values into a single value using a
+     * BiFunction.
      * <p>
      * It takes in a state store name, a group key function, a sequence size, and an aggregate function.
      * <p>
-     * The group key function is used to group input key-value pairs by a specific key, and the aggregate function is used to aggregate the values of each group into a single value.
+     * The group key function is used to group input key-value pairs by a specific key, and the aggregate function is
+     * used to aggregate the values of each group into a single value.
      * <p>
-     * The transformer keeps track of each group's values in the state store, and when the number of values for a group reaches the sequence size, it applies the aggregate function to the group's values and emits the result.
+     * The transformer keeps track of each group's values in the state store, and when the number of values for a group
+     * reaches the sequence size, it applies the aggregate function to the group's values and emits the result.
      *
      * @param <K>  the type of input keys.
      * @param <V>  the type of input values.
@@ -212,7 +200,8 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
          * @param stateStoreName    the name of the state store to be used.
          * @param groupKeyFunction  a function that takes in a record key and value and returns a group key.
          * @param sequenceSize      the size of the sequence used to trigger the aggregate function.
-         * @param aggregateFunction a function that takes in a group key and a list of records and returns an aggregate result.
+         * @param aggregateFunction a function that takes in a group key and a list of records and returns an aggregate
+         *                          result.
          */
         SequenceTransformer(
                 String stateStoreName,
@@ -237,11 +226,13 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
         }
 
         /**
-         * The main method of the transformer, it takes in a record key and value, groups it by the group key, and applies the aggregate function if the sequence size has been reached.
+         * The main method of the transformer, it takes in a record key and value, groups it by the group key, and
+         * applies the aggregate function if the sequence size has been reached.
          *
          * @param key   the key of the input record.
          * @param value the value of the input record.
-         * @return a {@link KeyValue} object with the key of the input record and the aggregate result if the sequence size has been reached, or null if the sequence is not yet complete.
+         * @return a {@link KeyValue} object with the key of the input record and the aggregate result if the sequence
+         * size has been reached, or null if the sequence is not yet complete.
          */
         @Override
         public KeyValue<K, VR> transform(K key, V value) {
@@ -268,7 +259,7 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 
             KeyValue<K, VR> returnValue = new KeyValue<>(key, this.aggregateFunction.apply(groupKey, groupSequence));
 
-            // we store now as the aggregateFunction may had altered the incoming records
+            // we store now as the aggregateFunction may have altered the incoming records
             groupSequence.remove(0);
             this.stateStore.put(groupKey, groupSequence);
 

@@ -8,24 +8,15 @@ import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 
 /**
- * This class tests the EvalBuilder class which is a part of the KipesBuilder in the kipe.streams.kafka.processors package.
- * <p>
- * The EvalBuilder class is used to add a transformation step to the topology that performs evaluations on the key and value of the input record.
- * <p>
- * The test case creates a topology with a single EvalBuilder processor, and sends a test input to the topology.
- * <p>
- * The test case then asserts that the outputs of the EvalBuilder processor have the expected values.
- *
- * @see KipesBuilder
- * @see EvalBuilder
+ * Test class for the {@link EvalBuilder}
  */
 class EvalBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 
-    /**
-     * This method adds the eval processor to the topology builder, with specific evaluation functions set for the keys outputA, outputB, and input.
-     * The evaluation functions take the key and value of the input record, and return a new value for the specified key.
-     * Placeholder for the actual builder implementation.
-     */
+	/**
+	 * This method adds the eval processor to the topology builder, with specific evaluation functions set for the keys
+	 * outputA, outputB, and input. The evaluation functions take the key and value of the input record, and return a
+	 * new value for the specified key. Placeholder for the actual builder implementation.
+	 */
 	@Override
 	protected KipesBuilder<String, GenericRecord> addGenericRecordProcessor(
 			KipesBuilder<String, GenericRecord> builder,

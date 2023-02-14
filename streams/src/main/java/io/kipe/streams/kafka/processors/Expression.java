@@ -22,8 +22,8 @@ public class Expression<K, V extends GenericRecord> {
 	protected Expression() {}
 
 	/**
-	 * The update method is used to update the specified field in the
-	 * {@link GenericRecord} object with the new value returned by the valueFunction
+	 * The update method is used to update the specified field in the {@link GenericRecord} object with the new value
+	 * returned by the valueFunction
 	 *
 	 * @param key    the key of the record
 	 * @param record the GenericRecord object to update
