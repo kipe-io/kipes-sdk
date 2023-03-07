@@ -2,16 +2,33 @@ package io.kipe.streams.kafka.processors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.kipe.streams.recordtypes.GenericRecord;
+import io.kipe.streams.kafka.serdes.GenericRecordSerdes;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.StreamsConfig;
 import org.junit.jupiter.api.Test;
 
 import io.kipe.streams.kafka.processors.expressions.stats.Count;
-import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class test the functionality of {@link StatsBuilder} by counting the number of records grouped by 'group' field.
  */
 class StatsBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
+
+	public StatsBuilderTest() {
+		super(getTopologySpecificProps());
+	}
+
+	private static Map<String, String> getTopologySpecificProps() {
+		Map<String, String> props = new HashMap<>();
+		props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+		props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, GenericRecordSerdes.class.getName());
+		return props;
+	}
 
 	/**
 	 * This method is used to add the stats processor to the topology builder It uses the Count.count() method to count
@@ -29,7 +46,7 @@ class StatsBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 		return builder.stats()
 				.with(Count.count()).as("myCount")
 				.groupBy("group")
-				.build(topologyTestContext.getJsonSerdeRegistry().getSerde(String.class));
+				.build();
 	}
 
 	/**

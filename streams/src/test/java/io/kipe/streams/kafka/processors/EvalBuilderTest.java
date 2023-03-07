@@ -2,15 +2,32 @@ package io.kipe.streams.kafka.processors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.kipe.streams.kafka.serdes.GenericRecordSerdes;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.StreamsConfig;
 import org.junit.jupiter.api.Test;
 
 import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Test class for the {@link EvalBuilder}
  */
 class EvalBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
+
+	public EvalBuilderTest() {
+		super(getTopologySpecificProps());
+	}
+
+	private static Map<String, String> getTopologySpecificProps() {
+		Map<String, String> props = new HashMap<>();
+		props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+		props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, GenericRecordSerdes.class.getName());
+		return props;
+	}
 
 	/**
 	 * This method adds the eval processor to the topology builder, with specific evaluation functions set for the keys

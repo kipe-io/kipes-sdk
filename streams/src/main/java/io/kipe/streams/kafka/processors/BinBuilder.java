@@ -125,7 +125,7 @@ public class BinBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecord>
 		return new EvalBuilder<>(
 				this.streamsBuilder, 
 				this.stream, 
-				this.keySerde, 
+				this.keySerde,
 				this.valueSerde,
 				this.topicsBaseName)
 				.with(

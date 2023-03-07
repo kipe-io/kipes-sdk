@@ -2,28 +2,41 @@ package io.kipe.streams.kafka.processors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.kipe.streams.kafka.serdes.TestRecordSequenceSerdes;
+import io.kipe.streams.recordtypes.TestRecordSequence;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.junit.jupiter.api.Test;
 
 import io.kipe.streams.test.kafka.AbstractTopologyTest;
 import io.kipe.streams.test.kafka.TopologyTestContext;
-import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Test class for {@link SequenceBuilder}
+ * Test class for {@link SequenceBuilder}.
  */
 class SequenceBuilderTest extends AbstractTopologyTest {
 
 	private static final String SOURCE = "source";
 	private static final String TARGET = "target";
 
-	private TestInputTopic<String, TestRecord> sourceTopic;
-	private TestOutputTopic<String, TestRecord> targetTopic;
+	private TestInputTopic<String, TestRecordSequence> sourceTopic;
+	private TestOutputTopic<String, TestRecordSequence> targetTopic;
+
+	public SequenceBuilderTest() {
+		super(getTopologySpecificProps());
+	}
+
+	private static Map<String, String> getTopologySpecificProps() {
+		Map<String, String> props = new HashMap<>();
+		props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+		props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, TestRecordSequenceSerdes.class.getName());
+		return props;
+	}
 
 	/**
 	 * Initialize the topology for testing.
@@ -34,38 +47,29 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	 */
 	@Override
 	protected void initTopology(TopologyTestContext topologyTestContext) {
-		JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
-		
 		KipesBuilder.init(topologyTestContext.getStreamsBuilder())
-		.from( 
-				topologyTestContext.createKStream(
-						SOURCE, 
-						String.class, 
-						TestRecord.class),
-				serdes.getSerde(String.class),
-				serdes.getSerde(TestRecord.class))
+		.<String, TestRecordSequence>from(
+				topologyTestContext.createKStream(SOURCE))
 		
 		.withTopicsBaseName(SOURCE)
 		
-		.<String, TestRecord> sequence()
+		.<String, TestRecordSequence> sequence()
 			.groupBy(
 					(key, value) ->
-						key, 
-					serdes.getSerde(String.class))
+						key)
 			.size(3)
 			.as(
 					(key, records) -> {
 						int sum = 0;
 						long ts = 0;
-						for(TestRecord record : records) {
+						for(TestRecordSequence record : records) {
 							sum += record.getValue();
 							ts = record.getTimestamp();
 							record.count += 1; // changes the stored record!
 						}
-						return new TestRecord(ts, key, sum, records.get(0).count);
+						return new TestRecordSequence(ts, key, sum, records.get(0).count);
 					},
-					TestRecord.class,
-					serdes.getSerde(TestRecord.class))
+					TestRecordSequence.class)
 			
 		.to(TARGET);
 		
@@ -82,14 +86,14 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	protected void initTestTopics(TopologyTestContext topologyTestContext) {
 		this.sourceTopic = topologyTestContext.createTestInputTopic(
 				SOURCE, 
-				String.class, 
-				TestRecord.class);
+				String.class,
+				TestRecordSequence.class);
 		
 		
 		this.targetTopic = topologyTestContext.createTestOutputTopic(
 				TARGET, 
-				String.class, 
-				TestRecord.class);		
+				String.class,
+				TestRecordSequence.class);
 	}
 
 	// ------------------------------------------------------------------------
@@ -111,7 +115,7 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 		assertEquals(2, this.targetTopic.getQueueSize());
 		
 		// and the first record is #3 with the sum of 1..3
-		TestRecord r = this.targetTopic.readValue();
+		TestRecordSequence r = this.targetTopic.readValue();
 		assertEquals("key", r.key);
 		assertEquals(30, r.timestamp);
 		assertEquals(1+2+3, r.value);
@@ -141,7 +145,7 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 		assertEquals(2, this.targetTopic.getQueueSize());
 		
 		// and the first record is #A3 with the sum of 1..3
-		TestRecord r = this.targetTopic.readValue();
+		TestRecordSequence r = this.targetTopic.readValue();
 		assertEquals("key_A", r.key);
 		assertEquals(25, r.timestamp);
 		assertEquals(1+2+3, r.value);
@@ -167,24 +171,7 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	 * @param timestamp the timestamp of the record
 	 */
 	private void send(String key, Integer value, long timestamp) {
-		this.sourceTopic.pipeInput(key, new TestRecord(timestamp, key, value, 0));
-	}
-	
-	// ------------------------------------------------------------------------
-	// records
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Data class for the test records.
-	 */
-	@AllArgsConstructor
-	@NoArgsConstructor
-	@Data
-	public static class TestRecord {
-		long timestamp;
-		String key;
-		Integer value;
-		Integer count;
+		this.sourceTopic.pipeInput(key, new TestRecordSequence(timestamp, key, value, 0));
 	}
 
 }

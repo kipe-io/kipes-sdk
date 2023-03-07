@@ -107,6 +107,13 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
         return this;
     }
 
+    public SequenceBuilder<K, V, GK, VR> groupBy(BiFunction<K, V, GK> groupKeyFunction) {
+        this.groupKeyFunction = groupKeyFunction;
+        this.groupKeySerde = groupKeySerde;
+
+        return this;
+    }
+
     /**
      * Configures the size of the sequences. The given argument must be greater than 0. `
      *
@@ -138,8 +145,8 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
             Serde<VR> resultValueSerde) {
         Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");
         Objects.requireNonNull(this.groupKeyFunction, "groupKeyFunction");
-        Objects.requireNonNull(this.groupKeySerde, "groupKeySerde");
-        Objects.requireNonNull(resultValueSerde, "resultValueSerde");
+//        Objects.requireNonNull(this.groupKeySerde, "groupKeySerde");
+//        Objects.requireNonNull(resultValueSerde, "resultValueSerde");
 
         final String stateStoreName = getProcessorStoreTopicName(getTopicsBaseName() + "-sequence");
 
@@ -161,6 +168,30 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
                                 stateStoreName),
                 this.keySerde,
                 resultValueSerde);
+    }
+
+    public KipesBuilder<K, VR> as(
+            BiFunction<GK, List<V>, VR> aggregateFunction,
+            Class<V> valueClass) {
+        Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");
+        Objects.requireNonNull(this.groupKeyFunction, "groupKeyFunction");
+
+        final String stateStoreName = getProcessorStoreTopicName(getTopicsBaseName() + "-sequence");
+
+        StoreBuilder<KeyValueStore<GK, List<V>>> dedupStoreBuilder =
+                Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(stateStoreName), null, new SequencesSerde<>(valueClass));
+        this.streamsBuilder.addStateStore(dedupStoreBuilder);
+
+
+        return (KipesBuilder<K, VR>) createKipesBuilder(
+                (KStream<K, V>) this.stream
+                        .transform(
+                                () -> new SequenceTransformer<>(
+                                            stateStoreName,
+                                            this.groupKeyFunction,
+                                            this.sequenceSize,
+                                            aggregateFunction),
+                                stateStoreName));
     }
 
 

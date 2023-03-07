@@ -84,7 +84,7 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V>
 		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 		
 		Objects.requireNonNull(otherStream, "otherStream");
-		Objects.requireNonNull(otherValueSerde, "otherValueSerde");
+//		Objects.requireNonNull(otherValueSerde, "otherValueSerde");
 		
 		this.otherStream = otherStream;
 		this.otherValueSerde = otherValueSerde;
@@ -191,8 +191,50 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V>
 						.withOtherValueSerde(this.otherValueSerde));
 		
 		return createKipesBuilder(
-				joinedStream, 
-				this.keySerde, 
-				resultValueSerde);
+				joinedStream,
+				null,
+				null);
+	}
+
+	public KipesBuilder<K,VR> as(ValueJoiner<V, OV, VR> joiner) {
+		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");
+
+		if(this.windowSizeBefore == null) {
+			this.windowSizeBefore = Duration.ZERO;
+		}
+		if(this.windowSizeAfter == null) {
+			this.windowSizeAfter = Duration.ZERO;
+		}
+
+		Objects.requireNonNull(this.retentionPeriod, "retentionPeriod");
+		Objects.requireNonNull(joiner, "joiner");
+
+		KStream<K,VR> joinedStream =
+				this.stream
+						.join(
+								this.otherStream,
+								joiner,
+								JoinWindows
+										.of(Duration.ZERO)
+										.before(this.windowSizeBefore)
+										.after(this.windowSizeAfter)
+										.grace(this.retentionPeriod),
+								StreamJoined.<K,V,OV>with(
+										Stores.persistentWindowStore(
+												getTopicsBaseName()+"-join-store-left",
+												this.retentionPeriod.plus(this.windowSizeBefore).plus(this.windowSizeAfter),
+												this.windowSizeBefore.plus(this.windowSizeAfter),
+												true),
+										Stores.persistentWindowStore(
+												getTopicsBaseName()+"-join-store-right",
+												this.retentionPeriod.plus(this.windowSizeBefore).plus(this.windowSizeAfter),
+												this.windowSizeBefore.plus(this.windowSizeAfter),
+												true))
+						);
+
+		return createKipesBuilder(
+				joinedStream,
+				null,
+				null);
 	}
 }

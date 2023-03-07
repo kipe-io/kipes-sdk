@@ -1,5 +1,6 @@
 package io.kipe.streams.test.kafka;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -16,7 +17,7 @@ import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
  * It provides a convenient way to create a {@link ConfiguredStreamBuilder} for building a topology,
  * and a {@link TopologyTestDriver} for testing the topology.
  *
- * <p>To use TopologyTestContext, create an instance using the static method {@link #create()}
+ * <p>To use TopologyTestContext, create an instance using the static method {@link #create(Map)}
  * and use {@link #getStreamsBuilder()} to obtain a {@link ConfiguredStreamBuilder} to build the topology.
  * <p>Then use {@link #initTopologyTestDriver()} to obtain a {@link TopologyTestDriver} to test the topology.
  * <p>Finally, use {@link #createTestInputTopic(String, Class, Class)} and {@link #createTestOutputTopic(String, Class, Class)}
@@ -37,12 +38,16 @@ public class TopologyTestContext {
 
 	private static final JsonSerdeRegistry JSONSERDEREGISTRY = MockedJsonSerdeRegistry.create();
 
-    /**
-     * Creates a new instance of TopologyTestContext.
-     *
-     * @return a new TopologyTestContext instance.
-     */
-	public static TopologyTestContext create() {
+	/**
+	 * Creates a new instance of TopologyTestContext.
+	 * <p>
+	 * This method accepts topology properties that are specific to sub-builder tests, such as default serdes.
+	 *
+	 * @param topologySpecificProps Topology properties passed into the test context.
+	 * @return a new TopologyTestContext instance.
+	 */
+	public static TopologyTestContext create(Map<String, String> topologySpecificProps) {
+		CONFIG.putAll(topologySpecificProps);
 		return new TopologyTestContext(
 				new ConfiguredStreamBuilder(CONFIG));
 	}
@@ -100,11 +105,16 @@ public class TopologyTestContext {
 						JSONSERDEREGISTRY.getSerde(valueClass))
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
 	}
-	
+
+	public <K,V> KStream<K,V> createKStream(String topic) {
+		return this.streamBuilder
+				.stream(topic);
+	}
+
 	// ------------------------------------------------------------------------
 	// initTopologyTestDriver
 	// ------------------------------------------------------------------------
-	
+
 	/**
 	 * Once the topology has been set up with by using the
 	 * {@link #getStreamsBuilder()} you can acquire a {@link TopologyTestDriver}
@@ -114,7 +124,7 @@ public class TopologyTestContext {
 		this.driver = new TopologyTestDriver(this.streamBuilder.build(), CONFIG);
 		return driver;
 	}
-	
+
 	// ------------------------------------------------------------------------
 	// state after initTopologyTestDriver
 	// ------------------------------------------------------------------------
@@ -134,8 +144,8 @@ public class TopologyTestContext {
 	public <K,V> TestInputTopic<K,V> createTestInputTopic(String topic, Class<K> keyType, Class<V> valueType) {
 		Objects.requireNonNull(this.driver, "TopologyTestDriver must be initialized before by calling 'initTopologyTestDriver()'");
 		return this.driver.createInputTopic(
-				topic, 
-				JSONSERDEREGISTRY.getSerializer(keyType), 
+				topic,
+				JSONSERDEREGISTRY.getSerializer(keyType),
 				JSONSERDEREGISTRY.getSerializer(valueType));
 	}
 
@@ -154,8 +164,8 @@ public class TopologyTestContext {
 	public <K,V> TestOutputTopic<K, V> createTestOutputTopic(String topic, Class<K> keyType, Class<V> valueType) {
 		Objects.requireNonNull(this.driver, "TopologyTestDriver must be initialized before by calling 'initTopologyTestDriver()'");
 		return this.driver.createOutputTopic(
-				topic, 
-				JSONSERDEREGISTRY.getDeserializer(keyType), 
+				topic,
+				JSONSERDEREGISTRY.getDeserializer(keyType),
 				JSONSERDEREGISTRY.getDeserializer(valueType));
 	}
 
@@ -170,5 +180,5 @@ public class TopologyTestContext {
 		this.driver.close();
 		this.driver = null;
 	}
-	
+
 }

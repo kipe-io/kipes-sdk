@@ -83,6 +83,13 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 		return this;
 	}
 
+	// TODO: Comment
+	public DedupBuilder<K,V, GK,DV> groupBy(BiFunction<K,V, GK> groupKeyFunction) {
+		this.groupKeyFunction = groupKeyFunction;
+
+		return this;
+	}
+
 	/**
 	 * Configures a value de-duplication function to identify equal records within a group of records (a dedup value
 	 * group). <br>

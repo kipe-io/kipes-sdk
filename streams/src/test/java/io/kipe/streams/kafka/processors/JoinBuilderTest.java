@@ -3,7 +3,14 @@ package io.kipe.streams.kafka.processors;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
+import io.kipe.streams.kafka.serdes.TestRecordSerdes;
+import io.kipe.streams.recordtypes.JoinRecord;
+import io.kipe.streams.recordtypes.TestRecord;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.kstream.KStream;
@@ -12,10 +19,6 @@ import org.junit.jupiter.api.Test;
 import io.kipe.common.utils.TimeUtils;
 import io.kipe.streams.test.kafka.AbstractTopologyTest;
 import io.kipe.streams.test.kafka.TopologyTestContext;
-import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * Test class for the {@link JoinBuilder}. Tests the functionality of the Streams join operator by creating input topics
@@ -27,14 +30,25 @@ class JoinBuilderTest extends AbstractTopologyTest {
 	private static final String LEFT_TOPIC = "leftTopic";
 	private static final String RIGHT_TOPIC = "rightTopic";
 	private static final String JOIN_TOPIC = "joinTopic";
-	
+
 	private static final int WINDOW_SIZE_AFTER = 7;
-	
+
 	private static final String KEY = "key";
-	
+
 	private TestInputTopic<String, TestRecord> leftTopic;
 	private TestInputTopic<String, TestRecord> rightTopic;
 	private TestOutputTopic<String, JoinRecord> joinTopic;
+
+	public JoinBuilderTest() {
+		super(getTopologySpecificProps());
+	}
+
+	private static Map<String, String> getTopologySpecificProps() {
+		Map<String, String> props = new HashMap<>();
+		props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+		props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, TestRecordSerdes.class.getName());
+		return props;
+	}
 
 	/**
 	 * Initializes the topology for the test.
@@ -43,57 +57,37 @@ class JoinBuilderTest extends AbstractTopologyTest {
 	 */
 	@Override
 	protected void initTopology(TopologyTestContext topologyTestContext) {
-		JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
-		
 		KipesBuilder<?,?> builder = KipesBuilder.init(topologyTestContext.getStreamsBuilder());
-		
+
 		// setup time adjusted left stream
 		KStream<String, TestRecord> leftStream = builder
-				.from(
-					topologyTestContext.createKStream(
-							LEFT_TOPIC, 
-							String.class, 
-							TestRecord.class),
-					serdes.getSerde(String.class), 
-					serdes.getSerde(TestRecord.class))
-				
+				.<String,TestRecord>from(
+					topologyTestContext.createKStream(LEFT_TOPIC))
 				.adjustRecordTimestamps(
 						(key, value) ->
 							value.timestamp)
 				.getStream();
-		
+
 		// setup time adjusted right stream
-		KStream<String, TestRecord> rightStream = builder 
-				.from(
-					topologyTestContext.createKStream(
-							RIGHT_TOPIC, 
-							String.class, 
-							TestRecord.class),
-					serdes.getSerde(String.class), 
-					serdes.getSerde(TestRecord.class))
-				
+		KStream<String, TestRecord> rightStream = builder
+				.<String,TestRecord>from(
+					topologyTestContext.createKStream(RIGHT_TOPIC))
+
 				.adjustRecordTimestamps(
 						(key, value) ->
 							value.timestamp)
 				.getStream();
-				
-		// setup join and push result 
+
+		// setup join and push result
 		builder
 		.withTopicsBaseName(JOIN_TOPIC)
-		.from(
-				leftStream, 
-				serdes.getSerde(String.class), 
-				serdes.getSerde(TestRecord.class))
-		
-		.<TestRecord, JoinRecord>join(
-				rightStream, 
-				serdes.getSerde(TestRecord.class))
+		.from(leftStream)
+
+		.<TestRecord, JoinRecord>join(rightStream)
 			.withRetentionPeriod(Duration.ofDays(365))
 			.withWindowSizeAfter(Duration.ofDays(WINDOW_SIZE_AFTER))
-			.as(
-					JoinRecord::from, 
-					serdes.getSerde(JoinRecord.class))
-		
+			.as(JoinRecord::from)
+
 		.to(JOIN_TOPIC);
 	}
 
@@ -134,7 +128,7 @@ class JoinBuilderTest extends AbstractTopologyTest {
 		long timestamp = TimeUtils.getTimestampDaysBeforeNow(7);
 		sendLeftTestRecord(timestamp);
 		sendRightTestRecord(timestamp);
-		
+
 		// then we get one joined record
 		assertEquals(1, this.joinTopic.getQueueSize());
 	}
@@ -148,7 +142,7 @@ class JoinBuilderTest extends AbstractTopologyTest {
 		long timestamp = TimeUtils.getTimestampDaysBeforeNow(7);
 		sendLeftTestRecord(timestamp);
 		sendRightTestRecord(timestamp+WINDOW_SIZE_AFTER*ONE_DAY);
-		
+
 		// then we get one joined record
 		assertEquals(1, this.joinTopic.getQueueSize());
 	}
@@ -162,11 +156,11 @@ class JoinBuilderTest extends AbstractTopologyTest {
 		long timestamp = TimeUtils.getTimestampDaysBeforeNow(7);
 		sendLeftTestRecord(timestamp);
 		sendRightTestRecord(timestamp+(WINDOW_SIZE_AFTER+1)*ONE_DAY);
-		
+
 		// then we get no joined record
 		assertEquals(0, this.joinTopic.getQueueSize());
 	}
-	
+
 	// ------------------------------------------------------------------------
 	// tests - one record left, two right
 	// ------------------------------------------------------------------------
@@ -182,11 +176,11 @@ class JoinBuilderTest extends AbstractTopologyTest {
 		sendLeftTestRecord(timestamp);
 		sendRightTestRecord(timestamp);
 		sendRightTestRecord(timestamp + ONE_DAY);
-		
+
 		// then we get joined records
 		assertEquals(2, this.joinTopic.getQueueSize());
 	}
-	
+
 	// ------------------------------------------------------------------------
 	// tests - two left, two right
 	// ------------------------------------------------------------------------
@@ -204,11 +198,11 @@ class JoinBuilderTest extends AbstractTopologyTest {
 
 		sendRightTestRecord(timestamp + ONE_DAY);
 		sendRightTestRecord(timestamp + 2*ONE_DAY);
-		
+
 		// then we get joined records
 		assertEquals(4, this.joinTopic.getQueueSize());
 	}
-	
+
 	// ------------------------------------------------------------------------
 	// utils
 	// ------------------------------------------------------------------------
@@ -241,43 +235,5 @@ class JoinBuilderTest extends AbstractTopologyTest {
 		TestRecord r = new TestRecord(timestamp, KEY);
 		topic.pipeInput(r.key, r, timestamp);
 	}
-	
-	// ------------------------------------------------------------------------
-	// records 
-	// ------------------------------------------------------------------------
 
-	/**
-	 * TestRecord class that contains a timestamp and a key.
-	 */
-	@AllArgsConstructor
-	@NoArgsConstructor
-	@Data
-	public static class TestRecord {
-		long timestamp;
-		String key;
-	}
-
-	/**
-	 * JoinRecord class that contains a timestamp, a key, and two TestRecord objects.
-	 * <p>
-	 * It also contains a method 'from' to create a new JoinRecord from two TestRecord objects.
-	 */
-	@AllArgsConstructor
-	@NoArgsConstructor
-	@Data
-	public static class JoinRecord {
-		static JoinRecord from(TestRecord left, TestRecord right) {
-			return new JoinRecord(
-					Math.max(left.timestamp, right.timestamp), 
-					left.key, 
-					left, 
-					right);
-		}
-		
-		long timestamp;
-		String key;
-		
-		TestRecord left;
-		TestRecord right;
-	}
 }
