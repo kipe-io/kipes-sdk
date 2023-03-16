@@ -14,11 +14,10 @@ import java.util.Map;
  * This class test the functionality of {@link StatsBuilder} by counting the number of records grouped by 'group' field.
  */
 class StatsBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
-	
 	public StatsBuilderTest() {
 		super(Map.of());
 	}
-	
+
 	/**
 	 * This method is used to add the stats processor to the topology builder It uses the Count.count() method to count
 	 * the number of records in each group It groups the records by 'group' field and returns the topology builder.
@@ -29,8 +28,8 @@ class StatsBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 	 */
 	@Override
 	protected KipesBuilder<String, GenericRecord> addGenericRecordProcessor(
-			KipesBuilder<String, GenericRecord> builder,
-			TopologyTestContext topologyTestContext)
+			KipesBuilder<String, GenericRecord> builder, 
+			TopologyTestContext topologyTestContext) 
 	{
 		return builder.stats()
 				.with(Count.count()).as("myCount")

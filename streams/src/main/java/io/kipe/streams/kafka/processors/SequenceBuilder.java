@@ -95,17 +95,17 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
             String topicsBaseName) {
         super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
     }
-	
-	/**
-	 * Configures a GroupKeyFunction to group incoming records.
-	 * <p>
-	 * If a non-null value is provided for the serdes parameter, it will be used as the serde for the resulting stream.
-	 * Otherwise, the default serde will be used.
-	 *
-	 * @param groupKeyFunction the function to calculate the GroupKey
-	 * @param groupKeySerde    the serde for the GroupKey
-	 * @return this builder
-	 */
+
+    /**
+     * Configures a GroupKeyFunction to group incoming records.
+     * <p>
+     * If a non-null value is provided for the serdes parameter, it will be used as the serde for the resulting stream.
+     * Otherwise, the default serde will be used.
+     *
+     * @param groupKeyFunction the function to calculate the GroupKey
+     * @param groupKeySerde    the serde for the GroupKey
+     * @return this builder
+     */
     public SequenceBuilder<K, V, GK, VR> groupBy(BiFunction<K, V, GK> groupKeyFunction, Serde<GK> groupKeySerde) {
         this.groupKeyFunction = groupKeyFunction;
         this.groupKeySerde = groupKeySerde;
@@ -116,7 +116,7 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
 	/**
 	 * Configures a GroupKeyFunction to group incoming records.
 	 * <p>
-	 * The uses the default serde.
+	 * This uses the default serde.
 	 *
 	 * @param groupKeyFunction the function to calculate the GroupKey
 	 * @return this builder
@@ -139,20 +139,20 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
         this.sequenceSize = size;
         return this;
     }
-	
-	/**
-	 * Applies an aggregate function to the complete sequence of records for each group key. The aggregate function
-	 * takes in the group key and a list of values and returns a new aggregate value. Note that it is possible to alter
-	 * the sequence records for later aggregations.
-	 * <p>
+
+    /**
+     * Applies an aggregate function to the complete sequence of records for each group key. The aggregate function
+     * takes in the group key and a list of values and returns a new aggregate value. Note that it is possible to alter
+     * the sequence records for later aggregations.
+     * <p>
 	 * If a non-null value is provided for the serdes parameter, it will be used as the serde for the resulting stream.
 	 * Otherwise, the default serde will be used.
-	 *
-	 * @param aggregateFunction the function to apply to the complete sequence of records for each group key.
-	 * @param valueClass        the class of the input values in the sequence.
-	 * @param resultValueSerde  the serde for the aggregate value.
-	 * @return a new {@link KipesBuilder} with the aggregate value as the value type.
-	 */
+     *
+     * @param aggregateFunction the function to apply to the complete sequence of records for each group key.
+     * @param valueClass        the class of the input values in the sequence.
+     * @param resultValueSerde  the serde for the aggregate value.
+     * @return a new {@link KipesBuilder} with the aggregate value as the value type.
+     */
     public KipesBuilder<K, VR> as(
             BiFunction<GK, List<V>, VR> aggregateFunction,
             Class<V> valueClass,

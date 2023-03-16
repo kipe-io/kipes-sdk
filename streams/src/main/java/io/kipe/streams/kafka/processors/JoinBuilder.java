@@ -197,8 +197,8 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V>
 						.withOtherValueSerde(this.otherValueSerde));
 		
 		return createKipesBuilder(
-				joinedStream,
-				this.keySerde,
+				joinedStream, 
+				this.keySerde, 
 				resultValueSerde);
 	}
 	

@@ -32,7 +32,7 @@ class BinBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 	@Override
 	protected KipesBuilder<String, GenericRecord> addGenericRecordProcessor(
 			KipesBuilder<String, GenericRecord> builder,
-			TopologyTestContext topologyTestContext)
+			TopologyTestContext topologyTestContext) 
 	{
 		return builder
 				.bin()
@@ -61,7 +61,7 @@ class BinBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 		assertEquals(1, this.targetTopic.getQueueSize());
 		
 		GenericRecord r = this.targetTopic.readValue();
-		assertEquals(discretizedValue, r.get("input"));
+		assertEquals(discretizedValue, r.get("input"));		
 	}
 
 	/**

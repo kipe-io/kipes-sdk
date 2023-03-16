@@ -100,16 +100,16 @@ extends AbstractTopologyPartBuilder<K, V>
 	{
 		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 	}
-	
-	/**
-	 * Configures a GroupKeyFunction to group incoming records.
-	 * <p>
-	 * It uses the provided groupKeySerde.
-	 *
-	 * @param groupKeyFunction the function to calculate the GroupKey.
-	 * @param groupKeySerde    the serde for the GroupKey.
-	 * @return this builder.
-	 */
+
+    /**
+     * Configures a GroupKeyFunction to group incoming records.
+     * * <p>
+     * It uses the provided groupKeySerde.
+     *
+     * @param groupKeyFunction the function to calculate the GroupKey.
+     * @param groupKeySerde    the serde for the GroupKey.
+     * @return this builder.
+     */
 	public TransactionBuilder<K,V, GK> groupBy(BiFunction<K,V, GK> groupKeyFunction, Serde<GK> groupKeySerde) {
 		this.groupKeyFunction = groupKeyFunction;
 		this.groupKeySerde = groupKeySerde;

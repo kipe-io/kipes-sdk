@@ -38,8 +38,8 @@ abstract class AbstractTopologyPartBuilder<K,V> {
 	 */
 	AbstractTopologyPartBuilder(
 			StreamsBuilder streamsBuilder,
-			KStream<K, V> stream,
-			Serde<K> keySerde,
+			KStream<K, V> stream, 
+			Serde<K> keySerde, 
 			Serde<V> valueSerde,
 			String topicsBaseName)
 	{
@@ -56,7 +56,7 @@ abstract class AbstractTopologyPartBuilder<K,V> {
 		this.stream = stream;
 		this.keySerde = keySerde;
 		this.valueSerde = valueSerde;
-		this.topicsBaseName = topicsBaseName;
+		this.topicsBaseName = topicsBaseName; 
 	}
 
 
@@ -80,8 +80,8 @@ abstract class AbstractTopologyPartBuilder<K,V> {
 	protected KipesBuilder<K,V> createKipesBuilder(KStream<K, V> stream) {
 		return KipesBuilder.init(this.streamsBuilder)
 				.from(
-						stream,
-						this.keySerde,
+						stream, 
+						this.keySerde, 
 						this.valueSerde)
 				.withTopicsBaseName(this.topicsBaseName);
 	}
@@ -101,8 +101,8 @@ abstract class AbstractTopologyPartBuilder<K,V> {
 	{
 		return KipesBuilder.init(this.streamsBuilder)
 				.from(
-						stream,
-						keySerde,
+						stream, 
+						keySerde, 
 						valueSerde)
 				.withTopicsBaseName(this.topicsBaseName);
 	}

@@ -78,8 +78,8 @@ public class KipesBuilder<K,V> {
 	
 	private KipesBuilder(
 			StreamsBuilder streamsBuilder,
-			KStream<K,V> stream,
-			Serde<K> keySerde,
+			KStream<K,V> stream, 
+			Serde<K> keySerde, 
 			Serde<V> valueSerde,
 			String topicsBaseName)
 	{
@@ -127,8 +127,8 @@ public class KipesBuilder<K,V> {
 	 * @return a new initialized {@link KipesBuilder}.
 	 */
 	public <NK,NV> KipesBuilder<NK,NV> from(
-			KStream<NK,NV> stream,
-			Serde<NK> keySerde,
+			KStream<NK,NV> stream, 
+			Serde<NK> keySerde, 
 			Serde<NV> valueSerde)
 	{
 		Objects.requireNonNull(stream, "stream");
@@ -140,9 +140,9 @@ public class KipesBuilder<K,V> {
 		}
 		
 		return new KipesBuilder<>(
-				this.streamsBuilder,
-				stream,
-				keySerde,
+				this.streamsBuilder, 
+				stream, 
+				keySerde, 
 				valueSerde,
 				this.topicsBaseName);
 	}
@@ -170,15 +170,15 @@ public class KipesBuilder<K,V> {
 	 */
 	public KipesBuilder<K,V> logDebug(String identifier) {
 		return new KipesBuilder<>(
-				this.streamsBuilder,
+				this.streamsBuilder, 
 				this.stream.map(
 						(key, value) -> {
 							LoggerFactory.getLogger(value.getClass())
 							.debug("{} key: {} value: {}", identifier, key, value);
 							
 							return new KeyValue<>(key, value);
-						}),
-				this.keySerde,
+						}), 
+				this.keySerde, 
 				this.valueSerde,
 				this.topicsBaseName);
 	}
@@ -201,7 +201,7 @@ public class KipesBuilder<K,V> {
 		
 		KStream<K,V> topicBackedStream = this.stream
 				.through(topicName, Produced.with(
-						this.keySerde,
+						this.keySerde, 
 						this.valueSerde));
 		
 		return new KipesBuilder<>(
@@ -230,7 +230,7 @@ public class KipesBuilder<K,V> {
 		Objects.requireNonNull(evalTimestampFunction, "evalTimestampFunction");
 		
 		return new KipesBuilder<>(
-				this.streamsBuilder,
+				this.streamsBuilder, 
 				this.stream.transform(
 						() -> new Transformer<K,V, KeyValue<K,V>>() {
 							private ProcessorContext context;
@@ -251,8 +251,8 @@ public class KipesBuilder<K,V> {
 							public void close() {
 								// nothing to do
 							}
-						}),
-				this.keySerde,
+						}), 
+				this.keySerde, 
 				this.valueSerde,
 				this.topicsBaseName);
 	}
@@ -278,7 +278,7 @@ public class KipesBuilder<K,V> {
 		
 		this.stream
 		.to(topicName, Produced.with(
-				this.keySerde,
+				this.keySerde, 
 				this.valueSerde));
 	}
 
@@ -290,7 +290,7 @@ public class KipesBuilder<K,V> {
 	 */
 	public KipesBuilder<K,V> filter(Predicate<K, V> predicate) {
 		// TODO introduce FilterBuilder
-		// JoinBuilder, TransactionBuilder provide the pattern. This
+		// JoinBuilder, TransactionBuilder provide the pattern. This 
 		// TopologyBuild should not know the details of how this manipulation
 		// works (predicate!)
 		
@@ -328,9 +328,9 @@ public class KipesBuilder<K,V> {
 		}
 		
 		return new DedupBuilder<K,V, GK,DV> (
-				this.streamsBuilder,
-				this.stream,
-				this.keySerde,
+				this.streamsBuilder, 
+				this.stream, 
+				this.keySerde, 
 				this.valueSerde,
 				this.topicsBaseName);
 	}
@@ -351,7 +351,7 @@ public class KipesBuilder<K,V> {
 	public <OV, VR> JoinBuilder<K,V, OV, VR> join(KStream<K,OV> otherStream, Serde<OV> otherValueSerde) {
 		// TODO move parameters to JoinBuilder
 		// TopologyBuild should not know the details of how this manipulation
-		// works
+		// works 
 		
 		Objects.requireNonNull(this.stream, "stream");
 		if (this.keySerde == null) {
@@ -368,10 +368,10 @@ public class KipesBuilder<K,V> {
 		
 		return new JoinBuilder<K,V, OV, VR>(
 				this.streamsBuilder,
-				this.stream,
-				this.keySerde,
-				this.valueSerde,
-				otherStream,
+				this.stream, 
+				this.keySerde, 
+				this.valueSerde, 
+				otherStream, 
 				otherValueSerde,
 				this.topicsBaseName);
 	}
@@ -422,9 +422,9 @@ public class KipesBuilder<K,V> {
 		}
 		
 		return (TransformBuilder<K,V, KR,VR>)new TransformBuilder<>(
-				this.streamsBuilder,
-				this.stream,
-				this.keySerde,
+				this.streamsBuilder, 
+				this.stream, 
+				this.keySerde, 
 				this.valueSerde,
 				this.topicsBaseName);
 	}
@@ -445,9 +445,9 @@ public class KipesBuilder<K,V> {
 		}
 
 		return (SequenceBuilder<K,V, GK, VR>)new SequenceBuilder<>(
-				this.streamsBuilder,
-				this.stream,
-				this.keySerde,
+				this.streamsBuilder, 
+				this.stream, 
+				this.keySerde, 
 				this.valueSerde,
 				this.topicsBaseName);
 	}
@@ -468,9 +468,9 @@ public class KipesBuilder<K,V> {
 		}
 		
 		return new EvalBuilder<>(
-				this.streamsBuilder,
-				(KStream<K,GenericRecord>)this.stream,
-				this.keySerde,
+				this.streamsBuilder, 
+				(KStream<K,GenericRecord>)this.stream, 
+				this.keySerde, 
 				(Serde<GenericRecord>)this.valueSerde,
 				this.topicsBaseName);
 	}
@@ -515,9 +515,9 @@ public class KipesBuilder<K,V> {
 		}
 		
 		return new StatsBuilder<>(
-				this.streamsBuilder,
-				(KStream<K,GenericRecord>)this.stream,
-				this.keySerde,
+				this.streamsBuilder, 
+				(KStream<K,GenericRecord>)this.stream, 
+				this.keySerde, 
 				(Serde<GenericRecord>)this.valueSerde,
 				this.topicsBaseName);
 		
@@ -539,9 +539,9 @@ public class KipesBuilder<K,V> {
 		}
 		
 		return new TableBuilder<>(
-				this.streamsBuilder,
-				(KStream<K,GenericRecord>)this.stream,
-				this.keySerde,
+				this.streamsBuilder, 
+				(KStream<K,GenericRecord>)this.stream, 
+				this.keySerde, 
 				(Serde<GenericRecord>)this.valueSerde,
 				this.topicsBaseName);
 	}

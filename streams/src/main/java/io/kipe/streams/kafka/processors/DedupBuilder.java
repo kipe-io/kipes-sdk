@@ -70,7 +70,7 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 	{
 		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 	}
-	
+
 	/**
 	 * Configures a GroupKeyFunction to group incoming records.
 	 * <p>

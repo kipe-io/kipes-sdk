@@ -55,10 +55,10 @@ class JoinBuilderTest extends AbstractTopologyTest {
 		KStream<String, TestRecord> leftStream = builder
 				.from(
 					topologyTestContext.createKStream(
-							LEFT_TOPIC,
-							String.class,
+							LEFT_TOPIC, 
+							String.class, 
 							TestRecord.class),
-					serdes.getSerde(String.class),
+					serdes.getSerde(String.class), 
 					serdes.getSerde(TestRecord.class))
 				
 				.adjustRecordTimestamps(
@@ -67,13 +67,13 @@ class JoinBuilderTest extends AbstractTopologyTest {
 				.getStream();
 		
 		// setup time adjusted right stream
-		KStream<String, TestRecord> rightStream = builder
+		KStream<String, TestRecord> rightStream = builder 
 				.from(
 					topologyTestContext.createKStream(
-							RIGHT_TOPIC,
-							String.class,
+							RIGHT_TOPIC, 
+							String.class, 
 							TestRecord.class),
-					serdes.getSerde(String.class),
+					serdes.getSerde(String.class), 
 					serdes.getSerde(TestRecord.class))
 				
 				.adjustRecordTimestamps(
@@ -81,21 +81,21 @@ class JoinBuilderTest extends AbstractTopologyTest {
 							value.timestamp)
 				.getStream();
 				
-		// setup join and push result
+		// setup join and push result 
 		builder
 		.withTopicsBaseName(JOIN_TOPIC)
 		.from(
-				leftStream,
-				serdes.getSerde(String.class),
+				leftStream, 
+				serdes.getSerde(String.class), 
 				serdes.getSerde(TestRecord.class))
 		
 		.<TestRecord, JoinRecord>join(
-				rightStream,
+				rightStream, 
 				serdes.getSerde(TestRecord.class))
 			.withRetentionPeriod(Duration.ofDays(365))
 			.withWindowSizeAfter(Duration.ofDays(WINDOW_SIZE_AFTER))
 			.as(
-					JoinRecord::from,
+					JoinRecord::from, 
 					serdes.getSerde(JoinRecord.class))
 		
 		.to(JOIN_TOPIC);
@@ -109,20 +109,20 @@ class JoinBuilderTest extends AbstractTopologyTest {
 	@Override
 	protected void initTestTopics(TopologyTestContext topologyTestContext) {
 		this.leftTopic = topologyTestContext.createTestInputTopic(
-				LEFT_TOPIC,
-				String.class,
+				LEFT_TOPIC, 
+				String.class, 
 				TestRecord.class);
 		
 		this.rightTopic = topologyTestContext.createTestInputTopic(
-				RIGHT_TOPIC,
-				String.class,
+				RIGHT_TOPIC, 
+				String.class, 
 				TestRecord.class);
 		
 		
 		this.joinTopic = topologyTestContext.createTestOutputTopic(
-				JOIN_TOPIC,
-				String.class,
-				JoinRecord.class);
+				JOIN_TOPIC, 
+				String.class, 
+				JoinRecord.class);		
 	}
 
 	// ------------------------------------------------------------------------

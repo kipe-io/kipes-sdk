@@ -39,10 +39,10 @@ public abstract class AbstractGenericRecordProcessorTopologyTest extends Abstrac
 		JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
 
 		KipesBuilder<String, GenericRecord> builder = KipesBuilder.init(topologyTestContext.getStreamsBuilder())
-		.from(
+		.from( 
 				topologyTestContext.createKStream(
-						SOURCE,
-						String.class,
+						SOURCE, 
+						String.class, 
 						GenericRecord.class),
 				serdes.getSerde(String.class),
 				serdes.getSerde(GenericRecord.class))
@@ -72,15 +72,15 @@ public abstract class AbstractGenericRecordProcessorTopologyTest extends Abstrac
 	@Override
 	protected void initTestTopics(TopologyTestContext topologyTestContext) {
 		this.sourceTopic = topologyTestContext.createTestInputTopic(
-				SOURCE,
-				String.class,
+				SOURCE, 
+				String.class, 
 				GenericRecord.class);
 		
 		
 		this.targetTopic = topologyTestContext.createTestOutputTopic(
-				TARGET,
-				String.class,
-				GenericRecord.class);
+				TARGET, 
+				String.class, 
+				GenericRecord.class);		
 	}
 
 	/**

@@ -40,10 +40,10 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 		JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
 		
 		KipesBuilder.init(topologyTestContext.getStreamsBuilder())
-		.from(
+		.from( 
 				topologyTestContext.createKStream(
-						SOURCE,
-						String.class,
+						SOURCE, 
+						String.class, 
 						TestRecordSequence.class),
 				serdes.getSerde(String.class),
 				serdes.getSerde(TestRecordSequence.class))
@@ -53,7 +53,7 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 		.<String, TestRecordSequence> sequence()
 			.groupBy(
 					(key, value) ->
-						key,
+						key, 
 					serdes.getSerde(String.class))
 			.size(3)
 			.as(
@@ -84,15 +84,15 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	@Override
 	protected void initTestTopics(TopologyTestContext topologyTestContext) {
 		this.sourceTopic = topologyTestContext.createTestInputTopic(
-				SOURCE,
-				String.class,
+				SOURCE, 
+				String.class, 
 				TestRecordSequence.class);
 		
 		
 		this.targetTopic = topologyTestContext.createTestOutputTopic(
-				TARGET,
-				String.class,
-				TestRecordSequence.class);
+				TARGET, 
+				String.class, 
+				TestRecordSequence.class);		
 	}
 
 	// ------------------------------------------------------------------------
@@ -132,7 +132,7 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	 */
 	@Test
 	void test_two_groups() {
-		// when we send two record groups
+		// when we send two record groups 
 		send("key_A",  1,  5);
 		send("key_B", 10, 10);
 		send("key_A",  2, 15);

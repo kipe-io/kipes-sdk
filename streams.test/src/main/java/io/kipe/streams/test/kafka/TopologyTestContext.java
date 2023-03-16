@@ -38,14 +38,14 @@ public class TopologyTestContext {
 
 	private static final JsonSerdeRegistry JSONSERDEREGISTRY = MockedJsonSerdeRegistry.create();
 
-	/**
-	 * Creates a new instance of TopologyTestContext.
-	 * <p>
-	 * This method accepts topology properties that are specific to sub-builder tests, such as default serdes.
-	 *
-	 * @param topologySpecificProps Topology properties passed into the test context.
-	 * @return a new TopologyTestContext instance.
-	 */
+    /**
+     * Creates a new instance of TopologyTestContext.
+     * <p>
+     * This method accepts topology properties that are specific to sub-builder tests, such as default serdes.
+     *
+     * @param topologySpecificProps Topology properties passed into the test context.
+     * @return a new TopologyTestContext instance.
+     */
 	public static TopologyTestContext create(Map<String, String> topologySpecificProps) {
 		CONFIG.putAll(topologySpecificProps);
 		return new TopologyTestContext(
@@ -88,18 +88,18 @@ public class TopologyTestContext {
 		return JSONSERDEREGISTRY;
 	}
 
-	/**
-	 * Creates a new {@link KStream} instance with the specified topic, key class and value class.
-	 * <p>
-	 * It uses json serdes for the key and value class.
-	 *
-	 * @param <K>        the type of key
-	 * @param <V>        the type of value
-	 * @param topic      the topic name
-	 * @param keyClass   the key class
-	 * @param valueClass the value class
-	 * @return a new {@link KStream} instance
-	 */
+    /**
+     * Creates a new {@link KStream} instance with the specified topic, key class and value class.
+     * <p>
+     * It uses json serdes for the key and value class.
+     *
+     * @param <K>        the type of key
+     * @param <V>        the type of value
+     * @param topic      the topic name
+     * @param keyClass   the key class
+     * @param valueClass the value class
+     * @return a new {@link KStream} instance
+     */
 	public <K,V> KStream<K,V> createKStream(String topic, Class<K> keyClass, Class<V> valueClass) {
 		return this.streamBuilder
 				.stream(topic, Consumed.with(
@@ -156,8 +156,8 @@ public class TopologyTestContext {
 	public <K,V> TestInputTopic<K,V> createTestInputTopic(String topic, Class<K> keyType, Class<V> valueType) {
 		Objects.requireNonNull(this.driver, "TopologyTestDriver must be initialized before by calling 'initTopologyTestDriver()'");
 		return this.driver.createInputTopic(
-				topic,
-				JSONSERDEREGISTRY.getSerializer(keyType),
+				topic, 
+				JSONSERDEREGISTRY.getSerializer(keyType), 
 				JSONSERDEREGISTRY.getSerializer(valueType));
 	}
 
@@ -176,8 +176,8 @@ public class TopologyTestContext {
 	public <K,V> TestOutputTopic<K, V> createTestOutputTopic(String topic, Class<K> keyType, Class<V> valueType) {
 		Objects.requireNonNull(this.driver, "TopologyTestDriver must be initialized before by calling 'initTopologyTestDriver()'");
 		return this.driver.createOutputTopic(
-				topic,
-				JSONSERDEREGISTRY.getDeserializer(keyType),
+				topic, 
+				JSONSERDEREGISTRY.getDeserializer(keyType), 
 				JSONSERDEREGISTRY.getDeserializer(valueType));
 	}
 
