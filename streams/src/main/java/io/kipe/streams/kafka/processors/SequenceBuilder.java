@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 
 import io.micronaut.core.serialize.exceptions.SerializationException;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Builder to create record sequences and applies a function to the sequences. Each record starts a new sequence of
@@ -69,6 +70,8 @@ import io.micronaut.core.serialize.exceptions.SerializationException;
  */
 // TODO: document potential record changing behavior of the aggregateFunction 
 public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K, V> {
+	
+	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SequenceBuilder.class);
 
     private BiFunction<K, V, GK> groupKeyFunction;
     private Serde<GK> groupKeySerde;
@@ -92,26 +95,34 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
             String topicsBaseName) {
         super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
     }
-
-    /**
-     * Configures a GroupKeyFunction to group incoming records.
-     *
-     * @param groupKeyFunction the function to calculate the GroupKey
-     * @param groupKeySerde    the serde for the GroupKey
-     * @return this builder
-     */
+	
+	/**
+	 * Configures a GroupKeyFunction to group incoming records.
+	 * <p>
+	 * If a non-null value is provided for the serdes parameter, it will be used as the serde for the resulting stream.
+	 * Otherwise, the default serde will be used.
+	 *
+	 * @param groupKeyFunction the function to calculate the GroupKey
+	 * @param groupKeySerde    the serde for the GroupKey
+	 * @return this builder
+	 */
     public SequenceBuilder<K, V, GK, VR> groupBy(BiFunction<K, V, GK> groupKeyFunction, Serde<GK> groupKeySerde) {
         this.groupKeyFunction = groupKeyFunction;
         this.groupKeySerde = groupKeySerde;
 
         return this;
     }
-
+	
+	/**
+	 * Configures a GroupKeyFunction to group incoming records.
+	 * <p>
+	 * The uses the default serde.
+	 *
+	 * @param groupKeyFunction the function to calculate the GroupKey
+	 * @return this builder
+	 */
     public SequenceBuilder<K, V, GK, VR> groupBy(BiFunction<K, V, GK> groupKeyFunction) {
-        this.groupKeyFunction = groupKeyFunction;
-        this.groupKeySerde = groupKeySerde;
-
-        return this;
+        return groupBy(groupKeyFunction, null);
     }
 
     /**
@@ -128,25 +139,32 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
         this.sequenceSize = size;
         return this;
     }
-
-    /**
-     * Applies an aggregate function to the complete sequence of records for each group key. The aggregate function
-     * takes in the group key and a list of values and returns a new aggregate value. Note that it is possible to alter
-     * the sequence records for later aggregations.
-     *
-     * @param aggregateFunction the function to apply to the complete sequence of records for each group key.
-     * @param valueClass        the class of the input values in the sequence.
-     * @param resultValueSerde  the serde for the aggregate value.
-     * @return a new {@link KipesBuilder} with the aggregate value as the value type.
-     */
+	
+	/**
+	 * Applies an aggregate function to the complete sequence of records for each group key. The aggregate function
+	 * takes in the group key and a list of values and returns a new aggregate value. Note that it is possible to alter
+	 * the sequence records for later aggregations.
+	 * <p>
+	 * If a non-null value is provided for the serdes parameter, it will be used as the serde for the resulting stream.
+	 * Otherwise, the default serde will be used.
+	 *
+	 * @param aggregateFunction the function to apply to the complete sequence of records for each group key.
+	 * @param valueClass        the class of the input values in the sequence.
+	 * @param resultValueSerde  the serde for the aggregate value.
+	 * @return a new {@link KipesBuilder} with the aggregate value as the value type.
+	 */
     public KipesBuilder<K, VR> as(
             BiFunction<GK, List<V>, VR> aggregateFunction,
             Class<V> valueClass,
             Serde<VR> resultValueSerde) {
         Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");
         Objects.requireNonNull(this.groupKeyFunction, "groupKeyFunction");
-//        Objects.requireNonNull(this.groupKeySerde, "groupKeySerde");
-//        Objects.requireNonNull(resultValueSerde, "resultValueSerde");
+        if (this.groupKeySerde == null) {
+            LOG.warn("The default groupKeySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+        }
+        if (resultValueSerde == null) {
+            LOG.warn("The default resultValueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+        }
 
         final String stateStoreName = getProcessorStoreTopicName(getTopicsBaseName() + "-sequence");
 
@@ -169,29 +187,22 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
                 this.keySerde,
                 resultValueSerde);
     }
-
+    
+    /**
+     * Applies an aggregate function to the complete sequence of records for each group key. The aggregate function
+     * takes in the group key and a list of values and returns a new aggregate value. Note that it is possible to alter
+     * the sequence records for later aggregations.
+     * <p>
+     * It uses the default serde.
+     *
+     * @param aggregateFunction the function to apply to the complete sequence of records for each group key.
+     * @param valueClass        the class of the input values in the sequence.
+     * @return a new {@link KipesBuilder} with the aggregate value as the value type.
+     */
     public KipesBuilder<K, VR> as(
             BiFunction<GK, List<V>, VR> aggregateFunction,
             Class<V> valueClass) {
-        Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");
-        Objects.requireNonNull(this.groupKeyFunction, "groupKeyFunction");
-
-        final String stateStoreName = getProcessorStoreTopicName(getTopicsBaseName() + "-sequence");
-
-        StoreBuilder<KeyValueStore<GK, List<V>>> dedupStoreBuilder =
-                Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(stateStoreName), null, new SequencesSerde<>(valueClass));
-        this.streamsBuilder.addStateStore(dedupStoreBuilder);
-
-
-        return (KipesBuilder<K, VR>) createKipesBuilder(
-                (KStream<K, V>) this.stream
-                        .transform(
-                                () -> new SequenceTransformer<>(
-                                            stateStoreName,
-                                            this.groupKeyFunction,
-                                            this.sequenceSize,
-                                            aggregateFunction),
-                                stateStoreName));
+        return as(aggregateFunction, valueClass, null);
     }
 
 

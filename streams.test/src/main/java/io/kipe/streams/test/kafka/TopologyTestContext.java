@@ -88,16 +88,18 @@ public class TopologyTestContext {
 		return JSONSERDEREGISTRY;
 	}
 
-    /**
-     * Creates a new {@link KStream} instance with the specified topic, key class and value class.
-     *
-     * @param <K>        the type of key
-     * @param <V>        the type of value
-     * @param topic      the topic name
-     * @param keyClass   the key class
-     * @param valueClass the value class
-     * @return a new {@link KStream} instance
-     */
+	/**
+	 * Creates a new {@link KStream} instance with the specified topic, key class and value class.
+	 * <p>
+	 * It uses json serdes for the key and value class.
+	 *
+	 * @param <K>        the type of key
+	 * @param <V>        the type of value
+	 * @param topic      the topic name
+	 * @param keyClass   the key class
+	 * @param valueClass the value class
+	 * @return a new {@link KStream} instance
+	 */
 	public <K,V> KStream<K,V> createKStream(String topic, Class<K> keyClass, Class<V> valueClass) {
 		return this.streamBuilder
 				.stream(topic, Consumed.with(
@@ -105,7 +107,17 @@ public class TopologyTestContext {
 						JSONSERDEREGISTRY.getSerde(valueClass))
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
 	}
-
+	
+	/**
+	 * Creates a new {@link KStream} instance with the specified topic.
+	 * <p>
+	 * It uses default serdes for the key and value class.
+	 *
+	 * @param <K>   the type of key
+	 * @param <V>   the type of value
+	 * @param topic the topic name
+	 * @return a new {@link KStream} instance
+	 */
 	public <K,V> KStream<K,V> createKStream(String topic) {
 		return this.streamBuilder
 				.stream(topic);
@@ -114,7 +126,7 @@ public class TopologyTestContext {
 	// ------------------------------------------------------------------------
 	// initTopologyTestDriver
 	// ------------------------------------------------------------------------
-
+	
 	/**
 	 * Once the topology has been set up with by using the
 	 * {@link #getStreamsBuilder()} you can acquire a {@link TopologyTestDriver}
@@ -124,7 +136,7 @@ public class TopologyTestContext {
 		this.driver = new TopologyTestDriver(this.streamBuilder.build(), CONFIG);
 		return driver;
 	}
-
+	
 	// ------------------------------------------------------------------------
 	// state after initTopologyTestDriver
 	// ------------------------------------------------------------------------
@@ -180,5 +192,5 @@ public class TopologyTestContext {
 		this.driver.close();
 		this.driver = null;
 	}
-
+	
 }

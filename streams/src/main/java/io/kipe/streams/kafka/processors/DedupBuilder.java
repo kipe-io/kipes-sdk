@@ -53,7 +53,9 @@ import org.slf4j.LoggerFactory;
  * @param <DV> the dedupValue's type (see {@link #advanceBy(BiFunction)})
  */
 public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> {
-
+	
+	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(DedupBuilder.class);
+	
 	private BiFunction<K,V, GK> groupKeyFunction;
 	private Serde<GK> groupKeySerde;
 
@@ -68,9 +70,12 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 	{
 		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 	}
-
+	
 	/**
 	 * Configures a GroupKeyFunction to group incoming records.
+	 * <p>
+	 * If a non-null value is provided for the serdes parameters, it will be used as the serde for the resulting key.
+	 * Otherwise, the default serdes will be used.
 	 *
 	 * @param groupKeyFunction the function to calculate the GroupKey
 	 * @param groupKeySerde    the serde for the GroupKey
@@ -82,14 +87,19 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 
 		return this;
 	}
-
-	// TODO: Comment
+	
+	/**
+	 * Configures a GroupKeyFunction to group incoming records.
+	 * <p>
+	 * It uses the default serdes for the key.
+	 *
+	 * @param groupKeyFunction the function to calculate the GroupKey
+	 * @return this builder
+	 */
 	public DedupBuilder<K,V, GK,DV> groupBy(BiFunction<K,V, GK> groupKeyFunction) {
-		this.groupKeyFunction = groupKeyFunction;
-
-		return this;
+		return groupBy(groupKeyFunction, null);
 	}
-
+	
 	/**
 	 * Configures a value de-duplication function to identify equal records within a group of records (a dedup value
 	 * group). <br>
@@ -126,7 +136,9 @@ public class DedupBuilder<K,V, GK,DV> extends AbstractTopologyPartBuilder<K, V> 
 	public KipesBuilder<K,V> emitFirst() {
 		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName must be set");
 		Objects.requireNonNull(this.groupKeyFunction, "groupBy groupKeyFunction must be set");
-		Objects.requireNonNull(this.groupKeySerde, "groupBy groupKeySerde must be set");
+		if (this.groupKeySerde == null) {
+			LOG.warn("The default groupKeySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		
 		final String stateStoreName = getProcessorStoreTopicName(getTopicsBaseName()+"-dedup");
 		

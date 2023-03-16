@@ -72,6 +72,8 @@ import io.kipe.streams.recordtypes.TransactionRecord;
 public class TransactionBuilder<K,V, GK> 
 extends AbstractTopologyPartBuilder<K, V>
 {
+	private static final Logger LOG = LoggerFactory.getLogger(TransactionBuilder.class);
+	
 	private BiFunction<K,V, GK> groupKeyFunction;
 	private Serde<GK> groupKeySerde;
 	
@@ -98,19 +100,33 @@ extends AbstractTopologyPartBuilder<K, V>
 	{
 		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 	}
-
-    /**
-     * Configures a GroupKeyFunction to group incoming records.
-     *
-     * @param groupKeyFunction the function to calculate the GroupKey.
-     * @param groupKeySerde    the serde for the GroupKey.
-     * @return this builder.
-     */
+	
+	/**
+	 * Configures a GroupKeyFunction to group incoming records.
+	 * <p>
+	 * It uses the provided groupKeySerde.
+	 *
+	 * @param groupKeyFunction the function to calculate the GroupKey.
+	 * @param groupKeySerde    the serde for the GroupKey.
+	 * @return this builder.
+	 */
 	public TransactionBuilder<K,V, GK> groupBy(BiFunction<K,V, GK> groupKeyFunction, Serde<GK> groupKeySerde) {
 		this.groupKeyFunction = groupKeyFunction;
 		this.groupKeySerde = groupKeySerde;
 		
 		return this;
+	}
+	
+	/**
+	 * Configures a GroupKeyFunction to group incoming records.
+	 * <p>
+	 * It uses the default groupKeySerde.
+	 *
+	 * @param groupKeyFunction the function to calculate the GroupKey.
+	 * @return this builder.
+	 */
+	public TransactionBuilder<K,V, GK> groupBy(BiFunction<K,V, GK> groupKeyFunction) {
+		return groupBy(groupKeyFunction, null);
 	}
 
     /**
@@ -152,6 +168,9 @@ extends AbstractTopologyPartBuilder<K, V>
 	 * <br>
 	 * The processing is backed by a named materialized changelog store. Clients need to specify the base name with
 	 * {@link KipesBuilder#withTopicsBaseName(String)} before.
+	 * <p>
+	 * If a non-null value is provided for the serdes parameter, it will be used as the serde for the resulting stream.
+	 * Otherwise, the default resultValueSerde will be used.
 	 *
 	 * @return a new KipesBuilder
 	 * @throws NullPointerException if `getTopicsBaseName()`, `groupKeyFunction`, `groupKeySerde`,
@@ -160,7 +179,9 @@ extends AbstractTopologyPartBuilder<K, V>
 	public KipesBuilder<K, TransactionRecord<GK, V>> as(Serde<TransactionRecord<GK, V>> resultValueSerde) {
 		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");		
 		Objects.requireNonNull(this.groupKeyFunction, "groupKeyFunction");
-		Objects.requireNonNull(this.groupKeySerde, "groupKeySerde");
+		if (this.groupKeySerde == null) {
+			LOG.warn("The default groupKeySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		Objects.requireNonNull(this.startsWithPredicate, "startsWithPredicate");
 		Objects.requireNonNull(this.endsWithPredicate, "endsWithPredicate");
 		Objects.requireNonNull(this.emitType, "emitType");
@@ -187,6 +208,23 @@ extends AbstractTopologyPartBuilder<K, V>
 						stateStoreName), 
 				this.keySerde, 
 				resultValueSerde);
+	}
+	
+	/**
+	 * Assembles the transaction transformer and returns a new KipesBuilder configured with the resulting
+	 * TransactionRecord stream.<br>
+	 * <br>
+	 * The processing is backed by a named materialized changelog store. Clients need to specify the base name with
+	 * {@link KipesBuilder#withTopicsBaseName(String)} before.
+	 * <p>
+	 * The default resultValueSerde will be used.
+	 *
+	 * @return a new KipesBuilder
+	 * @throws NullPointerException if `getTopicsBaseName()`, `groupKeyFunction`, `groupKeySerde`,
+	 *                              `startsWithPredicate`, `endsWithPredicate`, or `emitType` is null.
+	 */
+	public KipesBuilder<K, TransactionRecord<GK, V>> as() {
+		return as(null);
 	}
 	
 	// ------------------------------------------------------------------------

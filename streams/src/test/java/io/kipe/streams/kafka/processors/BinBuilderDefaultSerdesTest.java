@@ -3,9 +3,13 @@ package io.kipe.streams.kafka.processors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.of;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import io.kipe.streams.kafka.serdes.GenericRecordSerdes;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.StreamsConfig;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -16,10 +20,17 @@ import io.kipe.streams.test.kafka.TopologyTestContext;
 /**
  * Test class for {@link BinBuilder}. It tests the discretization of input values with the bin method.
  */
-class BinBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
+class BinBuilderDefaultSerdesTest extends AbstractGenericRecordProcessorTopologyDefaultSerdesTest {
 
-	public BinBuilderTest() {
-		super(Map.of());
+	public BinBuilderDefaultSerdesTest() {
+		super(getTopologySpecificProps());
+	}
+
+	private static Map<String, String> getTopologySpecificProps() {
+		Map<String, String> props = new HashMap<>();
+		props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+		props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, GenericRecordSerdes.class.getName());
+		return props;
 	}
 
 	/**
@@ -32,7 +43,7 @@ class BinBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 	@Override
 	protected KipesBuilder<String, GenericRecord> addGenericRecordProcessor(
 			KipesBuilder<String, GenericRecord> builder,
-			TopologyTestContext topologyTestContext)
+			TopologyTestContext topologyTestContext) 
 	{
 		return builder
 				.bin()
@@ -61,7 +72,7 @@ class BinBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 		assertEquals(1, this.targetTopic.getQueueSize());
 		
 		GenericRecord r = this.targetTopic.readValue();
-		assertEquals(discretizedValue, r.get("input"));
+		assertEquals(discretizedValue, r.get("input"));		
 	}
 
 	/**

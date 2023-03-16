@@ -13,7 +13,6 @@ import org.apache.kafka.streams.kstream.Grouped;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.kstream.internals.KTableImpl;
 import org.apache.kafka.streams.state.KeyValueStore;
 
 import io.kipe.streams.recordtypes.GenericRecord;
@@ -138,7 +137,9 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 	 * @return a KeyTable holding the current stats results.
 	 */
 	public KTable<String, GenericRecord> asKTable(Serde<String> keySerde) {
-		Objects.requireNonNull(keySerde, "keySerde");
+		if (keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		Objects.requireNonNull(getTopicsBaseName(), "topicBaseName");
 
 		return this.stream
@@ -181,49 +182,15 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 	}
 
 	public KTable<String, GenericRecord> asKTable() {
-		Objects.requireNonNull(getTopicsBaseName(), "topicBaseName");
-
-		return this.stream
-
-				.groupBy(
-						(key, value) -> {
-							StringBuilder sb = new StringBuilder();
-							for(String field: this.groupFields) {
-								sb.append("{").append(value.getString(field)).append("}");
-							}
-							return sb.toString();
-						},
-						Grouped.<String,GenericRecord>as(getTopicsBaseName())
-								.withValueSerde(this.valueSerde))
-
-				.<GenericRecord> aggregate(
-						() -> null,
-						(key, value, aggregate) -> {
-
-							GenericRecord a = aggregate;
-							if(a == null) {
-								a = new GenericRecord();
-								for(String field: this.groupFields) {
-									a.set(field, value.get(field));
-								}
-							}
-
-							for(Expression<String,GenericRecord> e : expressions) {
-								e.update(key, a);
-							}
-
-							return a;
-						},
-						Materialized
-								.<String, GenericRecord, KeyValueStore<Bytes,byte[]>>as(getProcessorStoreTopicName(getTopicsBaseName()))
-								.withKeySerde(((Serde<String>) this.keySerde))
-								.withValueSerde(this.valueSerde) // null
-								.withCachingDisabled());	// disabled so that incremental aggregates are available
+		return asKTable(null);
 	}
-
+	
 	/**
 	 * Builds a kipes builder that contains a stream created from the KTable returned by
 	 * {@link StatsBuilder#asKTable(Serde)}.
+	 * <p>
+	 * If a non-null value is provided for the serdes parameter, it will be used as the serde for the resulting stream.
+	 * Otherwise, the default serde will be used.
 	 *
 	 * @param keySerde serde to use for the key of the stream.
 	 * @return a kipes builder containing a stream with the specified key and value types.
@@ -235,11 +202,16 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 				keySerde,
 				this.valueSerde);
 	}
-
+	
+	/**
+	 * Builds a kipes builder that contains a stream created from the KTable returned by
+	 * {@link StatsBuilder#asKTable(Serde)}.
+	 * <p>
+	 * It uses the default serde.
+	 *
+	 * @return a kipes builder containing a stream with the specified key and value types.
+	 */
 	public KipesBuilder<String, GenericRecord> build() {
-		KipesBuilder<String, GenericRecord> kipesBuilder;
-		KStream<String, GenericRecord> stringGenericRecordKStream = asKTable().toStream();
-		kipesBuilder = (KipesBuilder<String, GenericRecord>) createKipesBuilder((KStream<K, GenericRecord>) stringGenericRecordKStream);
-		return kipesBuilder;
+		return build(null);
 	}
 }
