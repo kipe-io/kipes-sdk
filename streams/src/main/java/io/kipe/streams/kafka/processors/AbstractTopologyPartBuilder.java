@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
+import org.slf4j.LoggerFactory;
 
 /**
  * AbstractTopologyPartBuilder is a base class for building Kafka Streams topology parts.
@@ -16,6 +17,8 @@ import org.apache.kafka.streams.kstream.KStream;
  * @param <V> the value type of the input stream.
  */
 abstract class AbstractTopologyPartBuilder<K,V> {
+	
+	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AbstractTopologyPartBuilder.class);
 
 	protected final StreamsBuilder streamsBuilder;
 	protected final KStream<K,V> stream;
@@ -42,8 +45,12 @@ abstract class AbstractTopologyPartBuilder<K,V> {
 	{
 		Objects.requireNonNull(streamsBuilder, "streamsBuilder");
 		Objects.requireNonNull(stream, "stream");
-		Objects.requireNonNull(keySerde, "keySerde");
-		Objects.requireNonNull(valueSerde, "valueSerde");
+		if (keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		
 		this.streamsBuilder = streamsBuilder;
 		this.stream = stream;
@@ -63,8 +70,9 @@ abstract class AbstractTopologyPartBuilder<K,V> {
 	}
 
 	/**
-	 * Creates a new instance of {@link KipesBuilder} for the input stream with the shared
-	 * key and value serdes and the shared topics base name.
+	 * Creates a new instance of {@link KipesBuilder} for the specified input stream.
+	 *
+	 * If the builder's key and value serdes are not set, it falls back to the default serdes.
 	 *
 	 * @param stream the input stream to create the topology builder for
 	 * @return a new instance of {@link KipesBuilder}.

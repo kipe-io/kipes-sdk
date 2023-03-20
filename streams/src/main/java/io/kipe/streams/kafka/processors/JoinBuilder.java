@@ -10,6 +10,7 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.StreamJoined;
 import org.apache.kafka.streams.kstream.ValueJoiner;
 import org.apache.kafka.streams.state.Stores;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Builder for setting up a join of two streams. Clients do not instantiate this class directly but use
@@ -54,6 +55,8 @@ import org.apache.kafka.streams.state.Stores;
  */
 public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V>{
 	
+	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(JoinBuilder.class);
+	
 	private final KStream<K,OV> otherStream;
 	private final Serde<OV> otherValueSerde;
 	
@@ -84,7 +87,9 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V>
 		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 		
 		Objects.requireNonNull(otherStream, "otherStream");
-		Objects.requireNonNull(otherValueSerde, "otherValueSerde");
+		if (otherValueSerde == null) {
+			LOG.warn("The default otherValueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		
 		this.otherStream = otherStream;
 		this.otherValueSerde = otherValueSerde;
@@ -148,8 +153,7 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V>
 	 * @param joiner           the {@link ValueJoiner} used to combine the values from the current and other streams
 	 * @param resultValueSerde the {@link Serde} to be used for the result value
 	 * @return a KipesBuilder with the joined stream
-	 * @throws NullPointerException if any of the required parameters (topicsBaseName, joiner, resultValueSerde) are
-	 *                              null
+	 * @throws NullPointerException if any of the parameters (topicsBaseName, retentionPeriod, joiner) are null
 	 */
 	public KipesBuilder<K,VR> as(ValueJoiner<V, OV, VR> joiner, Serde<VR> resultValueSerde) {
 		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName");
@@ -163,7 +167,9 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V>
 		
 		Objects.requireNonNull(this.retentionPeriod, "retentionPeriod");
 		Objects.requireNonNull(joiner, "joiner");
-		Objects.requireNonNull(resultValueSerde, "resultValueSerde");
+		if (resultValueSerde == null) {
+			LOG.warn("The default resultValueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		
 		KStream<K,VR> joinedStream = 
 				this.stream
@@ -194,5 +200,23 @@ public class JoinBuilder <K,V, OV, VR> extends AbstractTopologyPartBuilder<K, V>
 				joinedStream, 
 				this.keySerde, 
 				resultValueSerde);
+	}
+	
+	/**
+	 * Assembles the joined stream using a named materialized changelog store.
+	 * <p>
+	 * This method performs a join operation on the current stream and the specified other stream, using the provided
+	 * ValueJoiner. It uses the default Serde for the result value. The join is performed within a specified window,
+	 * defined by the before and after window sizes and a retention period.
+	 * <p>
+	 * Clients must specify the base name for the topics used in the join operation using the
+	 * {@link KipesBuilder#withTopicsBaseName(String)} method before calling this method.
+	 *
+	 * @param joiner the {@link ValueJoiner} used to combine the values from the current and other streams
+	 * @return a KipesBuilder with the joined stream
+	 * @throws NullPointerException if any of the required parameters (topicsBaseName, retentionPeriod, joiner) are null
+	 */
+	public KipesBuilder<K,VR> as(ValueJoiner<V, OV, VR> joiner) {
+		return as(joiner, null);
 	}
 }

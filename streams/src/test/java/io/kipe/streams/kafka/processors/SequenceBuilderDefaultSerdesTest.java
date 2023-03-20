@@ -2,21 +2,24 @@ package io.kipe.streams.kafka.processors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.kipe.streams.kafka.serdes.TestRecordSequenceSerdes;
+import io.kipe.streams.recordtypes.TestRecordSequence;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.junit.jupiter.api.Test;
 
-import io.kipe.streams.recordtypes.TestRecordSequence;
 import io.kipe.streams.test.kafka.AbstractTopologyTest;
 import io.kipe.streams.test.kafka.TopologyTestContext;
-import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Test class for {@link SequenceBuilder}
  */
-class SequenceBuilderTest extends AbstractTopologyTest {
+class SequenceBuilderDefaultSerdesTest extends AbstractTopologyTest {
 
 	private static final String SOURCE = "source";
 	private static final String TARGET = "target";
@@ -24,8 +27,15 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	private TestInputTopic<String, TestRecordSequence> sourceTopic;
 	private TestOutputTopic<String, TestRecordSequence> targetTopic;
 
-	public SequenceBuilderTest() {
-		super(Map.of());
+	public SequenceBuilderDefaultSerdesTest() {
+		super(getTopologySpecificProps());
+	}
+
+	private static Map<String, String> getTopologySpecificProps() {
+		Map<String, String> props = new HashMap<>();
+		props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+		props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, TestRecordSequenceSerdes.class.getName());
+		return props;
 	}
 
 	/**
@@ -37,24 +47,16 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	 */
 	@Override
 	protected void initTopology(TopologyTestContext topologyTestContext) {
-		JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
-		
 		KipesBuilder.init(topologyTestContext.getStreamsBuilder())
-		.from( 
-				topologyTestContext.createKStream(
-						SOURCE, 
-						String.class, 
-						TestRecordSequence.class),
-				serdes.getSerde(String.class),
-				serdes.getSerde(TestRecordSequence.class))
+		.<String, TestRecordSequence>from(
+				topologyTestContext.createKStream(SOURCE))
 		
 		.withTopicsBaseName(SOURCE)
 		
 		.<String, TestRecordSequence> sequence()
 			.groupBy(
 					(key, value) ->
-						key, 
-					serdes.getSerde(String.class))
+						key)
 			.size(3)
 			.as(
 					(key, records) -> {
@@ -67,8 +69,7 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 						}
 						return new TestRecordSequence(ts, key, sum, records.get(0).count);
 					},
-					TestRecordSequence.class,
-					serdes.getSerde(TestRecordSequence.class))
+					TestRecordSequence.class)
 			
 		.to(TARGET);
 		
@@ -85,14 +86,14 @@ class SequenceBuilderTest extends AbstractTopologyTest {
 	protected void initTestTopics(TopologyTestContext topologyTestContext) {
 		this.sourceTopic = topologyTestContext.createTestInputTopic(
 				SOURCE, 
-				String.class, 
+				String.class,
 				TestRecordSequence.class);
 		
 		
 		this.targetTopic = topologyTestContext.createTestOutputTopic(
 				TARGET, 
-				String.class, 
-				TestRecordSequence.class);		
+				String.class,
+				TestRecordSequence.class);
 	}
 
 	// ------------------------------------------------------------------------

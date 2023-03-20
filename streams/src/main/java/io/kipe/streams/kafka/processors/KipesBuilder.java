@@ -32,7 +32,7 @@ import io.kipe.streams.recordtypes.GenericRecord;
  *      valueSerde)
  *   ...
  *   to(topicName);}</pre>
- *
+ * <p>
  * TODO document the exact behavior
  * TODO add tests
  * TODO add developer documentation how to extend
@@ -59,6 +59,8 @@ public class KipesBuilder<K,V> {
 	{
 		return new KipesBuilder<>(streamsBuilder);
 	}
+	
+	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(KipesBuilder.class);
 	
 	private final StreamsBuilder streamsBuilder;
 	private KStream<K,V> stream;
@@ -113,6 +115,9 @@ public class KipesBuilder<K,V> {
 	/**
 	 * Sets the current stream and returns a new KipesBuilder initiated with the current's KipesBuilder's
 	 * settings.
+	 * <p>
+	 * If a non-null value is provided for the serdes parameters, it will be used as the serde for the resulting stream.
+	 * Otherwise, the default serdes will be used.
 	 *
 	 * @param <NK>       the stream's key type.
 	 * @param <NV>       the stream's value type.
@@ -127,8 +132,12 @@ public class KipesBuilder<K,V> {
 			Serde<NV> valueSerde)
 	{
 		Objects.requireNonNull(stream, "stream");
-		Objects.requireNonNull(keySerde, "keySerde");
-		Objects.requireNonNull(valueSerde, "valueSerde");
+		if (keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		
 		return new KipesBuilder<>(
 				this.streamsBuilder, 
@@ -136,6 +145,21 @@ public class KipesBuilder<K,V> {
 				keySerde, 
 				valueSerde,
 				this.topicsBaseName);
+	}
+	
+	/**
+	 * Sets the current stream and returns a new KipesBuilder initiated with the current's KipesBuilder's
+	 * settings.
+	 * <p>
+	 * The default serdes will be used..
+	 *
+	 * @param <NK>   the stream's key type.
+	 * @param <NV>   the stream's value type.
+	 * @param stream the new stream.
+	 * @return a new initialized {@link KipesBuilder}.
+	 */
+	public <NK, NV> KipesBuilder<NK, NV> from(KStream<NK, NV> stream) {
+		return from(stream, null, null);
 	}
 
 	/**
@@ -167,8 +191,12 @@ public class KipesBuilder<K,V> {
 	 */
 	public KipesBuilder<K,V> through(String topicName) {
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		Objects.requireNonNull(topicName, "topicName");
 		
 		KStream<K,V> topicBackedStream = this.stream
@@ -193,8 +221,12 @@ public class KipesBuilder<K,V> {
 	 */
 	public KipesBuilder<K,V> adjustRecordTimestamps(final BiFunction<K,V, Long> evalTimestampFunction) {
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		Objects.requireNonNull(evalTimestampFunction, "evalTimestampFunction");
 		
 		return new KipesBuilder<>(
@@ -227,15 +259,21 @@ public class KipesBuilder<K,V> {
 
 	/**
 	 * Materializes the current stream into the given topic. The topic has to be created before. <br>
-	 * <br>
+	 * <p>
+	 * If serdes are not set, the default serdes will be used.
+	 * <p>
 	 * This is a terminal operation.
 	 *
 	 * @param topicName the target topic.
 	 */
 	public void to(String topicName) {
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		Objects.requireNonNull(topicName, "topicName");
 		
 		this.stream
@@ -257,8 +295,12 @@ public class KipesBuilder<K,V> {
 		// works (predicate!)
 		
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		Objects.requireNonNull(predicate, "predicate");
 		
 		return new KipesBuilder<>(
@@ -278,8 +320,12 @@ public class KipesBuilder<K,V> {
 	 */
 	public <GK,DV> DedupBuilder<K,V, GK,DV> dedup() {
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		
 		return new DedupBuilder<K,V, GK,DV> (
 				this.streamsBuilder, 
@@ -308,11 +354,17 @@ public class KipesBuilder<K,V> {
 		// works 
 		
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		Objects.requireNonNull(this.topicsBaseName, "topicsBaseName");
 		Objects.requireNonNull(otherStream, "otherStream");
-		Objects.requireNonNull(otherValueSerde, "otherValueSerde");
+		if (otherValueSerde == null) {
+			LOG.warn("The default otherValueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		
 		return new JoinBuilder<K,V, OV, VR>(
 				this.streamsBuilder,
@@ -324,6 +376,9 @@ public class KipesBuilder<K,V> {
 				this.topicsBaseName);
 	}
 
+	public <OV, VR> JoinBuilder<K, V, OV, VR> join(KStream<K, OV> otherStream) {
+		return join(otherStream, null);
+	}
 
 	/**
 	 * Creates a new stream of TransactionRecords describing transactions found in this KipesBuilder's stream.
@@ -335,8 +390,12 @@ public class KipesBuilder<K,V> {
 	@SuppressWarnings("unchecked")
 	public <GK> TransactionBuilder<K,V, GK> transaction() {
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 
 		return (TransactionBuilder<K,V, GK>)new TransactionBuilder<>(
 				this.streamsBuilder,
@@ -355,8 +414,12 @@ public class KipesBuilder<K,V> {
 	@SuppressWarnings("unchecked")
 	public <KR,VR> TransformBuilder<K,V, KR,VR> transform() {
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		
 		return (TransformBuilder<K,V, KR,VR>)new TransformBuilder<>(
 				this.streamsBuilder, 
@@ -374,8 +437,12 @@ public class KipesBuilder<K,V> {
 	@SuppressWarnings("unchecked")
 	public <GK, VR> SequenceBuilder<K,V, GK, VR> sequence() {
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 
 		return (SequenceBuilder<K,V, GK, VR>)new SequenceBuilder<>(
 				this.streamsBuilder, 
@@ -393,8 +460,12 @@ public class KipesBuilder<K,V> {
 	@SuppressWarnings("unchecked")
 	public EvalBuilder<K> eval() {
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		
 		return new EvalBuilder<>(
 				this.streamsBuilder, 
@@ -413,8 +484,12 @@ public class KipesBuilder<K,V> {
 	@SuppressWarnings("unchecked")
 	public BinBuilder<K> bin() {
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 
 		return new BinBuilder<>(
 				this.streamsBuilder,
@@ -432,8 +507,12 @@ public class KipesBuilder<K,V> {
 	@SuppressWarnings("unchecked")
 	public StatsBuilder<K> stats() {
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		
 		return new StatsBuilder<>(
 				this.streamsBuilder, 
@@ -452,8 +531,12 @@ public class KipesBuilder<K,V> {
 	@SuppressWarnings("unchecked")
 	public TableBuilder<K> table() {
 		Objects.requireNonNull(this.stream, "stream");
-		Objects.requireNonNull(this.keySerde, "keySerde");
-		Objects.requireNonNull(this.valueSerde, "valueSerde");
+		if (this.keySerde == null) {
+			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
+		if (this.valueSerde == null) {
+			LOG.warn("The default valueSerde is being used. To customize serdes, provide a specific serde to override this behavior.");
+		}
 		
 		return new TableBuilder<>(
 				this.streamsBuilder, 

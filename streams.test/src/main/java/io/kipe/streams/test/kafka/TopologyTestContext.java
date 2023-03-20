@@ -1,5 +1,6 @@
 package io.kipe.streams.test.kafka;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -16,7 +17,7 @@ import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
  * It provides a convenient way to create a {@link ConfiguredStreamBuilder} for building a topology,
  * and a {@link TopologyTestDriver} for testing the topology.
  *
- * <p>To use TopologyTestContext, create an instance using the static method {@link #create()}
+ * <p>To use TopologyTestContext, create an instance using the static method {@link #create(Map)}
  * and use {@link #getStreamsBuilder()} to obtain a {@link ConfiguredStreamBuilder} to build the topology.
  * <p>Then use {@link #initTopologyTestDriver()} to obtain a {@link TopologyTestDriver} to test the topology.
  * <p>Finally, use {@link #createTestInputTopic(String, Class, Class)} and {@link #createTestOutputTopic(String, Class, Class)}
@@ -39,10 +40,14 @@ public class TopologyTestContext {
 
     /**
      * Creates a new instance of TopologyTestContext.
+     * <p>
+     * This method accepts topology properties that are specific to sub-builder tests, such as default serdes.
      *
+     * @param topologySpecificProps Topology properties passed into the test context.
      * @return a new TopologyTestContext instance.
      */
-	public static TopologyTestContext create() {
+	public static TopologyTestContext create(Map<String, String> topologySpecificProps) {
+		CONFIG.putAll(topologySpecificProps);
 		return new TopologyTestContext(
 				new ConfiguredStreamBuilder(CONFIG));
 	}
@@ -85,6 +90,8 @@ public class TopologyTestContext {
 
     /**
      * Creates a new {@link KStream} instance with the specified topic, key class and value class.
+     * <p>
+     * It uses json serdes for the key and value class.
      *
      * @param <K>        the type of key
      * @param <V>        the type of value
@@ -101,6 +108,21 @@ public class TopologyTestContext {
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
 	}
 	
+	/**
+	 * Creates a new {@link KStream} instance with the specified topic.
+	 * <p>
+	 * It uses default serdes for the key and value class.
+	 *
+	 * @param <K>   the type of key
+	 * @param <V>   the type of value
+	 * @param topic the topic name
+	 * @return a new {@link KStream} instance
+	 */
+	public <K,V> KStream<K,V> createKStream(String topic) {
+		return this.streamBuilder
+				.stream(topic);
+	}
+
 	// ------------------------------------------------------------------------
 	// initTopologyTestDriver
 	// ------------------------------------------------------------------------
