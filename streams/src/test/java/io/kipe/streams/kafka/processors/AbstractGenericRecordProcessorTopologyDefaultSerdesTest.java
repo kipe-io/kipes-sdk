@@ -6,7 +6,6 @@ import org.apache.kafka.streams.TestOutputTopic;
 import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.AbstractTopologyTest;
 import io.kipe.streams.test.kafka.TopologyTestContext;
-import io.micronaut.configuration.kafka.serde.JsonSerdeRegistry;
 
 import java.util.Map;
 
@@ -17,7 +16,7 @@ import java.util.Map;
  * Subclasses should provide a concrete implementation of the {@link #addGenericRecordProcessor(KipesBuilder, TopologyTestContext)} method
  * to add the specific processor being tested to the topology.
  */
-public abstract class AbstractGenericRecordProcessorTopologyTest extends AbstractTopologyTest {
+public abstract class AbstractGenericRecordProcessorTopologyDefaultSerdesTest extends AbstractTopologyTest {
 	
 	protected static final String SOURCE = "source";
 	protected static final String TARGET = "target";
@@ -25,7 +24,7 @@ public abstract class AbstractGenericRecordProcessorTopologyTest extends Abstrac
 	protected TestInputTopic<String, GenericRecord> sourceTopic;
 	protected TestOutputTopic<String, GenericRecord> targetTopic;
 
-	public AbstractGenericRecordProcessorTopologyTest(Map<String, String> topologySpecificProps) {
+	public AbstractGenericRecordProcessorTopologyDefaultSerdesTest(Map<String, String> topologySpecificProps) {
 		super(topologySpecificProps);
 	}
 
@@ -36,17 +35,8 @@ public abstract class AbstractGenericRecordProcessorTopologyTest extends Abstrac
 	 */
 	@Override
 	protected void initTopology(TopologyTestContext topologyTestContext) {
-		JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
-
 		KipesBuilder<String, GenericRecord> builder = KipesBuilder.init(topologyTestContext.getStreamsBuilder())
-		.from( 
-				topologyTestContext.createKStream(
-						SOURCE, 
-						String.class, 
-						GenericRecord.class),
-				serdes.getSerde(String.class),
-				serdes.getSerde(GenericRecord.class))
-		
+		.<String,GenericRecord>from(topologyTestContext.createKStream(SOURCE))
 		.withTopicsBaseName(SOURCE);
 		
 		addGenericRecordProcessor(builder, topologyTestContext)
@@ -72,15 +62,15 @@ public abstract class AbstractGenericRecordProcessorTopologyTest extends Abstrac
 	@Override
 	protected void initTestTopics(TopologyTestContext topologyTestContext) {
 		this.sourceTopic = topologyTestContext.createTestInputTopic(
-				SOURCE, 
-				String.class, 
+				SOURCE,
+				String.class,
 				GenericRecord.class);
 		
 		
 		this.targetTopic = topologyTestContext.createTestOutputTopic(
-				TARGET, 
-				String.class, 
-				GenericRecord.class);		
+				TARGET,
+				String.class,
+				GenericRecord.class);
 	}
 
 	/**
