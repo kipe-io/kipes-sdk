@@ -9,7 +9,7 @@
 	</parent>
 
 	<groupId>io.kipe</groupId>
-	<artifactId>streams.test</artifactId>
+	<artifactId>streams-kafka-test</artifactId>
 	<packaging>jar</packaging>
 
 	<name>io.kipe.streams - test.kafka</name>
