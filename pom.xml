@@ -6,7 +6,7 @@
 	<artifactId>kipe-parent</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>Kipe</name>
+	<name>Kipe Streams SDK</name>
 	<url>http://placeholder.org</url>
 	<description>Kipes... </description>
 
