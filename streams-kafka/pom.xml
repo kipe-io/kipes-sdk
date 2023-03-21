@@ -4,15 +4,14 @@
 
 	<parent>
 		<groupId>io.kipe</groupId>
-		<artifactId>parent</artifactId>
+		<artifactId>kipe-parent</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<groupId>io.kipe</groupId>
 	<artifactId>streams-kafka</artifactId>
 	<packaging>jar</packaging>
 
-	<name>io.kipe.streams - kafka</name>
+	<name>Kipe Streams Kafka</name>
 
 	<repositories>
 		<repository>
