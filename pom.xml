@@ -1,7 +1,7 @@
 <!--
 
-    Kipe Streams SDK - Kipe Streams SDK
-    Copyright © 2023 Kipe.io
+    Kipe SDK - The High-Level Event Processing SDK.
+    Copyright © 2023 kipe.io
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -26,9 +26,9 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>Kipe Streams SDK</name>
-	<description>Kipe Streams SDK</description>
-	<url>https://kipe.io</url>
+	<name>Kipe SDK</name>
+	<description>The High-Level Event Processing SDK.</description>
+	<url>https://github.com/kipe-io/kipes-sdk</url>
 	<inceptionYear>2023</inceptionYear>
 
 	<parent>
@@ -42,7 +42,7 @@
 	<!-- ================================================================================================= -->
 
 	<organization>
-		<name>Kipe.io</name>
+		<name>kipe.io</name>
 		<url>https://kipe.io</url>
 	</organization>
 
@@ -365,10 +365,10 @@
 				</configuration>
 				<executions>
 					<execution>
-						<phase>generate-sources</phase>
 						<goals>
-							<goal>format</goal>
+							<goal>check</goal>
 						</goals>
+						<phase>validate</phase>
 					</execution>
 				</executions>
 			</plugin>

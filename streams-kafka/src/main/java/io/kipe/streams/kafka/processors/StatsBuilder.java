@@ -1,6 +1,6 @@
 /*
- * Kipe Streams Kafka - Kipe Streams SDK
- * Copyright © 2023 Kipe.io
+ * Kipes SDK for Kafka - The High-Level Event Processing SDK.
+ * Copyright © 2023 kipe.io
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -33,62 +33,10 @@ import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.state.KeyValueStore;
 
 import io.kipe.streams.recordtypes.GenericRecord;
-
-/**
- * A Builder for calculating statistics on incoming {@link GenericRecord}s. It is not meant to be instantiated directly
- * by clients, but instead accessed through {@link KipesBuilder#stats()}.
- * <p>It allows specification of statistics functions using instances of {@link StatsExpression}, added with the
- * {@link #with(StatsExpression)} method. The target field for each function can be changed using {@link #as(String)}.
- * Grouping the statistics based on one or more fields of the GenericRecord is possible with the groupBy method. If
- * grouping is specified, the output will be a KTable with a key as a concatenated string of the group field values and
- * a value as a GenericRecord containing both grouping fields and statistics fields.
- * <p>The final topology can be assembled and started with the {@link StatsBuilder#build(Serde)} method, which returns
- * a
- * KeyValueStore with the current statistics. The output topic can be customized with {@link KipesBuilder#to(String)}.
- * <p>
- * Example:
- * <pre>{@code StreamsBuilder streamsBuilder = new StreamsBuilder();
- * KStream<String, GenericRecord> stream = streamsBuilder.stream("input-topic");
- * Serde<GenericRecord> genericRecordSerde = JsonSerdeFactory.getJsonSerde(GenericRecord.class);
- *
- * StatsBuilder<String> statsBuilder =
- *         new StatsBuilder<>(
- *                 streamsBuilder,
- *                 stream,
- *                 Serdes.String(),
- *                 genericRecordSerde,
- *                 "topic-base-name"
- *         );
- *
- * KipesBuilder<String, GenericRecord> build = statsBuilder
- *         .with(Count.count()).as("myCount")
- *         .groupBy("group")
- *         .build(Serdes.String());
- * }</pre>
- * <p>
- * In this example, a new "StreamsBuilder" object is created, and a new stream is created from the input topic named
- * "input-topic". The key and value Serde are specified as "Serdes.String()" and "genericRecordSerde" respectively. A
- * new instance of the "StatsBuilder" class is then created, using the "StreamsBuilder" object, the stream, the key and
- * value Serde, and a topic base name "topic-base-name". The statistics expression is then added using the "with"
- * method, with the target field specified as "myCount". Finally, the topology is built with a grouping based on the
- * "group" field, and the output is a KeyValueStore with a key of type "String".
- *
- * @param <K> The key type of the input Kafka topic.
- */
 public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecord> {
 
 	private String[] groupFields = {};
 	private final List<StatsExpression> expressions = new LinkedList<>();
-
-	/**
-	 * Creates a new instance of the StatsBuilder class.
-	 *
-	 * @param streamsBuilder the StreamsBuilder instance used to assemble the topology.
-	 * @param stream         the input KStream that the topology will read from.
-	 * @param keySerde       the Serde to use for the key of the input stream.
-	 * @param valueSerde     the Serde to use for the value of the input stream.
-	 * @param topicsBaseName the base name of the output topic. The actual topic name will be appended with a suffix.
-	 */
 	StatsBuilder(
 			StreamsBuilder streamsBuilder, 
 			KStream<K, GenericRecord> stream, 
@@ -98,40 +46,16 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 	{
 		super(streamsBuilder, stream, keySerde, valueSerde, topicsBaseName);
 	}
-
-	/**
-	 * Specifies an optional grouping based on the given fields. If there's no grouping all incoming records get
-	 * aggregated into one.
-	 *
-	 * @param fieldNames the fields to group the aggregation by.
-	 * @return this builder.
-	 */
 	public StatsBuilder<K> groupBy(String... fieldNames) {
 		this.groupFields = fieldNames;
 		return this;
 	}
-
-	/**
-	 * Adds a StatsExpression. See {@link #as(String)} to override the default target field.
-	 *
-	 * @return this builder.
-	 */
 	public StatsBuilder<K> with(StatsExpression expression) {
 		Objects.requireNonNull(expression, "expression");
 		
 		this.expressions.add(expression);
 		return this;
 	}
-
-	/**
-	 * Sets the target fieldName of the last aggregation function. If there was no aggregation function added before an
-	 * IllegalStateException will be thrown.
-	 *
-	 * @param fieldName the fieldName to store the aggregation value of the last aggregation function at.
-	 * @return this builder.
-	 * @throws IllegalStateException if there was no expression added before.
-	 * @see #with(StatsExpression)
-	 */
 	public StatsBuilder<K> as(String fieldName) {
 		Objects.requireNonNull(fieldName, "fieldName");
 		
@@ -144,15 +68,6 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 		
 		return this;
 	}
-
-	/**
-	 * Assembles the topology and emits the results as {@link KTable}. The key of each row will be a concatenated String
-	 * in the form {@code {fieldValue_1}..{fieldValue_N}}. The row value will be a {@link GenericRecord} with the
-	 * grouping fields and stats fields.
-	 *
-	 * @param keySerde a {@link Serde<String>}.
-	 * @return a KeyTable holding the current stats results.
-	 */
 	public KTable<String, GenericRecord> asKTable(Serde<String> keySerde) {
 		if (keySerde == null) {
 			LOG.warn("The default keySerde is being used. To customize serdes, provide a specific serde to override this behavior.");
@@ -201,17 +116,6 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 	public KTable<String, GenericRecord> asKTable() {
 		return asKTable(null);
 	}
-	
-	/**
-	 * Builds a kipes builder that contains a stream created from the KTable returned by
-	 * {@link StatsBuilder#asKTable(Serde)}.
-	 * <p>
-	 * If a non-null value is provided for the serdes parameter, it will be used as the serde for the resulting stream.
-	 * Otherwise, the default serde will be used.
-	 *
-	 * @param keySerde serde to use for the key of the stream.
-	 * @return a kipes builder containing a stream with the specified key and value types.
-	 */
 	public KipesBuilder<String, GenericRecord> build(Serde<String> keySerde) {
 		return createKipesBuilder(
 				asKTable(keySerde)
@@ -219,15 +123,6 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 				keySerde,
 				this.valueSerde);
 	}
-	
-	/**
-	 * Builds a kipes builder that contains a stream created from the KTable returned by
-	 * {@link StatsBuilder#asKTable(Serde)}.
-	 * <p>
-	 * It uses the default serde.
-	 *
-	 * @return a kipes builder containing a stream with the specified key and value types.
-	 */
 	public KipesBuilder<String, GenericRecord> build() {
 		return build(null);
 	}
