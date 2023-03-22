@@ -1,6 +1,6 @@
 /*
- * Kipes SDK for Kafka - The High-Level Event Processing SDK.
- * Copyright © 2023 kipe.io
+ * Kipe Streams Kafka - Kipe Streams SDK
+ * Copyright © 2023 Kipe.io
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -26,10 +26,23 @@ import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 
 import java.util.Map;
+
+/**
+ * This class test the functionality of {@link StatsBuilder} by counting the number of records grouped by 'group' field.
+ */
 class StatsBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 	public StatsBuilderTest() {
 		super(Map.of());
 	}
+
+	/**
+	 * This method is used to add the stats processor to the topology builder It uses the Count.count() method to count
+	 * the number of records in each group It groups the records by 'group' field and returns the topology builder.
+	 *
+	 * @param builder             KipesBuilder<String, GenericRecord>
+	 * @param topologyTestContext TopologyTestContext
+	 * @return KipesBuilder<String, GenericRecord>
+	 */
 	@Override
 	protected KipesBuilder<String, GenericRecord> addGenericRecordProcessor(
 			KipesBuilder<String, GenericRecord> builder, 
@@ -40,6 +53,10 @@ class StatsBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
 				.groupBy("group")
 				.build(topologyTestContext.getJsonSerdeRegistry().getSerde(String.class));
 	}
+
+	/**
+	 * This is the test method that asserts the functionality of the stats processor.
+	 */
 	@Test
 	void test() {
 		// given three records
