@@ -1,6 +1,6 @@
 /*
- * Kipe Streams Kafka - Kipe Streams SDK
- * Copyright © 2023 Kipe.io
+ * Kipes SDK for Kafka - The High-Level Event Processing SDK.
+ * Copyright © 2023 kipe.io
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,18 +18,7 @@
 package io.kipe.streams.kafka.processors;
 
 import io.kipe.streams.recordtypes.GenericRecord;
-
-/**
- * An Abstract class for defining statistics expressions to be applied to Kafka records.
- */
 public abstract class StatsExpression extends Expression<String, GenericRecord> {
-
-	/**
-	 * Constructor for creating a {@link StatsExpression}.
-	 *
-	 * @param defaultFieldName The default field name to be used by the
-	 *                         expression.
-	 */
 	protected StatsExpression(String defaultFieldName) {
 		this.fieldName = defaultFieldName;
 	}

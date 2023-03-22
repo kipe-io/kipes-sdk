@@ -1,6 +1,6 @@
 /*
- * Kipe Streams Kafka Test - Kipe Streams SDK
- * Copyright © 2023 Kipe.io
+ * Kipes SDK Test Extensions for Kafka - The High-Level Event Processing SDK.
+ * Copyright © 2023 kipe.io
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
