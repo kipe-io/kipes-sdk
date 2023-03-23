@@ -163,7 +163,7 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 				
 				.groupBy(
 						(key, value) -> {
-							StringBuilder sb = new StringBuilder();
+							var sb = new StringBuilder();
 							for(String field: this.groupFields) {
 								sb.append("{").append(value.getString(field)).append("}");
 							}
@@ -185,8 +185,8 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 								}								
 							}
 							
-							for(Expression<String,GenericRecord> e : expressions) {
-								e.update(key, a);
+							for(StatsExpression e : expressions) {
+								e.update(key, value, a);
 							}
 							
 							return a;

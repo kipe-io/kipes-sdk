@@ -109,5 +109,14 @@ public abstract class AbstractGenericRecordProcessorTopologyTest extends Abstrac
 	protected <V> void send(String field, V value) {
 		this.sourceTopic.pipeInput(GenericRecord.create().with(field, value));
 	}
+	
+	/**
+	 * Send a {@link GenericRecord} to the input topic.
+	 *
+	 * @param record the record to send
+	 */
+	protected void send(GenericRecord record) {
+		this.sourceTopic.pipeInput(record);
+	}
 
 }

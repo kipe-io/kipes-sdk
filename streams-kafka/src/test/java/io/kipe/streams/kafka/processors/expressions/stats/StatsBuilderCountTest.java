@@ -15,23 +15,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.kipe.streams.kafka.processors;
+package io.kipe.streams.kafka.processors.expressions.stats;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
-import io.kipe.streams.kafka.processors.expressions.stats.Count;
+import io.kipe.streams.kafka.processors.AbstractGenericRecordProcessorTopologyTest;
+import io.kipe.streams.kafka.processors.KipesBuilder;
+import io.kipe.streams.kafka.processors.StatsBuilder;
 import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 
-import java.util.Map;
-
 /**
- * This class test the functionality of {@link StatsBuilder} by counting the number of records grouped by 'group' field.
+ * This class test the functionality of {@link StatsBuilder} in conjunction with the Count stats.
  */
-class StatsBuilderTest extends AbstractGenericRecordProcessorTopologyTest {
-	public StatsBuilderTest() {
+class StatsBuilderCountTest extends AbstractGenericRecordProcessorTopologyTest {
+	public StatsBuilderCountTest() {
 		super(Map.of());
 	}
 
