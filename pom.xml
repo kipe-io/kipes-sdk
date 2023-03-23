@@ -1,6 +1,6 @@
 <!--
 
-    Kipe SDK - The High-Level Event Processing SDK.
+    Kipes SDK - The High-Level Event Processing SDK.
     Copyright © 2023 kipe.io
 
     This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>Kipe SDK</name>
+	<name>Kipes SDK</name>
 	<description>The High-Level Event Processing SDK.</description>
 	<url>https://github.com/kipe-io/kipes-sdk</url>
 	<inceptionYear>2023</inceptionYear>
