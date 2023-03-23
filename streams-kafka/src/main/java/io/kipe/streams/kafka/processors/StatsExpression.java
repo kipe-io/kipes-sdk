@@ -18,12 +18,17 @@
 package io.kipe.streams.kafka.processors;
 
 import io.kipe.streams.recordtypes.GenericRecord;
+import lombok.Setter;
 
 /**
  * An Abstract class for defining statistics expressions to be applied to Kafka records.
  */
-public abstract class StatsExpression extends Expression<String, GenericRecord> {
+public abstract class StatsExpression {
 
+	@Setter
+	protected String fieldName;
+	protected StatsFunction<Object> statsFunction;
+	
 	/**
 	 * Constructor for creating a {@link StatsExpression}.
 	 *
@@ -32,5 +37,42 @@ public abstract class StatsExpression extends Expression<String, GenericRecord> 
 	 */
 	protected StatsExpression(String defaultFieldName) {
 		this.fieldName = defaultFieldName;
+	}
+	
+	/**
+	 * The update method is used to update the specified field in the aggregate object with the new value
+	 * returned by the {@link #statsFunction}.
+	 *
+	 * @param groupKey  the key of the current stats group
+	 * @param value     the GenericRecord to be used for calculating the statistics. 
+	 * @param aggregate the GenericRecord to store the aggregated values. This object is shared between all StatsExpressions.
+	 **/
+	protected void update(String groupKey, GenericRecord value, GenericRecord aggregate) {
+		aggregate.set(
+				this.fieldName, 
+				this.statsFunction.apply(groupKey, value, aggregate));
+	}
+	
+	
+	/**
+	 * Functional Interface for the aggregation function of all StatsExpression to aggregate values.
+	 *
+	 * @param <R> the result value of the aggregation
+	 */
+	@FunctionalInterface
+	public interface StatsFunction<R> {
+		
+		/**
+		 * The methods calculates the result of a statistical evaluation by applying the the contents of the value to
+		 * the existing contents in the aggregate.
+		 * <p>
+		 * Note: both the value and the aggregate objects must not be changed.
+		 *   
+		 * @param groupKey  the key of the current stats group 
+		 * @param value     the GenericRecord that can be used to calculate the statistics
+		 * @param aggregate the GenericRecord to retrieve the current, potentially not initialized aggregation status 
+		 * @return
+		 */
+		R apply(String groupKey, GenericRecord value, GenericRecord aggregate);
 	}
 }

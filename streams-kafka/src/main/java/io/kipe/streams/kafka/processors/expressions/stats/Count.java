@@ -51,8 +51,8 @@ public class Count extends StatsExpression {
 	 */
 	private Count() {
 		super(DEFAULT_FIELD);
-		this.valueFunction = (key, value) -> {
-			Number count = value.getNumber(this.fieldName);
+		this.statsFunction = (groupKey, value, aggregate) -> {
+			var count = aggregate.getNumber(this.fieldName);
 			return count == null? 1L : count.longValue() + 1L;
 		};
 	}
