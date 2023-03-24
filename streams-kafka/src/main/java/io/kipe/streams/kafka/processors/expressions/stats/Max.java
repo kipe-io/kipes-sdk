@@ -30,7 +30,7 @@ public class Max extends StatsExpression {
      * Returns the singleton instance of this class
      *
      * @param fieldNameToMax the field to find the max the values of
-     * @return Min singleton instance
+     * @return Max singleton instance
      */
     public static Max max(String fieldNameToMax) {
         return new Max(fieldNameToMax);
