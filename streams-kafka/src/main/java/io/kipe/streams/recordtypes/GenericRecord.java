@@ -20,6 +20,7 @@ package io.kipe.streams.recordtypes;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -189,4 +190,16 @@ public class GenericRecord {
 	public <K,V> Map<K,V> getMap(String fieldName) {
 		return (Map<K,V>) get(fieldName);
 	}
+
+	/**
+	 * Retrieves the value of the specified field as a Set.
+	 *
+	 * @param fieldName the name of the field to retrieve the value for.
+	 * @return the value of the field as a Set, or null if the field is not present or has a null value.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> Set<T> getSet(String fieldName) {
+		return (Set<T>) get(fieldName);
+	}
+
 }
