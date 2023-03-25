@@ -36,32 +36,6 @@ public class Mode extends StatsExpression {
 
     private final String fieldNameToMode;
 
-//    private Mode(String fieldNameToMode) {
-//        super(DEFAULT_FIELD);
-//        this.fieldNameToMode = fieldNameToMode;
-//        this.statsFunction = (groupKey, value, aggregate) -> {
-//            Map<String, Integer> frequencyMap = aggregate.getMap(DEFAULT_FREQUENCY_MAP_FIELD);
-//            if (frequencyMap == null) {
-//                frequencyMap = new HashMap<>();
-//                aggregate.set(DEFAULT_FREQUENCY_MAP_FIELD, frequencyMap);
-//            }
-//
-//            String fieldValue = value.getString(this.fieldNameToMode);
-//            frequencyMap.put(fieldValue, frequencyMap.getOrDefault(fieldValue, 0) + 1);
-//
-//            String mode = null;
-//            int maxCount = 0;
-//            for (Entry<String, Integer> entry : frequencyMap.entrySet()) {
-//                if (entry.getValue() > maxCount) {
-//                    maxCount = entry.getValue();
-//                    mode = entry.getKey();
-//                }
-//            }
-//
-//            return mode;
-//        };
-//    }
-
     private Mode(String fieldNameToMode) {
         super(DEFAULT_FIELD);
         this.fieldNameToMode = fieldNameToMode;
