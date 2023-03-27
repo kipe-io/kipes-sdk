@@ -12,6 +12,8 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '11'
-          distribution: 'adopt'
+          distribution: 'zulu'
+      - name: Maven Version
+        run: mvn --version
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots package
+        run: mvn -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn --batch-mode --update-snapshots package
