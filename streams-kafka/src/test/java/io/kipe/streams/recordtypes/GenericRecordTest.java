@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
 
-/**
+/**g
  * Test class for {@link GenericRecord}.
  */
 class GenericRecordTest {
@@ -164,8 +164,8 @@ class GenericRecordTest {
 				arguments("genericListValue", List.of("hello", 42, true)),
 				arguments("genericMapValue", Map.of("one", "hello", "two", 42, "three", true)),
 				arguments("nestedGenericListValue", List.of(List.of("one", 1), List.of(true, 3.14))),
-				arguments("customParameterizedValue", new GenericRecordTest4.CustomParameterizedType<>("customParameterizedContent", Map.of("one", 1, "two", 2))),
-				arguments("customNestedParameterizedValue", new GenericRecordTest4.CustomNestedParameterizedType<>(List.of(Map.of("one", 1, "two", 2), Map.of("three", 3, "four", 4)), Set.of("hello", "world"))),
+				arguments("customParameterizedValue", new CustomParameterizedType<>("customParameterizedContent", Map.of("one", 1, "two", 2))),
+				arguments("customNestedParameterizedValue", new CustomNestedParameterizedType<>(List.of(Map.of("one", 1, "two", 2), Map.of("three", 3, "four", 4)), Set.of("hello", "world"))),
 
 				// Empty record
 				arguments("emptyRecordValue", new GenericRecord()),
@@ -276,7 +276,7 @@ class GenericRecordTest {
 
 	@Test
 	void testNonSerializableCustomType() {
-		GenericRecordTest4.NonSerializableCustomType customType = new GenericRecordTest4.NonSerializableCustomType("customData");
+		NonSerializableCustomType customType = new NonSerializableCustomType("customData");
 		r.set("nonSerializableCustomType", customType);
 
 		ObjectMapper mapper = new ObjectMapper();
