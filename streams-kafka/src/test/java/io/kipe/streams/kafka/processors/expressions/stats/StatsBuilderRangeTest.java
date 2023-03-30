@@ -29,7 +29,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * This class tests the functionality of {@link StatsBuilder} in conjunction with the Range stats.
+ * Tests {@link StatsBuilder} with Range stats.
  */
 class StatsBuilderRangeTest extends AbstractGenericRecordProcessorTopologyTest {
     public StatsBuilderRangeTest() {
@@ -37,9 +37,7 @@ class StatsBuilderRangeTest extends AbstractGenericRecordProcessorTopologyTest {
     }
 
     /**
-     * This method is used to add the stats processor to the topology builder. It uses the Range.range() method to
-     * calculate the range of the records in each group. It groups the records by 'group' field and returns the
-     * topology builder.
+     * Adds the stats processor to the topology builder, calculates the range of records in each group.
      *
      * @param builder             KipesBuilder<String, GenericRecord>
      * @param topologyTestContext TopologyTestContext
@@ -56,7 +54,7 @@ class StatsBuilderRangeTest extends AbstractGenericRecordProcessorTopologyTest {
     }
 
     /**
-     * This is the test method that asserts the functionality of the stats processor.
+     * Tests the functionality of the stats processor.
      */
     @Test
     void test() {

@@ -20,55 +20,46 @@ package io.kipe.streams.kafka.processors.expressions.stats;
 import io.kipe.streams.kafka.processors.StatsExpression;
 
 /**
- * Stats expression to calculate the range of values of records.
- * <p>
- * This class provides a Range expression and a default field name "range"
- * which will be used to store the range value in the resulting record.
- * <p>
- * The valueFunction provided in the constructor takes in a key, value, and aggregate and returns the range value
- * by first attempting to retrieve the min and max values from the provided field name in the aggregate,
- * and if they are not present, it initializes them accordingly.
- * <p>
- * The class also provides a static factory method range(..) to create an instance.
+ * The Range class calculates the range of values in a data stream by finding the difference between the maximum and
+ * minimum values of a specified field.
  */
 public class Range extends StatsExpression {
-
     public static final String DEFAULT_FIELD = "range";
 
     /**
-     * Returns a new instance of this class
+     * Returns a new Range instance for the specified field.
      *
-     * @param fieldName the field to calculate the range of
-     * @return Range instance
+     * @param fieldNameToRange the field for which the range will be calculated
+     * @return a new Range instance for the given field
      */
-    public static Range range(String fieldName) {
-        return new Range(fieldName);
+    public static Range range(String fieldNameToRange) {
+        return new Range(fieldNameToRange);
     }
 
-    private final String fieldName;
-
     /**
-     * Constructor for Range class, which calls the constructor of the parent class {@link StatsExpression}
-     * with the default field name "range". It also sets the valueFunction in the constructor.
+     * Initializes the statsFunction to calculate the range by finding the minimum and maximum values for the specified
+     * field and computing the difference between them.
      */
-    private Range(String fieldName) {
+    private Range(String fieldNameToRange) {
         super(DEFAULT_FIELD);
-        this.fieldName = fieldName;
         this.statsFunction = (groupKey, value, aggregate) -> {
-            var min = aggregate.getNumber("min_" + this.fieldName);
-            var max = aggregate.getNumber("max_" + this.fieldName);
-            var fieldValue = value.getNumber(this.fieldName);
+            String fieldNameMin = String.format("_%s_min", this.fieldName);
+            String fieldNameMax = String.format("_%s_max", this.fieldName);
+
+            var min = aggregate.getNumber(fieldNameMin);
+            var max = aggregate.getNumber(fieldNameMax);
+            var fieldValue = value.getNumber(fieldNameToRange);
 
             if (min == null || fieldValue.doubleValue() < min.doubleValue()) {
-                aggregate.set("min_" + this.fieldName, fieldValue);
+                aggregate.set(fieldNameMin, fieldValue);
             }
 
             if (max == null || fieldValue.doubleValue() > max.doubleValue()) {
-                aggregate.set("max_" + this.fieldName, fieldValue);
+                aggregate.set(fieldNameMax, fieldValue);
             }
 
-            min = aggregate.getNumber("min_" + this.fieldName);
-            max = aggregate.getNumber("max_" + this.fieldName);
+            min = aggregate.getNumber(fieldNameMin);
+            max = aggregate.getNumber(fieldNameMax);
 
             return max.doubleValue() - min.doubleValue();
         };
