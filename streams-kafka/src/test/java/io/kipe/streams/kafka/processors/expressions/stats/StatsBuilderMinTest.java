@@ -30,7 +30,7 @@ import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 
 /**
- * This class tests the functionality of {@link StatsBuilder} in conjunction with the Min stats.
+ * Tests {@link StatsBuilder} with Min stats.
  */
 class StatsBuilderMinTest extends AbstractGenericRecordProcessorTopologyTest {
     public StatsBuilderMinTest() {
@@ -38,8 +38,7 @@ class StatsBuilderMinTest extends AbstractGenericRecordProcessorTopologyTest {
     }
 
     /**
-     * This method is used to add the stats processor to the topology builder. It uses the Min.min() method to find
-     * the minimum value in each group. It groups the records by 'group' field and returns the topology builder.
+     * Adds the stats processor to the topology builder, calculates the minimum value of records in each group.
      *
      * @param builder             KipesBuilder<String, GenericRecord>
      * @param topologyTestContext TopologyTestContext
@@ -56,7 +55,7 @@ class StatsBuilderMinTest extends AbstractGenericRecordProcessorTopologyTest {
     }
 
     /**
-     * This is the test method that asserts the functionality of the stats processor.
+     * Tests the functionality of the stats processor.
      */
     @Test
     void test() {

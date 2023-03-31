@@ -30,7 +30,7 @@ import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 
 /**
- * This class tests the functionality of {@link StatsBuilder} in conjunction with the Max stats.
+ * Tests {@link StatsBuilder} with Max stats.
  */
 class StatsBuilderMaxTest extends AbstractGenericRecordProcessorTopologyTest {
     public StatsBuilderMaxTest() {
@@ -38,8 +38,7 @@ class StatsBuilderMaxTest extends AbstractGenericRecordProcessorTopologyTest {
     }
 
     /**
-     * This method is used to add the stats processor to the topology builder. It uses the Max.max() method to find
-     * the maximum value in each group. It groups the records by 'group' field and returns the topology builder.
+     * Adds the stats processor to the topology builder, calculates the maximum value of records in each group.
      *
      * @param builder             KipesBuilder<String, GenericRecord>
      * @param topologyTestContext TopologyTestContext
@@ -56,13 +55,13 @@ class StatsBuilderMaxTest extends AbstractGenericRecordProcessorTopologyTest {
     }
 
     /**
-     * This is the test method that asserts the functionality of the stats processor.
+     * Tests the functionality of the stats processor.
      */
     @Test
     void test() {
         // given three records
         send(GenericRecord.create().with("group", "A").with("field", 10));
-        send(GenericRecord.create().with("group", "A").with("field", -20.0));
+        send(GenericRecord.create().with("group", "A").with("field", -20));
         send(GenericRecord.create().with("group", "B").with("field", 13));
 
         // then we get three results
@@ -81,4 +80,3 @@ class StatsBuilderMaxTest extends AbstractGenericRecordProcessorTopologyTest {
         assertEquals(13, r.getNumber("myMax").intValue());
     }
 }
-
