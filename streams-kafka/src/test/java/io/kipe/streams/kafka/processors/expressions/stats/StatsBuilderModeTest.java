@@ -30,7 +30,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * This class tests the functionality of {@link StatsBuilder} in conjunction with the Mode stats.
+ * Tests {@link StatsBuilder} with Mode stats.
  */
 class StatsBuilderModeTest extends AbstractGenericRecordProcessorTopologyTest {
     public StatsBuilderModeTest() {
@@ -38,8 +38,7 @@ class StatsBuilderModeTest extends AbstractGenericRecordProcessorTopologyTest {
     }
 
     /**
-     * This method is used to add the stats processor to the topology builder. It uses the Mode.mode() method to
-     * compute the mode of records in each group. It groups the records by 'group' field and returns the topology builder.
+     * Adds the stats processor to the topology builder, calculates the mode of records in each group.
      *
      * @param builder             KipesBuilder<String, GenericRecord>
      * @param topologyTestContext TopologyTestContext
@@ -56,7 +55,7 @@ class StatsBuilderModeTest extends AbstractGenericRecordProcessorTopologyTest {
     }
 
     /**
-     * This is the test method that asserts the functionality of the stats processor.
+     * Tests the functionality of the stats processor.
      */
     @Test
     void test() {
@@ -68,12 +67,12 @@ class StatsBuilderModeTest extends AbstractGenericRecordProcessorTopologyTest {
 
         // then we get four results
         assertEquals(4, this.targetTopic.getQueueSize());
+
         GenericRecord r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
         assertEquals(Set.of("apple"), r.getSet("myMode"));
 
         r = this.targetTopic.readValue();
-
         assertEquals("A", r.getString("group"));
         assertEquals(Set.of("apple", "banana"), r.getSet("myMode"));
 

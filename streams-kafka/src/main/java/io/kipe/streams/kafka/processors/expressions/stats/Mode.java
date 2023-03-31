@@ -25,32 +25,44 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * The Mode class calculates the mode of values in a data stream by finding the most frequently occurring value(s) in a
+ * specified field.
+ */
 public class Mode extends StatsExpression {
 
     public static final String DEFAULT_FIELD = "mode";
-    public static final String DEFAULT_FREQUENCY_MAP_FIELD = "frequencyMap";
 
+    /**
+     * Returns a new Mode instance for the specified field.
+     *
+     * @param fieldNameToMode the field for which the mode will be calculated
+     * @return a new Mode instance for the given field
+     */
     public static Mode mode(String fieldNameToMode) {
         return new Mode(fieldNameToMode);
     }
 
-    private final String fieldNameToMode;
-
+    /**
+     * Initializes the statsFunction to calculate the mode by counting the frequency of each unique value for the
+     * specified field and determining the most frequently occurring value(s).
+     */
     private Mode(String fieldNameToMode) {
         super(DEFAULT_FIELD);
-        this.fieldNameToMode = fieldNameToMode;
         this.statsFunction = (groupKey, value, aggregate) -> {
-            Map<String, Integer> frequencyMap = aggregate.getMap(DEFAULT_FREQUENCY_MAP_FIELD);
-            if (frequencyMap == null) {
-                frequencyMap = new HashMap<>();
-                aggregate.set(DEFAULT_FREQUENCY_MAP_FIELD, frequencyMap);
+            String fieldNameCounts = String.format("_%s_counts", this.fieldName);
+
+            Map<String, Integer> counts = aggregate.getMap(fieldNameCounts);
+            if (counts == null) {
+                counts = new HashMap<>();
+                aggregate.set(fieldNameCounts, counts);
             }
 
-            String fieldValue = value.getString(this.fieldNameToMode);
-            frequencyMap.put(fieldValue, frequencyMap.getOrDefault(fieldValue, 0) + 1);
+            String fieldValue = value.getString(fieldNameToMode);
+            counts.put(fieldValue, counts.getOrDefault(fieldValue, 0) + 1);
 
-            int maxCount = frequencyMap.values().stream().max(Integer::compareTo).orElse(0);
-            Set<String> modes = frequencyMap.entrySet().stream()
+            int maxCount = counts.values().stream().max(Integer::compareTo).orElse(0);
+            Set<String> modes = counts.entrySet().stream()
                     .filter(entry -> entry.getValue() == maxCount)
                     .map(Entry::getKey)
                     .collect(Collectors.toSet());
@@ -58,5 +70,4 @@ public class Mode extends StatsExpression {
             return modes;
         };
     }
-
 }
