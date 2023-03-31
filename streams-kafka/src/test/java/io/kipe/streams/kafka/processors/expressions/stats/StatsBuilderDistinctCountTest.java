@@ -17,20 +17,19 @@
  */
 package io.kipe.streams.kafka.processors.expressions.stats;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-
 import io.kipe.streams.kafka.processors.AbstractGenericRecordProcessorTopologyTest;
 import io.kipe.streams.kafka.processors.KipesBuilder;
 import io.kipe.streams.kafka.processors.StatsBuilder;
 import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * This class tests the functionality of {@link StatsBuilder} in conjunction with the DistinctCount stats.
+ * Tests {@link StatsBuilder} with DistinctCount stats.
  */
 class StatsBuilderDistinctCountTest extends AbstractGenericRecordProcessorTopologyTest {
     public StatsBuilderDistinctCountTest() {
@@ -38,9 +37,7 @@ class StatsBuilderDistinctCountTest extends AbstractGenericRecordProcessorTopolo
     }
 
     /**
-     * This method is used to add the stats processor to the topology builder.
-     * It uses the DistinctCount.distinctCount() method to count the number of distinct values in each group.
-     * It groups the records by 'group' field and returns the topology builder.
+     * Adds the stats processor to the topology builder, calculates the number of distinct values in each group.
      *
      * @param builder             KipesBuilder<String, GenericRecord>
      * @param topologyTestContext TopologyTestContext
@@ -49,17 +46,15 @@ class StatsBuilderDistinctCountTest extends AbstractGenericRecordProcessorTopolo
     @Override
     protected KipesBuilder<String, GenericRecord> addGenericRecordProcessor(
             KipesBuilder<String, GenericRecord> builder,
-            TopologyTestContext topologyTestContext)
-    {
+            TopologyTestContext topologyTestContext) {
         return builder.stats()
                 .with(DistinctCount.distinctCount("field")).as("myDistinctCount")
                 .groupBy("group")
                 .build(topologyTestContext.getJsonSerdeRegistry().getSerde(String.class));
-
     }
 
     /**
-     * This is the test method that asserts the functionality of the stats processor.
+     * Tests the functionality of the stats processor.
      */
     @Test
     void test() {

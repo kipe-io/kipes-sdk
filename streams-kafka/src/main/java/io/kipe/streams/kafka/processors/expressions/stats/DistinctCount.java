@@ -23,44 +23,33 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Stats expression to count distinct values of records.
- * <p>
- * This class provides a default field name "distinct_count"
- * which will be used to store the distinct count value in the resulting record.
- * <p>
- * The valueFunction provided in the constructor takes in a key and value and returns the distinct count value
- * by maintaining a set of unique values of the specified field.
- * <p>
- * The class also provides a static factory method distinctCount(..) to create an instance.
+ * The DistinctCount class counts distinct values of a specified field in a data stream.
  */
 public class DistinctCount extends StatsExpression {
 
     public static final String DEFAULT_FIELD = "distinct_count";
 
     /**
-     * Returns a new instance of this class
+     * Returns a new DistinctCount instance for the specified field.
      *
      * @param fieldNameToDistinctCount the field to count distinct values of
-     * @return DistinctCount instance
+     * @return a new DistinctCount instance for the given field
      */
     public static DistinctCount distinctCount(String fieldNameToDistinctCount) {
         return new DistinctCount(fieldNameToDistinctCount);
     }
 
-    private final String fieldName;
-
     /**
-     * Constructor for DistinctCount class, which calls the constructor of the parent class {@link StatsExpression}
-     * with the default field name "distinct_count". It also sets the valueFunction in the constructor.
+     * Initializes the statsFunction to count distinct values of the specified field by maintaining a set of unique
+     * values.
      */
     private DistinctCount(String fieldNameToDistinctCount) {
         super(DEFAULT_FIELD);
-        this.fieldName = fieldNameToDistinctCount;
         this.statsFunction = (groupKey, value, aggregate) -> {
-            Set<Object> uniqueValues = aggregate.get(this.fieldName);
+            Set<Object> uniqueValues = aggregate.get(fieldNameToDistinctCount);
             if (uniqueValues == null) uniqueValues = new HashSet<>();
             uniqueValues.add(value.get(fieldNameToDistinctCount));
-            aggregate.set(this.fieldName, uniqueValues);
+            aggregate.set(fieldNameToDistinctCount, uniqueValues);
             return uniqueValues.size();
         };
     }
