@@ -27,7 +27,7 @@ import java.util.Set;
  */
 public class DistinctCount extends StatsExpression {
 
-    public static final String DEFAULT_FIELD = "distinct_count";
+    public static final String DEFAULT_FIELD = "distinctCount";
 
     /**
      * Returns a new DistinctCount instance for the specified field.
@@ -46,10 +46,13 @@ public class DistinctCount extends StatsExpression {
     private DistinctCount(String fieldNameToDistinctCount) {
         super(DEFAULT_FIELD);
         this.statsFunction = (groupKey, value, aggregate) -> {
-            Set<Object> uniqueValues = aggregate.get(fieldNameToDistinctCount);
-            if (uniqueValues == null) uniqueValues = new HashSet<>();
+            String fieldNameValues = String.format("_%s_values", this.fieldName);
+            Set<Object> uniqueValues = aggregate.get(fieldNameValues);
+            if (uniqueValues == null) {
+                uniqueValues = new HashSet<>();
+            }
             uniqueValues.add(value.get(fieldNameToDistinctCount));
-            aggregate.set(fieldNameToDistinctCount, uniqueValues);
+            aggregate.set(fieldNameValues, uniqueValues);
             return uniqueValues.size();
         };
     }
