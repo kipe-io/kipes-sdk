@@ -20,43 +20,30 @@ package io.kipe.streams.kafka.processors.expressions.stats;
 import io.kipe.streams.kafka.processors.StatsExpression;
 
 /**
- * Stats expression to return the first seen value of records.
- * <p>
- * This class provides a singleton instance of the First expression and a default field name "first"
- * which will be used to store the first seen value in the resulting record.
- * <p>
- * The valueFunction provided in the constructor takes in a key and value and returns the first seen value
- * by first attempting to retrieve the value from the provided field name in the value,
- * and if it is not present, it defaults to the first seen value.
- * <p>
- * The class also provides a static factory method first(..) to retrieve an instance.
+ * The First class is a stats expression that returns the first seen value of records for a specified field.
  */
 public class First extends StatsExpression {
 
     public static final String DEFAULT_FIELD = "first";
 
     /**
-     * Returns the singleton instance of this class
+     * Returns a new instance of this class for the specified field.
      *
      * @param fieldNameToFirst the field to get the first value of
-     * @return First singleton instance
+     * @return a new First instance for the given field
      */
     public static First first(String fieldNameToFirst) {
         return new First(fieldNameToFirst);
     }
 
-    private final String fieldNameToFirst;
-
     /**
-     * Constructor for First class, which calls the constructor of the parent class {@link StatsExpression}
-     * with the default field name "first". It also sets the valueFunction in the constructor.
+     * Initializes the statsFunction to return the first seen value of records for the specified field.
      */
     private First(String fieldNameToFirst) {
         super(DEFAULT_FIELD);
-        this.fieldNameToFirst = fieldNameToFirst;
         this.statsFunction = (groupKey, value, aggregate) -> {
             var firstSeenValue = aggregate.get(fieldName);
-            var fieldValue = value.get(this.fieldNameToFirst);
+            var fieldValue = value.get(fieldNameToFirst);
             return firstSeenValue == null ? fieldValue : firstSeenValue;
         };
     }

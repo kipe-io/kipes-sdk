@@ -20,42 +20,29 @@ package io.kipe.streams.kafka.processors.expressions.stats;
 import io.kipe.streams.kafka.processors.StatsExpression;
 
 /**
- * Stats expression to return the last seen value of records.
- * <p>
- * This class provides a singleton instance of the Last expression and a default field name "last"
- * which will be used to store the last seen value in the resulting record.
- * <p>
- * The valueFunction provided in the constructor takes in a key and value and returns the last seen value
- * by first attempting to retrieve the value from the provided field name in the value,
- * and if it is not present, it defaults to the last seen value.
- * <p>
- * The class also provides a static factory method last(..) to retrieve an instance.
+ * The Last class is a stats expression that returns the last seen value of records for a specified field.
  */
 public class Last extends StatsExpression {
 
     public static final String DEFAULT_FIELD = "last";
 
     /**
-     * Returns the singleton instance of this class
+     * Returns a new instance of this class for the specified field.
      *
      * @param fieldNameToLast the field to get the last value of
-     * @return Last singleton instance
+     * @return a new Last instance for the given field
      */
     public static Last last(String fieldNameToLast) {
         return new Last(fieldNameToLast);
     }
 
-    private final String fieldNameToLast;
-
     /**
-     * Constructor for Last class, which calls the constructor of the parent class {@link StatsExpression}
-     * with the default field name "last". It also sets the valueFunction in the constructor.
+     * Initializes the statsFunction to return the last seen value of records for the specified field.
      */
     private Last(String fieldNameToLast) {
         super(DEFAULT_FIELD);
-        this.fieldNameToLast = fieldNameToLast;
         this.statsFunction = (groupKey, value, aggregate) -> {
-            var fieldValue = value.get(this.fieldNameToLast);
+            var fieldValue = value.get(fieldNameToLast);
             return fieldValue == null ? aggregate.get(fieldName) : fieldValue;
         };
     }
