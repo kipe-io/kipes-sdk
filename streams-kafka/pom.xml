@@ -17,14 +17,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>io.kipe</groupId>
-		<artifactId>kipe-parent</artifactId>
+		<artifactId>kipes-sdk</artifactId>
 		<version>1.0-SNAPSHOT</version>
+		<relativePath>../</relativePath>
 	</parent>
 
 	<artifactId>streams-kafka</artifactId>
@@ -32,49 +34,48 @@
 
 	<name>Kipes SDK for Kafka</name>
 
-	<repositories>
-		<repository>
-			<id>confluent</id>
-			<url>https://packages.confluent.io/maven/</url>
-		</repository>
-	</repositories>
+	<!-- =================================================================== -->
+	<!-- dependencies -->
+	<!-- =================================================================== -->
 
-	<properties>
-		<confluent.version>7.3.2</confluent.version>
-	</properties>
-
-	<!-- Placeholder dependencies -->
 	<dependencies>
-		<!-- Add dependencies specific to the streams module -->
+	
+		<!-- =============================================================== -->
+		<!-- EXTERNAL DEPENDENCIES -->
+		<!-- =============================================================== -->
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.micronaut.kafka</groupId>
-			<artifactId>micronaut-kafka-streams</artifactId>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-streams</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.confluent</groupId>
 			<artifactId>kafka-streams-avro-serde</artifactId>
-			<version>${confluent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.confluent</groupId>
 			<artifactId>kafka-streams-json-schema-serde</artifactId>
-			<version>${confluent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.confluent</groupId>
 			<artifactId>kafka-streams-protobuf-serde</artifactId>
-			<version>${confluent.version}</version>
 		</dependency>
+
+		<!-- =============================================================== -->
+		<!-- TEST DEPENDENCIES -->
+		<!-- =============================================================== -->
+
 		<dependency>
 			<groupId>io.kipe</groupId>
 			<artifactId>streams-kafka-test</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.awaitility</groupId>
 			<artifactId>awaitility</artifactId>
@@ -97,13 +98,24 @@
 		</dependency>
 	</dependencies>
 
-	<!-- Placeholder build plugins -->
+	<!-- =================================================================== -->
+	<!-- build management -->
+	<!-- =================================================================== -->
+
 	<build>
-		<pluginManagement>
-			<plugins>
-				<!-- Add build plugins specific to the streams module -->
-			</plugins>
-		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<licenseSets>
+						<licenseSet>
+							<header>../licence-header.txt</header>
+						</licenseSet>
+					</licenseSets>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 
 </project>

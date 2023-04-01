@@ -18,16 +18,18 @@
 package io.kipe.streams.kafka.serdes.deserializer;
 
 
+import java.util.Map;
+
+import org.apache.kafka.common.errors.SerializationException;
+import org.apache.kafka.common.serialization.Deserializer;
+
 // ------------------------------------------------------------------------
 // JsonPOJODeserializer
 // ------------------------------------------------------------------------
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.kipe.streams.recordtypes.GenericRecord;
-import org.apache.kafka.common.errors.SerializationException;
-import org.apache.kafka.common.serialization.Deserializer;
 
-import java.util.Map;
+import io.kipe.streams.recordtypes.GenericRecord;
 
 /**
  * A private static class that implements the Deserializer interface. It is used to deserialize objects of type T
@@ -50,7 +52,6 @@ public class GenericRecordDeserializer<T> implements Deserializer<GenericRecord>
      * @param props A map of properties that can be used to configure the deserializer.
      * @param isKey A boolean value indicating whether the deserializer is being used to deserialize keys or values.
      */
-    @SuppressWarnings("unchecked")
     @Override
     public void configure(final Map<String, ?> props, final boolean isKey) {
     }
