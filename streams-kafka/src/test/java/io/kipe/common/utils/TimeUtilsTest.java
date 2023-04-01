@@ -17,11 +17,9 @@
  */
 package io.kipe.common.utils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-
-import io.kipe.common.utils.TimeUtils;
 
 class TimeUtilsTest {
 

@@ -17,12 +17,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.kipe</groupId>
-	<artifactId>kipe-parent</artifactId>
+	<artifactId>kipes-sdk</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
@@ -31,15 +32,9 @@
 	<url>https://github.com/kipe-io/kipes-sdk</url>
 	<inceptionYear>2023</inceptionYear>
 
-	<parent>
-		<groupId>io.micronaut</groupId>
-		<artifactId>micronaut-parent</artifactId>
-		<version>3.4.3</version>
-	</parent>
-
-	<!-- ================================================================================================= -->
-	<!-- organisational stuff -->
-	<!-- ================================================================================================= -->
+	<!-- =================================================================== -->
+	<!-- organizational stuff -->
+	<!-- =================================================================== -->
 
 	<organization>
 		<name>kipe.io</name>
@@ -54,47 +49,55 @@
 		</license>
 	</licenses>
 
-	<developers>
-		<developer>
-			<id>placeholder-developer-id</id>
-			<name>Placeholder Developer</name>
-			<email>placeholder-developer-email</email>
-		</developer>
-	</developers>
-
-	<!-- ================================================================================================= -->
+	<!-- =================================================================== -->
 	<!-- global properties -->
-	<!-- ================================================================================================= -->
+	<!-- =================================================================== -->
 
 	<properties>
+		<maven.compiler.release>11</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<confluent.version>7.3.2</confluent.version>
 		<lombok.version>1.18.26</lombok.version>
 		<maven.version>3.8.1</maven.version>
-		<micronaut.version>3.8.3</micronaut.version>
-		<mockito.version>5.1.1</mockito.version>
+		<mockito.version>5.2.0</mockito.version>
 		<release.version>11</release.version>
 		<retrofit.version>2.9.0</retrofit.version>
 		<micronaut.env>local</micronaut.env>
 	</properties>
 
-	<!-- ================================================================================================= -->
+	<!-- =================================================================== -->
 	<!-- modules -->
-	<!-- ================================================================================================= -->
+	<!-- =================================================================== -->
 
 	<modules>
 		<module>streams-kafka-test</module>
 		<module>streams-kafka</module>
+		<module>streams-kafka-micronaut</module>
 	</modules>
 
-	<!-- ================================================================================================= -->
+	<!-- =================================================================== -->
 	<!-- dependencies -->
-	<!-- ================================================================================================= -->
+	<!-- =================================================================== -->
+
+	<repositories>
+		<repository>
+			<id>central</id>
+			<name>Maven Central</name>
+			<url>https://repo.maven.apache.org/maven2/</url>
+		</repository>
+		<repository>
+			<id>confluent</id>
+			<url>https://packages.confluent.io/maven/</url>
+		</repository>
+	</repositories>
 
 	<dependencyManagement>
 		<dependencies>
 
-			<!-- ============================================================================================= -->
+			<!-- =========================================================== -->
 			<!-- EXTERNAL DEPENDENCIES -->
-			<!-- ============================================================================================= -->
+			<!-- =========================================================== -->
 
 			<dependency>
 				<groupId>com.squareup.retrofit2</groupId>
@@ -107,15 +110,34 @@
 				<version>${retrofit.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>io.confluent</groupId>
+				<artifactId>kafka-streams-avro-serde</artifactId>
+				<version>${confluent.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.confluent</groupId>
+				<artifactId>kafka-streams-json-schema-serde</artifactId>
+				<version>${confluent.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.confluent</groupId>
+				<artifactId>kafka-streams-protobuf-serde</artifactId>
+				<version>${confluent.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.micronaut.kafka</groupId>
+				<artifactId>micronaut-kafka-streams</artifactId>
+				<version>4.5.2</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-math3</artifactId>
 				<version>3.6.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.kafka</groupId>
-				<artifactId>connect-api</artifactId>
-				<version>${kafka.version}</version>
-				<scope>provided</scope>
+				<artifactId>kafka-streams</artifactId>
+				<version>3.4.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.projectlombok</groupId>
@@ -123,20 +145,26 @@
 				<version>${lombok.version}</version>
 			</dependency>
 
-			<!-- ============================================================================================= -->
+			<!-- ========================================================== -->
 			<!-- TEST DEPENDENCIES -->
-			<!-- ============================================================================================= -->
+			<!-- ========================================================== -->
 
 			<dependency>
 				<groupId>org.apache.kafka</groupId>
 				<artifactId>kafka-streams-test-utils</artifactId>
-				<version>${kafka.version}</version>
+				<version>3.4.0</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.awaitility</groupId>
 				<artifactId>awaitility</artifactId>
 				<version>4.2.0</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter</artifactId>
+				<version>5.9.2</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -155,16 +183,37 @@
 		</dependencies>
 	</dependencyManagement>
 
-	<!-- ================================================================================================= -->
+	<!-- =================================================================== -->
 	<!-- build management -->
-	<!-- ================================================================================================= -->
+	<!-- =================================================================== -->
 
 	<build>
 		<pluginManagement>
 			<plugins>
 				<plugin>
-					<groupId>io.micronaut.build</groupId>
-					<artifactId>micronaut-maven-plugin</artifactId>
+					<groupId>com.mycila</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>4.1</version>
+					<configuration>
+						<licenseSets>
+							<licenseSet>
+								<header>licence-header.txt</header>
+								<excludes>
+									<exclude>**/*.md</exclude>
+									<exclude>**/*.txt</exclude>
+									<exclude>**/resources/**</exclude>
+								</excludes>
+							</licenseSet>
+						</licenseSets>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+							<phase>validate</phase>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -196,27 +245,12 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.10.1</version>
 					<configuration>
-						<!--                        <source>1.11</source>-->
-						<!--                        <target>1.11</target>-->
-						<!--                        <configuration>-->
-						<release>11</release>
-						<!--                        </configuration>-->
 						<useIncrementalCompilation>true</useIncrementalCompilation>
 						<annotationProcessorPaths>
 							<path>
 								<groupId>org.projectlombok</groupId>
 								<artifactId>lombok</artifactId>
 								<version>${lombok.version}</version>
-							</path>
-							<path>
-								<groupId>io.micronaut</groupId>
-								<artifactId>micronaut-inject-java</artifactId>
-								<version>${micronaut.version}</version>
-							</path>
-							<path>
-								<groupId>io.micronaut</groupId>
-								<artifactId>micronaut-validation</artifactId>
-								<version>${micronaut.version}</version>
 							</path>
 						</annotationProcessorPaths>
 					</configuration>
@@ -232,16 +266,6 @@
 										<groupId>org.projectlombok</groupId>
 										<artifactId>lombok</artifactId>
 										<version>${lombok.version}</version>
-									</path>
-									<path>
-										<groupId>io.micronaut</groupId>
-										<artifactId>micronaut-inject-java</artifactId>
-										<version>${micronaut.version}</version>
-									</path>
-									<path>
-										<groupId>io.micronaut</groupId>
-										<artifactId>micronaut-validation</artifactId>
-										<version>${micronaut.version}</version>
 									</path>
 								</annotationProcessorPaths>
 							</configuration>
@@ -264,43 +288,13 @@
 					<version>3.3.0</version>
 				</plugin>
 				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-shade-plugin</artifactId>
-					<version>3.4.1</version>
-					<executions>
-						<execution>
-							<id>default-shade</id>
-							<phase>package</phase>
-							<goals>
-								<goal>shade</goal>
-							</goals>
-						</execution>
-					</executions>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>3.5.0</version>
 				</plugin>
 				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-site-plugin</artifactId>
-					<version>3.12.1</version>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.0.0</version>
 				</plugin>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>exec-maven-plugin</artifactId>
-					<configuration>
-						<executable>java</executable>
-						<arguments>
-							<argument>-classpath</argument>
-							<classpath/>
-							<argument>-XX:TieredStopAtLevel=1</argument>
-							<argument>-Dcom.sun.management.jmxremote</argument>
-							<argument>-Dmicronaut.environments=${micronaut.env}</argument>
-							<argument>${exec.mainClass}</argument>
-						</arguments>
-					</configuration>
-				</plugin>
-				<!--                <plugin>-->
-				<!--                    <artifactId>maven-dependency-plugin</artifactId>-->
-				<!--                    <version>3.5.0</version>-->
-				<!--                </plugin>-->
 			</plugins>
 		</pluginManagement>
 
@@ -308,25 +302,15 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.2.1</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.5.0</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.4.1</version>
-				<!--            <executions>-->
-				<!--                <execution>-->
-				<!--                    <id> maven-javadocs </id>-->
-				<!--                    <goals>-->
-				<!--                        <goal> jar </goal>-->
-				<!--                    </goals>-->
-				<!--                </execution>-->
-				<!--            </executions>-->
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -337,54 +321,23 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.14.2</version>
-				<!--                <reportSets>-->
-				<!--                    <reportSet>-->
-				<!--                        <reports>-->
-				<!--                            <report>dependency-updates-report</report>-->
-				<!--                            <report>plugin-updates-report</report>-->
-				<!--                            <report>property-updates-report</report>-->
-				<!--                        </reports>-->
-				<!--                    </reportSet>-->
-				<!--                </reportSets>-->
 			</plugin>
 			<plugin>
 				<groupId>com.mycila</groupId>
 				<artifactId>license-maven-plugin</artifactId>
-				<version>4.1</version>
-				<configuration>
-					<licenseSets>
-						<licenseSet>
-							<header>licence-header.txt</header>
-							<excludes>
-								<exclude>**/*.md</exclude>
-								<exclude>**/*.txt</exclude>
-								<exclude>**/resources/**</exclude>
-								<exclude>documentation/**</exclude>
-							</excludes>
-						</licenseSet>
-					</licenseSets>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>check</goal>
-						</goals>
-						<phase>validate</phase>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
 
-	<!-- ================================================================================================= -->
+	<!-- =================================================================== -->
 	<!-- distribution management -->
-	<!-- ================================================================================================= -->
+	<!-- =================================================================== -->
 
 	<scm>
 		<connection>scm:git:git://github.com/kipe-io/kipes-sdk.git</connection>
 		<developerConnection>scm:git:ssh://github.com/kipe-io/kipes-sdk.git</developerConnection>
 		<url>https://github.com/kipe-io/kipes-sdk.git/tree/master</url>
-		<!--        <tag>log-0.2</tag>-->
+		<!-- <tag>log-0.2</tag> -->
 	</scm>
 
 	<distributionManagement>

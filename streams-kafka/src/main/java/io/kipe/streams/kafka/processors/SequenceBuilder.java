@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
+import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
@@ -37,13 +38,11 @@ import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
-
-import io.micronaut.core.serialize.exceptions.SerializationException;
-import org.slf4j.LoggerFactory;
 
 /**
  * A Builder to create record sequences and applies a function to the sequences. Each record starts a new sequence of
@@ -279,7 +278,6 @@ public class SequenceBuilder<K, V, GK, VR> extends AbstractTopologyPartBuilder<K
          * @param context the ProcessorContext to get the state store from.
          */
         @Override
-        @SuppressWarnings("unchecked")
         public void init(ProcessorContext context) {
             this.stateStore = context.getStateStore(stateStoreName);
         }
