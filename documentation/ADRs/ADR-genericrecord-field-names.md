@@ -40,7 +40,7 @@ We define three field types and the format the field names must adhere to:
 Furthermore, InternalFields must reference their host construct in the fieldName
 so that multiple SDK constructs can use the same internal field:
 
-`InternalFieldName := _{constructName}_{fieldName}`
+`InternalFieldName := _{constructName}_{fieldNamePart}`
 
 The `constructName` might be further sub-constructed as needed by the SDK
 construct. Typically, the `constructName` equals the `SDKFieldName`
@@ -75,3 +75,9 @@ The documentation must include:
 - the field type
 - the semantics of the field
 - in case of SDKFields: how the user can rename the field
+
+## Consequences
+
+### `io.kipe.streams.kafka.processors.StatsExpression`
+
+- we introduced a method `protected String createInternalFieldName(String fieldNamePart)`
