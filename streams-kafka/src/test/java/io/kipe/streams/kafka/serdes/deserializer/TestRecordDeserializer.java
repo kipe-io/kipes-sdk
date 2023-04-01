@@ -50,7 +50,6 @@ public class TestRecordDeserializer<T> implements Deserializer<TestRecord> {
      * @param props A map of properties that can be used to configure the deserializer.
      * @param isKey A boolean value indicating whether the deserializer is being used to deserialize keys or values.
      */
-    @SuppressWarnings("unchecked")
     @Override
     public void configure(final Map<String, ?> props, final boolean isKey) {
     }
