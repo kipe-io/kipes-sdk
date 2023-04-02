@@ -24,7 +24,7 @@ import io.kipe.streams.kafka.processors.StatsExpression;
  */
 public class Average extends StatsExpression {
 
-    public static final String DEFAULT_FIELD = "average";
+    public static final String DEFAULT_FIELD = "avg";
 
     /**
      * Returns a new {@code Average} instance configured to compute the average value for the specified field name.
@@ -45,24 +45,22 @@ public class Average extends StatsExpression {
     private Average(String fieldNameToAverage) {
         super(DEFAULT_FIELD);
         this.statsFunction = (groupKey, value, aggregate) -> {
-            String fieldNameSum = "_" + this.fieldName + "_sum";
-            String fieldNameCount = "_" + this.fieldName + "_count";
+            String fieldNameSum = createInternalFieldName("sum");
+            String fieldNameCount = createInternalFieldName("count");
 
-            var currentSum = aggregate.getNumber(fieldNameSum);
-            var currentCount = aggregate.getNumber(fieldNameCount);
-            var newValue = value.getNumber(fieldNameToAverage);
+            Number currentSumNumber = aggregate.getNumber(fieldNameSum);
+            Number currentCountNumber = aggregate.getNumber(fieldNameCount);
+            double newValue = value.getNumber(fieldNameToAverage).doubleValue();
 
-            if (currentSum == null) {
-                currentSum = newValue;
-                currentCount = 1;
-            } else {
-                currentSum = currentSum.doubleValue() + newValue.doubleValue();
-                currentCount = currentCount.intValue() + 1;
-            }
+            double currentSum = (currentSumNumber != null) ? currentSumNumber.doubleValue() : 0.0;
+            int currentCount = (currentCountNumber != null) ? currentCountNumber.intValue() : 0;
+
+            currentSum += newValue;
+            currentCount++;
 
             aggregate.set(fieldNameSum, currentSum);
             aggregate.set(fieldNameCount, currentCount);
-            return currentSum.doubleValue() / currentCount.intValue();
+            return currentSum / currentCount;
         };
     }
 }
