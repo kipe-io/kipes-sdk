@@ -30,15 +30,17 @@ import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
 
 /**
- * Tests {@link StatsBuilder} with Min stats.
+ * This class tests the functionality of {@link StatsBuilder} in conjunction with the First stats.
  */
-class StatsBuilderMinTest extends AbstractGenericRecordProcessorTopologyTest {
-    public StatsBuilderMinTest() {
+class StatsBuilderFirstTest extends AbstractGenericRecordProcessorTopologyTest {
+    public StatsBuilderFirstTest() {
         super(Map.of());
     }
 
     /**
-     * Adds the stats processor to the topology builder, calculates the minimum value of records in each group.
+     * This method is used to add the stats processor to the topology builder.
+     * It uses the First.first() method to get the first value of the field 'field' in each group.
+     * It groups the records by 'group' field and returns the topology builder.
      *
      * @param builder             KipesBuilder<String, GenericRecord>
      * @param topologyTestContext TopologyTestContext
@@ -47,15 +49,16 @@ class StatsBuilderMinTest extends AbstractGenericRecordProcessorTopologyTest {
     @Override
     protected KipesBuilder<String, GenericRecord> addGenericRecordProcessor(
             KipesBuilder<String, GenericRecord> builder,
-            TopologyTestContext topologyTestContext) {
+            TopologyTestContext topologyTestContext)
+    {
         return builder.stats()
-                .with(Min.min("field")).as("myMin")
+                .with(First.first("field")).as("myFirst")
                 .groupBy("group")
                 .build(topologyTestContext.getJsonSerdeRegistry().getSerde(String.class));
     }
 
     /**
-     * Tests the functionality of the stats processor.
+     * This is the test method that asserts the functionality of the stats processor.
      */
     @Test
     void test() {
@@ -69,14 +72,15 @@ class StatsBuilderMinTest extends AbstractGenericRecordProcessorTopologyTest {
 
         GenericRecord r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
-        assertEquals(10, r.getNumber("myMin").intValue());
+        assertEquals(10, r.getNumber("myFirst").intValue());
 
         r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
-        assertEquals(-20, r.getNumber("myMin").intValue());
+        assertEquals(10, r.getNumber("myFirst").intValue());
 
         r = this.targetTopic.readValue();
         assertEquals("B", r.getString("group"));
-        assertEquals(13, r.getNumber("myMin").intValue());
+        assertEquals(13, r.getNumber("myFirst").intValue());
     }
+
 }

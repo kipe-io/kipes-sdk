@@ -359,6 +359,7 @@
 								<exclude>**/*.md</exclude>
 								<exclude>**/*.txt</exclude>
 								<exclude>**/resources/**</exclude>
+								<exclude>documentation/**</exclude>
 							</excludes>
 						</licenseSet>
 					</licenseSets>
