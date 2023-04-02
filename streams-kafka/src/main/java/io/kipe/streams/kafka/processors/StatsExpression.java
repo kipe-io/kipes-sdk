@@ -40,6 +40,17 @@ public abstract class StatsExpression {
 	}
 	
 	/**
+	 * Creates a new InternalFieldName according to the ADR: GenericRecord Field Names.
+	 *    
+	 * @param fieldNamePart the internal field name part to use to create the InternalFieldName
+	 * @return
+	 * 	the InternalFieldName
+	 */
+	protected String createInternalFieldName(String fieldNamePart) {
+		return "_" + this.fieldName + "_" + fieldNamePart;
+	}
+	
+	/**
 	 * The update method is used to update the specified field in the aggregate object with the new value
 	 * returned by the {@link #statsFunction}.
 	 *
