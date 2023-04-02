@@ -50,7 +50,7 @@ public class Mode extends StatsExpression {
     private Mode(String fieldNameToMode) {
         super(DEFAULT_FIELD);
         this.statsFunction = (groupKey, value, aggregate) -> {
-            String fieldNameCounts = String.format("_%s_counts", this.fieldName);
+            String fieldNameCounts = createInternalFieldName("counts");
 
             Map<String, Integer> counts = aggregate.getMap(fieldNameCounts);
             if (counts == null) {
@@ -61,13 +61,17 @@ public class Mode extends StatsExpression {
             String fieldValue = value.getString(fieldNameToMode);
             counts.put(fieldValue, counts.getOrDefault(fieldValue, 0) + 1);
 
-            int maxCount = counts.values().stream().max(Integer::compareTo).orElse(0);
-            Set<String> modes = counts.entrySet().stream()
-                    .filter(entry -> entry.getValue() == maxCount)
-                    .map(Entry::getKey)
-                    .collect(Collectors.toSet());
-
-            return modes;
+            return calculateModes(counts);
         };
     }
+
+    private Set<String> calculateModes(Map<String, Integer> counts) {
+        int maxCount = counts.values().stream().max(Integer::compareTo).orElse(0);
+
+        return counts.entrySet().stream()
+                .filter(entry -> entry.getValue() == maxCount)
+                .map(Entry::getKey)
+                .collect(Collectors.toSet());
+    }
+
 }
