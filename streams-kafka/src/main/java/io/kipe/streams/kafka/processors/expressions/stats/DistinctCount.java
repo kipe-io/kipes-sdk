@@ -46,7 +46,7 @@ public class DistinctCount extends StatsExpression {
     private DistinctCount(String fieldNameToDistinctCount) {
         super(DEFAULT_FIELD);
         this.statsFunction = (groupKey, value, aggregate) -> {
-            String fieldNameValues = String.format("_%s_values", this.fieldName);
+            String fieldNameValues = createInternalFieldName("values");
             Set<Object> uniqueValues = aggregate.get(fieldNameValues);
             if (uniqueValues == null) {
                 uniqueValues = new HashSet<>();
