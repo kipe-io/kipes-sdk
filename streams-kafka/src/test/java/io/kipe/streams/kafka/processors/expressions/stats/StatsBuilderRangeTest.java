@@ -17,28 +17,27 @@
  */
 package io.kipe.streams.kafka.processors.expressions.stats;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-
 import io.kipe.streams.kafka.processors.AbstractGenericRecordProcessorTopologyTest;
 import io.kipe.streams.kafka.processors.KipesBuilder;
 import io.kipe.streams.kafka.processors.StatsBuilder;
 import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Tests {@link StatsBuilder} with Min stats.
+ * Tests {@link StatsBuilder} with Range stats.
  */
-class StatsBuilderMinTest extends AbstractGenericRecordProcessorTopologyTest {
-    public StatsBuilderMinTest() {
+class StatsBuilderRangeTest extends AbstractGenericRecordProcessorTopologyTest {
+    public StatsBuilderRangeTest() {
         super(Map.of());
     }
 
     /**
-     * Adds the stats processor to the topology builder, calculates the minimum value of records in each group.
+     * Adds the stats processor to the topology builder, calculates the range of records in each group.
      *
      * @param builder             KipesBuilder<String, GenericRecord>
      * @param topologyTestContext TopologyTestContext
@@ -49,7 +48,7 @@ class StatsBuilderMinTest extends AbstractGenericRecordProcessorTopologyTest {
             KipesBuilder<String, GenericRecord> builder,
             TopologyTestContext topologyTestContext) {
         return builder.stats()
-                .with(Min.min("field")).as("myMin")
+                .with(Range.range("field")).as("myRange")
                 .groupBy("group")
                 .build(topologyTestContext.getJsonSerdeRegistry().getSerde(String.class));
     }
@@ -59,24 +58,29 @@ class StatsBuilderMinTest extends AbstractGenericRecordProcessorTopologyTest {
      */
     @Test
     void test() {
-        // given three records
+        // given four records
         send(GenericRecord.create().with("group", "A").with("field", 10));
         send(GenericRecord.create().with("group", "A").with("field", -20));
         send(GenericRecord.create().with("group", "B").with("field", 13));
+        send(GenericRecord.create().with("group", "B").with("field", 25));
 
-        // then we get three results
-        assertEquals(3, this.targetTopic.getQueueSize());
+        // then we get four results
+        assertEquals(4, this.targetTopic.getQueueSize());
 
         GenericRecord r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
-        assertEquals(10, r.getNumber("myMin").intValue());
+        assertEquals(0, r.getNumber("myRange").intValue());
 
         r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
-        assertEquals(-20, r.getNumber("myMin").intValue());
+        assertEquals(30, r.getNumber("myRange").intValue());
 
         r = this.targetTopic.readValue();
         assertEquals("B", r.getString("group"));
-        assertEquals(13, r.getNumber("myMin").intValue());
+        assertEquals(0, r.getNumber("myRange").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("B", r.getString("group"));
+        assertEquals(12, r.getNumber("myRange").intValue());
     }
 }
