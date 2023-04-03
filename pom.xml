@@ -17,14 +17,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.kipe</groupId>
 	<artifactId>kipes-sdk</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Kipes SDK</name>
@@ -40,7 +38,21 @@
 		<name>kipe.io</name>
 		<url>https://kipe.io</url>
 	</organization>
-
+	
+	<developers>
+		<developer>
+			<id>jens-guenther</id>
+			<name>Jens Guenther</name>
+			<organization>kipe.io</organization>
+			<roles><role>Maintainer</role></roles>
+		</developer>
+		<developer>
+			<id>yianni</id>
+			<name>John Gerassimou</name>
+			<roles><role>Contributor</role></roles>
+		</developer>
+	</developers>
+	
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License v3.0</name>
@@ -346,10 +358,11 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.4.1</version>
 			</plugin>
-			<!-- plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-release-plugin</artifactId> 
-				<version>3.0.0</version> <configuration> <serverId>github</serverId> <autoVersionSubmodules>true</autoVersionSubmodules> 
-				<useReleaseProfile>false</useReleaseProfile> <releaseProfiles>release</releaseProfiles> 
-				<goals>deploy</goals> </configuration> </plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>3.0.0</version>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
@@ -401,6 +414,9 @@
 							<release>${target.jdk}</release>
 							<show>public</show>
 							<version>true</version>
+							<failOnError>false</failOnError>
+							<failOnWarnings>false</failOnWarnings>
+							<quiet>true</quiet>
 						</configuration>
 					</plugin>
 					<plugin>
@@ -426,6 +442,17 @@
 						</executions>
 					</plugin>
 					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-release-plugin</artifactId>
+						<version>3.0.0</version>
+						<configuration>
+							<autoVersionSubmodules>true</autoVersionSubmodules>
+							<useReleaseProfile>false</useReleaseProfile>
+							<releaseProfiles>release</releaseProfiles>
+							<goals>deploy</goals>
+						</configuration>
+					</plugin>
+					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
 						<version>1.6.13</version>
@@ -449,7 +476,6 @@
 		<connection>scm:git:git://github.com/kipe-io/kipes-sdk.git</connection>
 		<developerConnection>scm:git:ssh://github.com/kipe-io/kipes-sdk.git</developerConnection>
 		<url>https://github.com/kipe-io/kipes-sdk.git/tree/main</url>
-		<!-- <tag>log-0.2</tag> -->
 	</scm>
 
 	<distributionManagement>
