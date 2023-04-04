@@ -74,20 +74,21 @@ public class Variance extends StatsExpression {
             String fieldNameMean = createInternalFieldName("mean");
             String fieldNameSsd = createInternalFieldName("ssd");
 
-            double oldMean = aggregate.getDouble(fieldNameMean) == null ? 0.0 : aggregate.getDouble(fieldNameMean);
-            double count = aggregate.getNumber(fieldNameCount) == null ? 0.0 : aggregate.getNumber(fieldNameCount).doubleValue();
+            double previousMean = aggregate.getDouble(fieldNameMean) == null ? 0.0 : aggregate.getDouble(fieldNameMean);
+            double previousCount = aggregate.getNumber(fieldNameCount) == null ? 0.0 : aggregate.getNumber(fieldNameCount).doubleValue();
             double fieldValue = value.getDouble(fieldNameToVariance);
-            count += 1;
-            double newMean = oldMean + (fieldValue - oldMean) / count;
-            double oldS = aggregate.getDouble(fieldNameSsd) == null ? 0.0 : aggregate.getDouble(fieldNameSsd);
-            double newS = oldS + (fieldValue - oldMean) * (fieldValue - newMean);
+            previousCount += 1;
+            double updatedMean = previousMean + (fieldValue - previousMean) / previousCount;
+            double previousSsd = aggregate.getDouble(fieldNameSsd) == null ? 0.0 : aggregate.getDouble(fieldNameSsd);
+            double updatedSsd = previousSsd + (fieldValue - previousMean) * (fieldValue - updatedMean);
 
-            aggregate.set(fieldNameCount, count);
-            aggregate.set(fieldNameMean, newMean);
-            aggregate.set(fieldNameSsd, newS);
 
-            double variance = newS / (varianceType.equals(VarianceType.POPULATION) ? count : count - 1);
-            return count <= 1 ? 0.0 : variance;
+            aggregate.set(fieldNameCount, previousCount);
+            aggregate.set(fieldNameMean, updatedMean);
+            aggregate.set(fieldNameSsd, updatedSsd);
+
+            double variance = updatedSsd / (varianceType.equals(VarianceType.POPULATION) ? previousCount : previousCount - 1);
+            return previousCount <= 1 ? 0.0 : variance;
         };
     }
 }
