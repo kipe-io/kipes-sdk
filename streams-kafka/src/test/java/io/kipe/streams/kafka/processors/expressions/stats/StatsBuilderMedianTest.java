@@ -53,18 +53,61 @@ class StatsBuilderMedianTest extends AbstractGenericRecordProcessorTopologyTest 
                 .build(topologyTestContext.getJsonSerdeRegistry().getSerde(String.class));
     }
 
-    /**
-     * Tests the functionality of the stats processor.
-     */
     @Test
-    void test() {
-        // given four records
+    void testOneElement() {
         send(GenericRecord.create().with("group", "A").with("field", 10));
-        send(GenericRecord.create().with("group", "A").with("field", -20));
-        send(GenericRecord.create().with("group", "B").with("field", 13));
-        send(GenericRecord.create().with("group", "B").with("field", 25));
 
-        // then we get four results
+        assertEquals(1, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myMedian").intValue());
+    }
+
+    @Test
+    void testEvenNumberOfElements() {
+        send(GenericRecord.create().with("group", "A").with("field", 10));
+        send(GenericRecord.create().with("group", "A").with("field", 20));
+
+        assertEquals(2, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(15, r.getNumber("myMedian").intValue());
+    }
+
+    @Test
+    void testOddNumberOfElements() {
+        send(GenericRecord.create().with("group", "A").with("field", 10));
+        send(GenericRecord.create().with("group", "A").with("field", 20));
+        send(GenericRecord.create().with("group", "A").with("field", 30));
+
+        assertEquals(3, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(15, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(20, r.getNumber("myMedian").intValue());
+    }
+
+    @Test
+    void testAddingElementToLowerHalfEven() {
+        send(GenericRecord.create().with("group", "A").with("field", 10));
+        send(GenericRecord.create().with("group", "A").with("field", 20));
+        send(GenericRecord.create().with("group", "A").with("field", 5));
+        send(GenericRecord.create().with("group", "A").with("field", 0));
+
         assertEquals(4, this.targetTopic.getQueueSize());
 
         GenericRecord r = this.targetTopic.readValue();
@@ -73,14 +116,84 @@ class StatsBuilderMedianTest extends AbstractGenericRecordProcessorTopologyTest 
 
         r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
-        assertEquals(-5, r.getNumber("myMedian").intValue());
+        assertEquals(15, r.getNumber("myMedian").intValue());
 
         r = this.targetTopic.readValue();
-        assertEquals("B", r.getString("group"));
-        assertEquals(13, r.getNumber("myMedian").intValue());
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myMedian").intValue());
 
         r = this.targetTopic.readValue();
-        assertEquals("B", r.getString("group"));
-        assertEquals(19, r.getNumber("myMedian").intValue());
+        assertEquals("A", r.getString("group"));
+        assertEquals(7.5, r.getNumber("myMedian").doubleValue());
+    }
+
+    @Test
+    void testAddingElementToLowerHalfOdd() {
+        send(GenericRecord.create().with("group", "A").with("field", 10));
+        send(GenericRecord.create().with("group", "A").with("field", 20));
+        send(GenericRecord.create().with("group", "A").with("field", 5));
+
+        assertEquals(3, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(15, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myMedian").intValue());
+    }
+
+    @Test
+    void testAddingElementToUpperHalfEven() {
+        send(GenericRecord.create().with("group", "A").with("field", 10));
+        send(GenericRecord.create().with("group", "A").with("field", 20));
+        send(GenericRecord.create().with("group", "A").with("field", 30));
+        send(GenericRecord.create().with("group", "A").with("field", 40));
+        assertEquals(4, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(15, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(20, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(25, r.getNumber("myMedian").intValue());
+    }
+
+    @Test
+    void testAddingElementToUpperHalfOdd() {
+        send(GenericRecord.create().with("group", "A").with("field", 10));
+        send(GenericRecord.create().with("group", "A").with("field", 20));
+        send(GenericRecord.create().with("group", "A").with("field", 30));
+
+        assertEquals(3, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        System.out.println(r);
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        System.out.println(r);
+        assertEquals("A", r.getString("group"));
+        assertEquals(15, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        System.out.println(r);
+        assertEquals("A", r.getString("group"));
+        assertEquals(20, r.getNumber("myMedian").intValue());
     }
 }
