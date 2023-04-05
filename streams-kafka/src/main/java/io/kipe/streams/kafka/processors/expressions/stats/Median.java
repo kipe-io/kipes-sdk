@@ -59,29 +59,38 @@ public class Median extends StatsExpression {
             }
 
             Double fieldValue = value.getNumber(fieldNameToMedian).doubleValue();
-
-            if (lowerHalf.isEmpty() || fieldValue < lowerHalf.peek()) {
-                lowerHalf.add(fieldValue);
-            } else {
-                upperHalf.add(fieldValue);
-            }
-
-            // Rebalance the heaps
-            while (lowerHalf.size() > upperHalf.size() + 1) {
-                upperHalf.add(lowerHalf.poll());
-            }
-            while (upperHalf.size() > lowerHalf.size()) {
-                lowerHalf.add(upperHalf.poll());
-            }
+            addValue(fieldValue, lowerHalf, upperHalf);
+            rebalanceHeaps(lowerHalf, upperHalf);
 
             aggregate.set(fieldNameLowerHalf, lowerHalf);
             aggregate.set(fieldNameUpperHalf, upperHalf);
 
-            if (lowerHalf.size() == upperHalf.size()) {
-                return (lowerHalf.peek() + upperHalf.peek()) / 2;
-            } else {
-                return lowerHalf.peek();
-            }
+            return calculateMedian(lowerHalf, upperHalf);
         };
+    }
+
+    private void addValue(Double fieldValue, PriorityQueue<Double> lowerHalf, PriorityQueue<Double> upperHalf) {
+        if (lowerHalf.isEmpty() || fieldValue < lowerHalf.peek()) {
+            lowerHalf.add(fieldValue);
+        } else {
+            upperHalf.add(fieldValue);
+        }
+    }
+
+    private void rebalanceHeaps(PriorityQueue<Double> lowerHalf, PriorityQueue<Double> upperHalf) {
+        while (lowerHalf.size() > upperHalf.size() + 1) {
+            upperHalf.add(lowerHalf.poll());
+        }
+        while (upperHalf.size() > lowerHalf.size()) {
+            lowerHalf.add(upperHalf.poll());
+        }
+    }
+
+    private double calculateMedian(PriorityQueue<Double> lowerHalf, PriorityQueue<Double> upperHalf) {
+        if (lowerHalf.size() == upperHalf.size()) {
+            return (lowerHalf.peek() + upperHalf.peek()) / 2;
+        } else {
+            return lowerHalf.peek();
+        }
     }
 }
