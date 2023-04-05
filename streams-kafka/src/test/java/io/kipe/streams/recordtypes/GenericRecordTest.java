@@ -40,6 +40,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**g
@@ -121,7 +122,69 @@ class GenericRecordTest {
 		r.set(FIELD, null);
 		assertNull(r.get(FIELD));
 	}
-	
+
+	// ------------------------------------------------------------------------
+	// tests get with initOnNull
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Test {@link GenericRecord#get(String, Supplier)} method with existing field.
+	 */
+	@Test
+	void test_get_with_initOnNull_existing_field() {
+		List<String> listField = new ArrayList<>();
+		listField.add("value1");
+		listField.add("value2");
+		r.set("listField", listField);
+
+		List<String> listFromRecord = r.get("listField", ArrayList::new);
+		assertEquals(listField, listFromRecord);
+	}
+
+	/**
+	 * Test {@link GenericRecord#get(String, Supplier)} )} method with non-existing field.
+	 */
+	@Test
+	void test_get_with_initOnNull_non_existing_field() {
+		List<String> nonExistentField = r.get("nonExistentField", ArrayList::new);
+		assertNotNull(nonExistentField);
+		assertTrue(nonExistentField.isEmpty());
+	}
+
+	@Test
+	void test_get_with_initOnNull_null_value() {
+		GenericRecord record = new GenericRecord();
+		String fieldName = "testField";
+		record.set(fieldName, null);
+
+		Supplier<String> initOnNull = () -> "defaultValue";
+		String value = record.get(fieldName, initOnNull);
+		assertEquals("defaultValue", value);
+	}
+
+	@Test
+	void test_get_with_initOnNull_existing_field_no_modification() {
+		GenericRecord record = new GenericRecord();
+		String fieldName = "testField";
+		record.set(fieldName, "value");
+
+		Supplier<String> initOnNull = () -> "defaultValue";
+		String value = record.get(fieldName, initOnNull);
+		assertEquals("value", value);
+		assertNotNull(record.get(fieldName));
+	}
+
+	@Test
+	void test_get_with_initOnNull_non_existing_field_modification() {
+		GenericRecord record = new GenericRecord();
+		String fieldName = "testField";
+
+		Supplier<String> initOnNull = () -> "defaultValue";
+		String value = record.get(fieldName, initOnNull);
+		assertEquals("defaultValue", value);
+		assertNotNull(record.get(fieldName));
+	}
+
 	// ------------------------------------------------------------------------
 	// serde
 	// ------------------------------------------------------------------------
