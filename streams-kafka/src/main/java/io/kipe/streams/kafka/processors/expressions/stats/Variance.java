@@ -18,10 +18,13 @@
 package io.kipe.streams.kafka.processors.expressions.stats;
 
 import io.kipe.streams.kafka.processors.StatsExpression;
+import org.apache.kafka.streams.errors.StreamsException;
 
 /**
  * The Variance class calculates the variance of values in a data stream using Welford's algorithm for better numerical
  * stability.
+ * <p>
+ * Note that an Exception will be thrown if a null field value is encountered during processing.
  */
 public class Variance extends StatsExpression {
     public static final String DEFAULT_SAMPLE_VARIANCE_FIELD = "var";
@@ -38,6 +41,9 @@ public class Variance extends StatsExpression {
      * @param fieldNameToVariance the field for which the variance will be calculated
      * @param varianceType        the type of variance to calculate (sample or population)
      * @return a new Variance instance for the given field
+     * @throws StreamsException     when an error occurs during processing, such as encountering a null field value
+     * @throws NullPointerException when a null field value is encountered, causing an issue in processing (underlying
+     *                              cause of StreamsException)
      */
     public static Variance var(String fieldNameToVariance, VarianceType varianceType) {
         String defaultField = varianceType == VarianceType.SAMPLE ? DEFAULT_SAMPLE_VARIANCE_FIELD : DEFAULT_POPULATION_VARIANCE_FIELD;
