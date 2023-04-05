@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -98,6 +99,29 @@ public class GenericRecord {
 	public <V> V get(String fieldName) {
 		Objects.requireNonNull(fieldName, "fieldName");
 		return (V)fields.get(fieldName);
+	}
+
+	/**
+	 * Retrieves the value of the given field. If the field doesn't exist and initOnNull is provided, a new value will
+	 * be initialized, stored, and returned using the supplier.
+	 *
+	 * @param fieldName  the field's name to return the value for.
+	 * @param initOnNull a supplier to provide a new value if the field doesn't exist.
+	 * @return the field's value or a new value from initOnNull, or {@code null} if absent and initOnNull is not
+	 * provided.
+	 * @throws NullPointerException if fieldName is null.
+	 * @throws RuntimeException     if initOnNull.get() throws an exception.
+	 */
+	@SuppressWarnings("unchecked")
+	public <V> V get(String fieldName, Supplier<V> initOnNull) {
+		Objects.requireNonNull(fieldName, "fieldName");
+
+		V value = (V) fields.get(fieldName);
+		if (value == null && initOnNull != null) {
+			value = initOnNull.get();
+			fields.put(fieldName, value);
+		}
+		return value;
 	}
 
 	/**
