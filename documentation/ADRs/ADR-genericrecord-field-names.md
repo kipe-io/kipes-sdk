@@ -67,8 +67,7 @@ If the user renames a SDKField then that new name must be used to build the
 ### Code Documentation
 
 Each SDK construct that introduces fields into a GenericRecord must document
-these at a suitable location. Suitable locations are ideally those where the 
-SDK construct is established in the calling code.  
+these at the class javadoc.  
   
 The documentation must include:
 - the field name
