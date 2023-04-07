@@ -26,7 +26,7 @@ import org.apache.kafka.streams.errors.StreamsException;
  * <p>
  * Note that an Exception will be thrown if a null field value is encountered during processing.
  * <p>
- * The following table shows the fields used by this class for internal storage:
+ * The fields for this statistical expression are as follows:
  * <p>
  * <pre>
  * | field       | internal | type   | description                                          |
