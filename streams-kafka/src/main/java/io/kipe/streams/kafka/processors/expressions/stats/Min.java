@@ -21,6 +21,13 @@ import io.kipe.streams.kafka.processors.StatsExpression;
 
 /**
  * Stats expression to find the minimum value.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field | internal | type   | description                             |
+ * |-------|----------|--------|-----------------------------------------|
+ * | min   | no       | double | the minimum value of the measured field |
+ * </pre>
  */
 public class Min extends StatsExpression {
 

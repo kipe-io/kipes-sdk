@@ -30,6 +30,13 @@ import io.kipe.streams.kafka.processors.StatsExpression;
  * and if it is not present, it defaults to 1.
  * <p>
  * The class also provides a static factory method count() to retrieve the singleton instance.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field | internal | type | description                             |
+ * |-------|----------|------|-----------------------------------------|
+ * | count | no       | long | the count of records in the data stream |
+ * </pre>
  */
 public class Count extends StatsExpression {
 

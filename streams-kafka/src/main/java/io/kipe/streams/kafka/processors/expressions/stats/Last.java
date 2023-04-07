@@ -21,6 +21,13 @@ import io.kipe.streams.kafka.processors.StatsExpression;
 
 /**
  * The Last class is a stats expression that returns the last seen value of records for a specified field.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field | internal | type   | description                                     |
+ * |-------|----------|--------|-------------------------------------------------|
+ * | last  | no       | object | the last seen value at the measured value field |
+ * </pre>
  */
 public class Last extends StatsExpression {
 

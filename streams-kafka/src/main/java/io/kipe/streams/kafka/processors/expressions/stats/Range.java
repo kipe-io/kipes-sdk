@@ -22,6 +22,15 @@ import io.kipe.streams.kafka.processors.StatsExpression;
 /**
  * The Range class calculates the range of values in a data stream by finding the difference between the maximum and
  * minimum values of a specified field.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field | internal | type   | description                                          |
+ * |-------|----------|--------|------------------------------------------------------|
+ * | range | no       | double | the calculated range of values in the measured field |
+ * | min   | yes      | double | the minimum value found in the measured field        |
+ * | max   | yes      | double | the maximum value found in the measured field        |
+ * </pre>
  */
 public class Range extends StatsExpression {
     public static final String DEFAULT_FIELD = "range";
