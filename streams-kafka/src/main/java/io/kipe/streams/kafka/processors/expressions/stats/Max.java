@@ -21,6 +21,13 @@ import io.kipe.streams.kafka.processors.StatsExpression;
 
 /**
  * Stats expression to find the maximum value.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field | internal | type   | description                             |
+ * |-------|----------|--------|-----------------------------------------|
+ * | max   | no       | double | the maximum value of the measured field |
+ * </pre>
  */
 public class Max extends StatsExpression {
 

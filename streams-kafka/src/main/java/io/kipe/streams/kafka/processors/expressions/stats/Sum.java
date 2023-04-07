@@ -30,6 +30,13 @@ import io.kipe.streams.kafka.processors.StatsExpression;
  * and if it is not present, it defaults to 0.
  * <p>
  * The class also provides a static factory method sum(..) to retrieve an instance.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field | internal | type   | description                                        |
+ * |-------|----------|--------|----------------------------------------------------|
+ * | sum   | no       | double | the calculated sum of values in the measured field |
+ * </pre>
  */
 public class Sum extends StatsExpression {
 

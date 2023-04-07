@@ -25,6 +25,16 @@ import org.apache.kafka.streams.errors.StreamsException;
  * for better numerical stability.
  * <p>
  * Note that an Exception will be thrown if a null field value is encountered during processing.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field           | internal | type   | description                                                  |
+ * |-----------------|----------|--------|--------------------------------------------------------------|
+ * | stdev or stdevp | no       | double | the standard deviation of values at the measured value field |
+ * | count           | yes      | double | the number of values processed                               |
+ * | mean            | yes      | double | the running mean of the values                               |
+ * | ssd             | yes      | double | the running sum of squared differences from the mean         |
+ * </pre>
  */
 public class StandardDeviation extends StatsExpression {
     public static final String DEFAULT_SAMPLE_STDEV_FIELD = "stdev";

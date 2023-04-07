@@ -28,6 +28,14 @@ import java.util.stream.Collectors;
 /**
  * The Mode class calculates the mode of values in a data stream by finding the most frequently occurring value(s) in a
  * specified field.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field  | internal | type                     | description                                      |
+ * |--------|----------|--------------------------|--------------------------------------------------|
+ * | mode   | no       | set of strings           | the mode of values at the measured value field   |
+ * | counts | yes      | map of string to integer | the frequency of each unique value               |
+ * </pre>
  */
 public class Mode extends StatsExpression {
 

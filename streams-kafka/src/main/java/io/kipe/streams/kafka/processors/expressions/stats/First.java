@@ -21,6 +21,13 @@ import io.kipe.streams.kafka.processors.StatsExpression;
 
 /**
  * The First class is a stats expression that returns the first seen value of records for a specified field.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field | internal | type   | description                                      |
+ * |-------|----------|--------|--------------------------------------------------|
+ * | first | no       | object | the first seen value at the measured value field |
+ * </pre>
  */
 public class First extends StatsExpression {
 
