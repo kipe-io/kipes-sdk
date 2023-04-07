@@ -21,6 +21,15 @@ import io.kipe.streams.kafka.processors.StatsExpression;
 
 /**
  * The Average class calculates the average value of a specified field within a dataset.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field | internal | type    | description                                         |
+ * |-------|----------|---------|-----------------------------------------------------|
+ * | avg   | no       | double  | the calculated average value of the measured field  |
+ * | sum   | yes      | double  | the running sum of the values in the measured field |
+ * | count | yes      | integer | the running count of values in the measured field   |
+ * </pre>
  */
 public class Average extends StatsExpression {
 

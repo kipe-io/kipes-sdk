@@ -24,6 +24,14 @@ import java.util.Set;
 
 /**
  * The DistinctCount class counts distinct values of a specified field in a data stream.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field         | internal | type           | description                                              |
+ * |---------------|----------|----------------|----------------------------------------------------------|
+ * | distinctCount | no       | integer        | the count of distinct values at the measured value field |
+ * | values        | yes      | set of objects | the unique values of the specified field                 |
+ * </pre>
  */
 public class DistinctCount extends StatsExpression {
 
