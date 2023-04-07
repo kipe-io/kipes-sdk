@@ -27,7 +27,6 @@ import org.apache.kafka.streams.errors.StreamsException;
  * Note that an Exception will be thrown if a null field value is encountered during processing.
  * <p>
  * The fields for this statistical expression are as follows:
- * <p>
  * <pre>
  * | field       | internal | type   | description                                          |
  * |-------------|----------|--------|------------------------------------------------------|
