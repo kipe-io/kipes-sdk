@@ -25,11 +25,21 @@ import org.apache.kafka.streams.errors.StreamsException;
  * stability.
  * <p>
  * Note that an Exception will be thrown if a null field value is encountered during processing.
+ * <p>
+ * The following table shows the fields used by this class for internal storage:
+ * <p>
+ * <pre>
+ * | field       | internal | type   | description                                          |
+ * |-------------|----------|--------|------------------------------------------------------|
+ * | var or varp | no       | double | the variance of values at the measured value field   |
+ * | count       | yes      | double | the number of values processed                       |
+ * | mean        | yes      | double | the running mean of the values                       |
+ * | ssd         | yes      | double | the running sum of squared differences from the mean |
+ * </pre>
  */
 public class Variance extends StatsExpression {
     public static final String DEFAULT_SAMPLE_VARIANCE_FIELD = "var";
-    public static final String DEFAULT_POPULATION_VARIANCE_FIELD = "varP";
-
+    public static final String DEFAULT_POPULATION_VARIANCE_FIELD = "varp";
 
     public enum VarianceType {
         SAMPLE, POPULATION
@@ -41,9 +51,6 @@ public class Variance extends StatsExpression {
      * @param fieldNameToVariance the field for which the variance will be calculated
      * @param varianceType        the type of variance to calculate (sample or population)
      * @return a new Variance instance for the given field
-     * @throws StreamsException     when an error occurs during processing, such as encountering a null field value
-     * @throws NullPointerException when a null field value is encountered, causing an issue in processing (underlying
-     *                              cause of StreamsException)
      */
     public static Variance var(String fieldNameToVariance, VarianceType varianceType) {
         String defaultField = varianceType == VarianceType.SAMPLE ? DEFAULT_SAMPLE_VARIANCE_FIELD : DEFAULT_POPULATION_VARIANCE_FIELD;
@@ -87,7 +94,6 @@ public class Variance extends StatsExpression {
             double updatedMean = previousMean + (fieldValue - previousMean) / previousCount;
             double previousSsd = aggregate.getDouble(fieldNameSsd) == null ? 0.0 : aggregate.getDouble(fieldNameSsd);
             double updatedSsd = previousSsd + (fieldValue - previousMean) * (fieldValue - updatedMean);
-
 
             aggregate.set(fieldNameCount, previousCount);
             aggregate.set(fieldNameMean, updatedMean);
