@@ -153,36 +153,33 @@ class GenericRecordTest {
 
 	@Test
 	void test_get_with_initOnNull_null_value() {
-		GenericRecord record = new GenericRecord();
 		String fieldName = "testField";
-		record.set(fieldName, null);
+		r.set(fieldName, null);
 
 		Supplier<String> initOnNull = () -> "defaultValue";
-		String value = record.get(fieldName, initOnNull);
+		String value = r.get(fieldName, initOnNull);
 		assertEquals("defaultValue", value);
 	}
 
 	@Test
 	void test_get_with_initOnNull_existing_field_no_modification() {
-		GenericRecord record = new GenericRecord();
 		String fieldName = "testField";
-		record.set(fieldName, "value");
+		r.set(fieldName, "value");
 
 		Supplier<String> initOnNull = () -> "defaultValue";
-		String value = record.get(fieldName, initOnNull);
+		String value = r.get(fieldName, initOnNull);
 		assertEquals("value", value);
-		assertNotNull(record.get(fieldName));
+		assertNotNull(r.get(fieldName));
 	}
 
 	@Test
 	void test_get_with_initOnNull_non_existing_field_modification() {
-		GenericRecord record = new GenericRecord();
 		String fieldName = "testField";
 
 		Supplier<String> initOnNull = () -> "defaultValue";
-		String value = record.get(fieldName, initOnNull);
+		String value = r.get(fieldName, initOnNull);
 		assertEquals("defaultValue", value);
-		assertNotNull(record.get(fieldName));
+		assertNull(r.get(fieldName));
 	}
 
 	// ------------------------------------------------------------------------
