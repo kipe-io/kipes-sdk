@@ -32,7 +32,7 @@ Showing only relevant settings:
   
 ```xml
 
-  <!-- configure your sonatpye JIRA credentials registered with the relevant project -->
+  <!-- configure your sonatype JIRA credentials registered with the relevant project -->
   <server>
     <id>ossrh</id>
     <username>username</username>
