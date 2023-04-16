@@ -181,7 +181,7 @@ public class TopologyTestContext {
 	// ------------------------------------------------------------------------
 
     /**
-     * Creates a {@link TestInputTopic} for the given topic, key type, and value type.
+     * Creates a {@link TestInputTopic} for the given topic, key type, and value type using JSON serialization.
      * The TopologyTestDriver must be initialized by calling 'initTopologyTestDriver()' before this method is called.
      *
      * @param topic     The name of the topic to create the TestInputTopic for.
@@ -201,7 +201,29 @@ public class TopologyTestContext {
 	}
 
     /**
-     * Creates a {@link TestOutputTopic} for the given topic, key type, and value type.
+     * Creates a {@link TestInputTopic} for the given topic, key serde, and value serde.
+     * The TopologyTestDriver must be initialized by calling 'initTopologyTestDriver()' before this method is called.
+     * This method provides more flexibility in choosing custom serdes for keys and values.
+     *
+     * @param topic The name of the topic to create the TestInputTopic for.
+     * @param key   The serde for the key to be serialized.
+     * @param value The serde for the value to be serialized.
+     * @param <K>   The type of the key.
+     * @param <V>   The type of the value.
+     * @return The created TestInputTopic.
+     * @throws NullPointerException If the TopologyTestDriver has not been initialized.
+     */
+
+	public <K,V> TestInputTopic<K,V> createTestInputTopic(String topic, Serde<K> key, Serde<V> value) {
+		Objects.requireNonNull(this.driver, "TopologyTestDriver must be initialized before by calling 'initTopologyTestDriver()'");
+		return this.driver.createInputTopic(
+				topic,
+				key.serializer(),
+				value.serializer());
+	}
+
+    /**
+     * Creates a {@link TestOutputTopic} for the given topic, key type, and value type using JSON serialization.
      * The TopologyTestDriver must be initialized by calling 'initTopologyTestDriver()' before this method is called.
      *
      * @param topic     The name of the topic to create the TestOutputTopic for.
@@ -218,6 +240,27 @@ public class TopologyTestContext {
 				topic, 
 				JSONSERDEREGISTRY.getDeserializer(keyType), 
 				JSONSERDEREGISTRY.getDeserializer(valueType));
+	}
+
+    /**
+     * Creates a {@link TestOutputTopic} for the given topic, key serde, and value serde.
+     * The TopologyTestDriver must be initialized by calling 'initTopologyTestDriver()' before this method is called.
+     * This method provides more flexibility in choosing custom serdes for keys and values.
+     *
+     * @param topic The name of the topic to create the TestOutputTopic for.
+     * @param key   The serde for the key to be deserialized.
+     * @param value The serde for the value to be deserialized.
+     * @param <K>   The type of the key.
+     * @param <V>   The type of the value.
+     * @return The created TestOutputTopic.
+     * @throws NullPointerException If the TopologyTestDriver has not been initialized.
+     */
+	public <K,V> TestOutputTopic<K,V> createTestOutputTopic(String topic, Serde<K> key, Serde<V> value) {
+		Objects.requireNonNull(this.driver, "TopologyTestDriver must be initialized before by calling 'initTopologyTestDriver()'");
+		return this.driver.createOutputTopic(
+				topic,
+				key.deserializer(),
+				value.deserializer());
 	}
 
     /**
