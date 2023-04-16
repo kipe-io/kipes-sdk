@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
+import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.Topology.AutoOffsetReset;
 import org.apache.kafka.streams.kstream.Consumed;
@@ -108,7 +109,8 @@ public class TopologyTestContext {
     /**
      * Creates a new {@link KStream} instance with the specified topic, key class and value class.
      * <p>
-     * It uses json serdes for the key and value class.
+     * It uses json serdes for the key and value class. For custom serdes, use the overloaded method
+     * with Serde parameters.
      *
      * @param <K>        the type of key
      * @param <V>        the type of value
@@ -122,6 +124,26 @@ public class TopologyTestContext {
 				.stream(topic, Consumed.with(
 						JSONSERDEREGISTRY.getSerde(keyClass),
 						JSONSERDEREGISTRY.getSerde(valueClass))
+						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
+	}
+
+    /**
+     * Creates a new {@link KStream} instance with the specified topic, key serde, and value serde.
+     * <p>
+     * This method allows the use of custom serdes for the key and value.
+     *
+     * @param <K>       the type of key
+     * @param <V>       the type of value
+     * @param topic     the topic name
+     * @param keySerde  the key serde
+     * @param valueSerde the value serde
+     * @return a new {@link KStream} instance
+     */
+	public <K, V> KStream<K, V> createKStream(String topic, Serde<K> keySerde, Serde<V> valueSerde) {
+		return this.streamBuilder
+				.stream(topic, Consumed.with(
+								keySerde,
+								valueSerde)
 						.withOffsetResetPolicy(AutoOffsetReset.EARLIEST));
 	}
 	
