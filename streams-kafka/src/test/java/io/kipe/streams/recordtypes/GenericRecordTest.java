@@ -17,33 +17,48 @@
  */
 package io.kipe.streams.recordtypes;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
-/**g
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
  * Test class for {@link GenericRecord}.
  */
 class GenericRecordTest {
@@ -299,7 +314,7 @@ class GenericRecordTest {
 		ObjectMapper mapper = new ObjectMapper();
 
 		assertThrows(JsonProcessingException.class, () -> {
-			String json = mapper.writeValueAsString(r);
+			mapper.writeValueAsString(r);
 		});
 	}
 
@@ -314,9 +329,10 @@ class GenericRecordTest {
 
 		String json = mapper.writeValueAsString(r);
 
+		
 		assertThrows(UnrecognizedPropertyException.class, () -> {
-			GenericRecord serdeRecord = mapper.readValue(json, GenericRecord.class);
-		});
+			mapper.readValue(json, GenericRecord.class);
+		});		
 	}
 	
 	// ------------------------------------------------------------------------
@@ -342,7 +358,7 @@ class GenericRecordTest {
 		ObjectMapper mapper = new ObjectMapper();
 
 		assertThrows(JsonProcessingException.class, () -> {
-			String json = mapper.writeValueAsString(r);
+			mapper.writeValueAsString(r);
 		});
 	}
 
