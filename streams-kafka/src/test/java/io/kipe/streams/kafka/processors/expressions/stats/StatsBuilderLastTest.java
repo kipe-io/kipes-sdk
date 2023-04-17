@@ -84,27 +84,48 @@ class StatsBuilderLastTest extends AbstractGenericRecordProcessorTopologyTest {
     }
 
     @Test
-    void testNullValues() {
-        send(GenericRecord.create().with("group", "A").with("field", null));
+    void testNullValuesInMiddle() {
         send(GenericRecord.create().with("group", "A").with("field", 10));
         send(GenericRecord.create().with("group", "A").with("field", null));
         send(GenericRecord.create().with("group", "A").with("field", -20));
         send(GenericRecord.create().with("group", "B").with("field", 13));
 
-        assertEquals(5, this.targetTopic.getQueueSize());
-        
+        assertEquals(4, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myLast").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myLast").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(-20, r.getNumber("myLast").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("B", r.getString("group"));
+        assertEquals(13, r.getNumber("myLast").intValue());
+    }
+
+    @Test
+    void testNullValuesAtStart() {
+        send(GenericRecord.create().with("group", "A").with("field", null));
+        send(GenericRecord.create().with("group", "A").with("field", 10));
+        send(GenericRecord.create().with("group", "A").with("field", -20));
+        send(GenericRecord.create().with("group", "B").with("field", 13));
+
+        assertEquals(4, this.targetTopic.getQueueSize());
+
         GenericRecord r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
         assertNull(r.getNumber("myLast"));
 
         r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
-        assertEquals(10, r.getNumber("myLast"));
-        
-        r = this.targetTopic.readValue();
-        assertEquals("A", r.getString("group"));
-        assertEquals(10, r.getNumber("myLast"));
-        
+        assertEquals(10, r.getNumber("myLast").intValue());
+
         r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
         assertEquals(-20, r.getNumber("myLast").intValue());

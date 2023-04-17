@@ -81,28 +81,44 @@ class StatsBuilderAverageTest extends AbstractGenericRecordProcessorTopologyTest
     }
 
     @Test
-    void testNullValues() {
-        send(GenericRecord.create().with("group", "C").with("field", null));
+    void testNullValuesInMiddle() {
         send(GenericRecord.create().with("group", "C").with("field", 10));
         send(GenericRecord.create().with("group", "C").with("field", null));
         send(GenericRecord.create().with("group", "C").with("field", -20));
 
-        assertEquals(4, this.targetTopic.getQueueSize());
+        assertEquals(3, this.targetTopic.getQueueSize());
 
         GenericRecord r = this.targetTopic.readValue();
         assertEquals("C", r.getString("group"));
+        assertEquals(10, r.getNumber("myAverage").doubleValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("C", r.getString("group"));
+        assertEquals(10, r.getNumber("myAverage").doubleValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("C", r.getString("group"));
+        assertEquals(-5, r.getNumber("myAverage").doubleValue());
+    }
+
+    @Test
+    void testNullValuesAtStart() {
+        send(GenericRecord.create().with("group", "D").with("field", null));
+        send(GenericRecord.create().with("group", "D").with("field", 10));
+        send(GenericRecord.create().with("group", "D").with("field", -20));
+
+        assertEquals(3, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("D", r.getString("group"));
         assertNull(r.getNumber("myAverage"));
 
         r = this.targetTopic.readValue();
-        assertEquals("C", r.getString("group"));
+        assertEquals("D", r.getString("group"));
         assertEquals(10, r.getNumber("myAverage").doubleValue());
 
         r = this.targetTopic.readValue();
-        assertEquals("C", r.getString("group"));
-        assertEquals(10, r.getNumber("myAverage").doubleValue());
-
-        r = this.targetTopic.readValue();
-        assertEquals("C", r.getString("group"));
+        assertEquals("D", r.getString("group"));
         assertEquals(-5, r.getNumber("myAverage").doubleValue());
     }
 }

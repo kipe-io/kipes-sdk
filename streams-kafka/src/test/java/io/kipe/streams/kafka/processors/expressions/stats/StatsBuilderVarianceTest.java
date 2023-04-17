@@ -17,18 +17,17 @@
  */
 package io.kipe.streams.kafka.processors.expressions.stats;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.kipe.streams.kafka.processors.AbstractGenericRecordProcessorTopologyTest;
 import io.kipe.streams.kafka.processors.KipesBuilder;
 import io.kipe.streams.kafka.processors.StatsBuilder;
 import io.kipe.streams.recordtypes.GenericRecord;
 import io.kipe.streams.test.kafka.TopologyTestContext;
-import org.apache.kafka.streams.errors.StreamsException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests {@link StatsBuilder} with Variance stats (var and varp).
@@ -112,14 +111,12 @@ class StatsBuilderVarianceTest extends AbstractGenericRecordProcessorTopologyTes
     }
 
     @Test
-    void testNullValues() {
+    void testNullValuesInMiddle() {
         send(GenericRecord.create().with("group", "D").with("field", 10));
         send(GenericRecord.create().with("group", "D").with("field", null));
         send(GenericRecord.create().with("group", "D").with("field", -20));
-        send(GenericRecord.create().with("group", "E").with("field", null));
-        send(GenericRecord.create().with("group", "E").with("field", -20));
-        
-        assertEquals(5, this.targetTopic.getQueueSize());
+
+        assertEquals(3, this.targetTopic.getQueueSize());
 
         GenericRecord r = this.targetTopic.readValue();
         assertEquals("D", r.getString("group"));
@@ -134,9 +131,17 @@ class StatsBuilderVarianceTest extends AbstractGenericRecordProcessorTopologyTes
         r = this.targetTopic.readValue();
         assertEquals("D", r.getString("group"));
         assertEquals(450.0, r.getNumber("myVar").doubleValue());
-        assertEquals    (225.0, r.getNumber("myVarp").doubleValue());
+        assertEquals(225.0, r.getNumber("myVarp").doubleValue());
+    }
 
-        r = this.targetTopic.readValue();
+    @Test
+    void testNullValuesAtStart() {
+        send(GenericRecord.create().with("group", "E").with("field", null));
+        send(GenericRecord.create().with("group", "E").with("field", -20));
+
+        assertEquals(2, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
         assertEquals("E", r.getString("group"));
         assertNull(r.get("myVar"));
         assertNull(r.get("myVarp"));

@@ -109,14 +109,12 @@ class StatsBuilderStandardDeviationTest extends AbstractGenericRecordProcessorTo
     }
 
     @Test
-    void testNullValues() {
+    void testNullValuesInMiddle() {
         send(GenericRecord.create().with("group", "D").with("field", 10));
         send(GenericRecord.create().with("group", "D").with("field", null));
         send(GenericRecord.create().with("group", "D").with("field", -20));
-        send(GenericRecord.create().with("group", "E").with("field", null));
-        send(GenericRecord.create().with("group", "E").with("field", -20));
 
-        assertEquals(5, this.targetTopic.getQueueSize());
+        assertEquals(3, this.targetTopic.getQueueSize());
 
         GenericRecord r = this.targetTopic.readValue();
         assertEquals("D", r.getString("group"));
@@ -132,8 +130,16 @@ class StatsBuilderStandardDeviationTest extends AbstractGenericRecordProcessorTo
         assertEquals("D", r.getString("group"));
         assertEquals(21.21, r.getNumber("myStdev").doubleValue(), 1e-2);
         assertEquals(15.0, r.getNumber("myStdevp").doubleValue(), 1e-2);
+    }
 
-        r = this.targetTopic.readValue();
+    @Test
+    void testNullValuesAtStart() {
+        send(GenericRecord.create().with("group", "E").with("field", null));
+        send(GenericRecord.create().with("group", "E").with("field", -20));
+
+        assertEquals(2, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
         assertEquals("E", r.getString("group"));
         assertNull(r.get("myStdev"));
         assertNull(r.get("myStdevp"));
