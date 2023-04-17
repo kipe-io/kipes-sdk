@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests {@link StatsBuilder} with Average stats.
@@ -77,5 +78,31 @@ class StatsBuilderAverageTest extends AbstractGenericRecordProcessorTopologyTest
         r = this.targetTopic.readValue();
         assertEquals("B", r.getString("group"));
         assertEquals(13, r.getNumber("myAverage").doubleValue());
+    }
+
+    @Test
+    void testNullValues() {
+        send(GenericRecord.create().with("group", "C").with("field", null));
+        send(GenericRecord.create().with("group", "C").with("field", 10));
+        send(GenericRecord.create().with("group", "C").with("field", null));
+        send(GenericRecord.create().with("group", "C").with("field", -20));
+
+        assertEquals(4, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("C", r.getString("group"));
+        assertNull(r.getNumber("myAverage"));
+
+        r = this.targetTopic.readValue();
+        assertEquals("C", r.getString("group"));
+        assertEquals(10, r.getNumber("myAverage").doubleValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("C", r.getString("group"));
+        assertEquals(10, r.getNumber("myAverage").doubleValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("C", r.getString("group"));
+        assertEquals(-5, r.getNumber("myAverage").doubleValue());
     }
 }

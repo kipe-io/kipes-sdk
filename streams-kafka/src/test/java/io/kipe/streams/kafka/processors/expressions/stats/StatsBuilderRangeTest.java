@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests {@link StatsBuilder} with Range stats.
@@ -83,4 +84,48 @@ class StatsBuilderRangeTest extends AbstractGenericRecordProcessorTopologyTest {
         assertEquals("B", r.getString("group"));
         assertEquals(12, r.getNumber("myRange").intValue());
     }
+
+    @Test
+    void testWithNullValues() {
+        // given five records
+        send(GenericRecord.create().with("group", "A").with("field", 10));
+        send(GenericRecord.create().with("group", "A").with("field", -20));
+        send(GenericRecord.create().with("group", "A").with("field", null));
+        send(GenericRecord.create().with("group", "B").with("field", 13));
+        send(GenericRecord.create().with("group", "B").with("field", 25));
+        send(GenericRecord.create().with("group", "C").with("field", null));
+        send(GenericRecord.create().with("group", "C").with("field", 15));
+
+        // then we get five results
+        assertEquals(7, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(0, r.getNumber("myRange").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(30, r.getNumber("myRange").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(30, r.getNumber("myRange").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("B", r.getString("group"));
+        assertEquals(0, r.getNumber("myRange").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("B", r.getString("group"));
+        assertEquals(12, r.getNumber("myRange").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("C", r.getString("group"));
+        assertNull( r.getNumber("myRange"));
+
+        r = this.targetTopic.readValue();
+        assertEquals("C", r.getString("group"));
+        assertEquals(0, r.getNumber("myRange").intValue());
+    }
+    
 }
