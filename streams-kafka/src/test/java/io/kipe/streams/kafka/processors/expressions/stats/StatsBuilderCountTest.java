@@ -18,6 +18,7 @@
 package io.kipe.streams.kafka.processors.expressions.stats;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Map;
 
@@ -82,4 +83,34 @@ class StatsBuilderCountTest extends AbstractGenericRecordProcessorTopologyTest {
 		assertEquals(1, r.getNumber("myCount").intValue());
 	}
 
+	@Test
+	void testNullValues() {
+		send("group", null);
+		send("group", "A");
+		send("group", null);
+		send("group", "A");
+		send("group", "B");
+
+		assertEquals(5, this.targetTopic.getQueueSize());
+
+		GenericRecord r = this.targetTopic.readValue();
+		assertNull(r.getString("group"));
+		assertEquals(1, r.getNumber("myCount").intValue());
+
+		r = this.targetTopic.readValue();
+		assertEquals("A", r.getString("group"));
+		assertEquals(1, r.getNumber("myCount").intValue());
+		
+		r = this.targetTopic.readValue();
+		assertNull(r.getString("group"));
+		assertEquals(2, r.getNumber("myCount").intValue());
+
+		r = this.targetTopic.readValue();
+		assertEquals("A", r.getString("group"));
+		assertEquals(2, r.getNumber("myCount").intValue());
+
+		r = this.targetTopic.readValue();
+		assertEquals("B", r.getString("group"));
+		assertEquals(1, r.getNumber("myCount").intValue());
+	}
 }

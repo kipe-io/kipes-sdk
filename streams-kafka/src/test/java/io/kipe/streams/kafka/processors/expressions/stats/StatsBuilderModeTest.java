@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests {@link StatsBuilder} with Mode stats.
@@ -83,5 +84,36 @@ class StatsBuilderModeTest extends AbstractGenericRecordProcessorTopologyTest {
         r = this.targetTopic.readValue();
         assertEquals("B", r.getString("group"));
         assertEquals(Set.of("orange"), r.getSet("myMode"));
+    }
+
+    @Test
+    void testNullValues() {
+        send(GenericRecord.create().with("group", "C").with("field", "apple"));
+        send(GenericRecord.create().with("group", "C").with("field", null));
+        send(GenericRecord.create().with("group", "C").with("field", "apple"));
+        send(GenericRecord.create().with("group", "D").with("field", null));
+        send(GenericRecord.create().with("group", "D").with("field", "banana"));
+
+        assertEquals(5, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("C", r.getString("group"));
+        assertEquals(Set.of("apple"), r.getSet("myMode"));
+
+        r = this.targetTopic.readValue();
+        assertEquals("C", r.getString("group"));
+        assertEquals(Set.of("apple"), r.getSet("myMode"));
+
+        r = this.targetTopic.readValue();
+        assertEquals("C", r.getString("group"));
+        assertEquals(Set.of("apple"), r.getSet("myMode"));
+
+        r = this.targetTopic.readValue();
+        assertEquals("D", r.getString("group"));
+        assertNull(r.get("myMode"));
+
+        r = this.targetTopic.readValue();
+        assertEquals("D", r.getString("group"));
+        assertEquals(Set.of("banana"), r.getSet("myMode"));
     }
 }

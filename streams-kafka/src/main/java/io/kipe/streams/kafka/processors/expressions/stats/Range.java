@@ -55,9 +55,13 @@ public class Range extends StatsExpression {
             String fieldNameMin = String.format("_%s_min", this.fieldName);
             String fieldNameMax = String.format("_%s_max", this.fieldName);
 
-            var min = aggregate.getNumber(fieldNameMin);
-            var max = aggregate.getNumber(fieldNameMax);
-            var fieldValue = value.getNumber(fieldNameToRange);
+            Number min = aggregate.getNumber(fieldNameMin);
+            Number max = aggregate.getNumber(fieldNameMax);
+            Number fieldValue = value.getNumber(fieldNameToRange);
+
+            if (fieldValue == null) {
+                return min != null && max != null ? max.doubleValue() - min.doubleValue() : null;
+            }
 
             if (min == null || fieldValue.doubleValue() < min.doubleValue()) {
                 aggregate.set(fieldNameMin, fieldValue);

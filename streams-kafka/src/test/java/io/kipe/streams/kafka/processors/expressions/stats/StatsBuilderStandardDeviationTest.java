@@ -109,9 +109,38 @@ class StatsBuilderStandardDeviationTest extends AbstractGenericRecordProcessorTo
     }
 
     @Test
-    void testNullValue() {
-        assertThrows(StreamsException.class, () ->
-                send(GenericRecord.create().with("group", "D").with("field", null))
-        );
+    void testNullValues() {
+        send(GenericRecord.create().with("group", "D").with("field", 10));
+        send(GenericRecord.create().with("group", "D").with("field", null));
+        send(GenericRecord.create().with("group", "D").with("field", -20));
+        send(GenericRecord.create().with("group", "E").with("field", null));
+        send(GenericRecord.create().with("group", "E").with("field", -20));
+
+        assertEquals(5, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("D", r.getString("group"));
+        assertEquals(0.0, r.getNumber("myStdev").doubleValue());
+        assertEquals(0.0, r.getNumber("myStdevp").doubleValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("D", r.getString("group"));
+        assertEquals(0.0, r.getNumber("myStdev").doubleValue());
+        assertEquals(0.0, r.getNumber("myStdevp").doubleValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("D", r.getString("group"));
+        assertEquals(21.21, r.getNumber("myStdev").doubleValue(), 1e-2);
+        assertEquals(15.0, r.getNumber("myStdevp").doubleValue(), 1e-2);
+
+        r = this.targetTopic.readValue();
+        assertEquals("E", r.getString("group"));
+        assertNull(r.get("myStdev"));
+        assertNull(r.get("myStdevp"));
+
+        r = this.targetTopic.readValue();
+        assertEquals("E", r.getString("group"));
+        assertEquals(0.0, r.getNumber("myStdev").doubleValue());
+        assertEquals(0.0, r.getNumber("myStdevp").doubleValue());
     }
 }

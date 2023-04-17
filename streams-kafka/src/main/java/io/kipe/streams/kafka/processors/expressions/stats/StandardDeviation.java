@@ -89,9 +89,14 @@ public class StandardDeviation extends StatsExpression {
             String fieldNameMean = createInternalFieldName("mean");
             String fieldNameSsd = createInternalFieldName("ssd");
 
+            Double fieldValue = value.getDouble(fieldNameToStdev);
+
+            if (fieldValue == null) {
+                return aggregate.getDouble(this.fieldName);
+            }
+
             double previousMean = aggregate.getDouble(fieldNameMean) == null ? 0.0 : aggregate.getDouble(fieldNameMean);
             double previousCount = aggregate.getNumber(fieldNameCount) == null ? 0.0 : aggregate.getNumber(fieldNameCount).doubleValue();
-            double fieldValue = value.getDouble(fieldNameToStdev);
             previousCount += 1;
             double updatedMean = previousMean + (fieldValue - previousMean) / previousCount;
             double previousSsd = aggregate.getDouble(fieldNameSsd) == null ? 0.0 : aggregate.getDouble(fieldNameSsd);
