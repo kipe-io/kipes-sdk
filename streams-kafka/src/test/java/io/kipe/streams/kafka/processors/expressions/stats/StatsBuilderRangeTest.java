@@ -86,18 +86,14 @@ class StatsBuilderRangeTest extends AbstractGenericRecordProcessorTopologyTest {
     }
 
     @Test
-    void testWithNullValues() {
-        // given five records
+    void testNullValuesInMiddle() {
         send(GenericRecord.create().with("group", "A").with("field", 10));
         send(GenericRecord.create().with("group", "A").with("field", -20));
         send(GenericRecord.create().with("group", "A").with("field", null));
         send(GenericRecord.create().with("group", "B").with("field", 13));
         send(GenericRecord.create().with("group", "B").with("field", 25));
-        send(GenericRecord.create().with("group", "C").with("field", null));
-        send(GenericRecord.create().with("group", "C").with("field", 15));
 
-        // then we get five results
-        assertEquals(7, this.targetTopic.getQueueSize());
+        assertEquals(5, this.targetTopic.getQueueSize());
 
         GenericRecord r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
@@ -118,10 +114,18 @@ class StatsBuilderRangeTest extends AbstractGenericRecordProcessorTopologyTest {
         r = this.targetTopic.readValue();
         assertEquals("B", r.getString("group"));
         assertEquals(12, r.getNumber("myRange").intValue());
+    }
 
-        r = this.targetTopic.readValue();
+    @Test
+    void testNullValuesAtStart() {
+        send(GenericRecord.create().with("group", "C").with("field", null));
+        send(GenericRecord.create().with("group", "C").with("field", 15));
+
+        assertEquals(2, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
         assertEquals("C", r.getString("group"));
-        assertNull( r.getNumber("myRange"));
+        assertNull(r.getNumber("myRange"));
 
         r = this.targetTopic.readValue();
         assertEquals("C", r.getString("group"));
