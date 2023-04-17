@@ -86,23 +86,17 @@ class StatsBuilderDistinctCountTest extends AbstractGenericRecordProcessorTopolo
     }
 
     @Test
-    void testNullValues() {
-        send(GenericRecord.create().with("group", "A").with("field", null));
+    void testNullValuesInMiddle() {
         send(GenericRecord.create().with("group", "A").with("field", 10));
         send(GenericRecord.create().with("group", "A").with("field", null));
         send(GenericRecord.create().with("group", "A").with("field", -20));
         send(GenericRecord.create().with("group", "B").with("field", 13));
-        send(GenericRecord.create().with("group", "A").with("field", 10));
 
-        assertEquals(6, this.targetTopic.getQueueSize());
-        
+        assertEquals(4, this.targetTopic.getQueueSize());
+
         GenericRecord r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
-        assertEquals(1, r.getNumber("myDistinctCount"));
-        
-        r = this.targetTopic.readValue();
-        assertEquals("A", r.getString("group"));
-        assertEquals(2, r.getNumber("myDistinctCount").intValue());
+        assertEquals(1, r.getNumber("myDistinctCount").intValue());
 
         r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
@@ -115,9 +109,31 @@ class StatsBuilderDistinctCountTest extends AbstractGenericRecordProcessorTopolo
         r = this.targetTopic.readValue();
         assertEquals("B", r.getString("group"));
         assertEquals(1, r.getNumber("myDistinctCount").intValue());
+    }
+
+    @Test
+    void testNullValuesAtStart() {
+        send(GenericRecord.create().with("group", "A").with("field", null));
+        send(GenericRecord.create().with("group", "A").with("field", 10));
+        send(GenericRecord.create().with("group", "A").with("field", -20));
+        send(GenericRecord.create().with("group", "B").with("field", 13));
+
+        assertEquals(4, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(1, r.getNumber("myDistinctCount"));
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(2, r.getNumber("myDistinctCount").intValue());
 
         r = this.targetTopic.readValue();
         assertEquals("A", r.getString("group"));
         assertEquals(3, r.getNumber("myDistinctCount").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("B", r.getString("group"));
+        assertEquals(1, r.getNumber("myDistinctCount").intValue());
     }
 }

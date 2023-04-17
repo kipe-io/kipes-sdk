@@ -84,14 +84,39 @@ class StatsBuilderCountTest extends AbstractGenericRecordProcessorTopologyTest {
 	}
 
 	@Test
-	void testNullValues() {
-		send("group", null);
+	void testNullValuesInMiddle() {
 		send("group", "A");
 		send("group", null);
 		send("group", "A");
 		send("group", "B");
 
-		assertEquals(5, this.targetTopic.getQueueSize());
+		assertEquals(4, this.targetTopic.getQueueSize());
+
+		GenericRecord r = this.targetTopic.readValue();
+		assertEquals("A", r.getString("group"));
+		assertEquals(1, r.getNumber("myCount").intValue());
+
+		r = this.targetTopic.readValue();
+		assertNull(r.getString("group"));
+		assertEquals(1, r.getNumber("myCount").intValue());
+
+		r = this.targetTopic.readValue();
+		assertEquals("A", r.getString("group"));
+		assertEquals(2, r.getNumber("myCount").intValue());
+
+		r = this.targetTopic.readValue();
+		assertEquals("B", r.getString("group"));
+		assertEquals(1, r.getNumber("myCount").intValue());
+	}
+
+	@Test
+	void testNullValuesAtStart() {
+		send("group", null);
+		send("group", "A");
+		send("group", "A");
+		send("group", "B");
+
+		assertEquals(4, this.targetTopic.getQueueSize());
 
 		GenericRecord r = this.targetTopic.readValue();
 		assertNull(r.getString("group"));
@@ -100,10 +125,6 @@ class StatsBuilderCountTest extends AbstractGenericRecordProcessorTopologyTest {
 		r = this.targetTopic.readValue();
 		assertEquals("A", r.getString("group"));
 		assertEquals(1, r.getNumber("myCount").intValue());
-		
-		r = this.targetTopic.readValue();
-		assertNull(r.getString("group"));
-		assertEquals(2, r.getNumber("myCount").intValue());
 
 		r = this.targetTopic.readValue();
 		assertEquals("A", r.getString("group"));

@@ -87,14 +87,12 @@ class StatsBuilderModeTest extends AbstractGenericRecordProcessorTopologyTest {
     }
 
     @Test
-    void testNullValues() {
+    void testNullValuesInMiddle() {
         send(GenericRecord.create().with("group", "C").with("field", "apple"));
         send(GenericRecord.create().with("group", "C").with("field", null));
         send(GenericRecord.create().with("group", "C").with("field", "apple"));
-        send(GenericRecord.create().with("group", "D").with("field", null));
-        send(GenericRecord.create().with("group", "D").with("field", "banana"));
 
-        assertEquals(5, this.targetTopic.getQueueSize());
+        assertEquals(3, this.targetTopic.getQueueSize());
 
         GenericRecord r = this.targetTopic.readValue();
         assertEquals("C", r.getString("group"));
@@ -107,8 +105,16 @@ class StatsBuilderModeTest extends AbstractGenericRecordProcessorTopologyTest {
         r = this.targetTopic.readValue();
         assertEquals("C", r.getString("group"));
         assertEquals(Set.of("apple"), r.getSet("myMode"));
+    }
 
-        r = this.targetTopic.readValue();
+    @Test
+    void testNullValuesAtStart() {
+        send(GenericRecord.create().with("group", "D").with("field", null));
+        send(GenericRecord.create().with("group", "D").with("field", "banana"));
+
+        assertEquals(2, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
         assertEquals("D", r.getString("group"));
         assertNull(r.get("myMode"));
 
