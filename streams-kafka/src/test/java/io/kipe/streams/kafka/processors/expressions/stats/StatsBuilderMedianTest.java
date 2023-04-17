@@ -196,4 +196,31 @@ class StatsBuilderMedianTest extends AbstractGenericRecordProcessorTopologyTest 
         assertEquals("A", r.getString("group"));
         assertEquals(20, r.getNumber("myMedian").intValue());
     }
+
+    @Test
+    void testDuplicateElements() {
+        send(GenericRecord.create().with("group", "A").with("field", 10));
+        send(GenericRecord.create().with("group", "A").with("field", 10));
+        send(GenericRecord.create().with("group", "A").with("field", 20));
+        send(GenericRecord.create().with("group", "A").with("field", 20));
+
+        assertEquals(4, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(10, r.getNumber("myMedian").intValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("A", r.getString("group"));
+        assertEquals(15, r.getNumber("myMedian").intValue());
+    }
+
 }

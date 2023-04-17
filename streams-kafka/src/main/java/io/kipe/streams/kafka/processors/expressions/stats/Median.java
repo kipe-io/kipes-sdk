@@ -17,13 +17,23 @@
  */
 package io.kipe.streams.kafka.processors.expressions.stats;
 
+import com.google.common.collect.TreeMultiset;
 import io.kipe.streams.kafka.processors.StatsExpression;
-
-import java.util.Comparator;
-import java.util.PriorityQueue;
 
 /**
  * The Median class calculates the median value of a data stream for a specified field.
+ * <p>
+ * The fields for this statistical expression are as follows:
+ * <pre>
+ * | field     | internal | type               | description                                       |
+ * |-----------|----------|--------------------|---------------------------------------------------|
+ * | median    | no       | double             | the calculated median value of the measured field |
+ * | lowerHalf | yes      | multiset of double | the lower half values for the specified field     |
+ * | upperHalf | yes      | multiset of double | the upper half values for the specified field     |
+ * </pre>
+ * <p>
+ * Note: This implementation uses 2-TreeMultiset as an alternative to the 2-PriorityQueue approach due to serialization
+ * issues, while still providing an efficient median calculation in streaming environments.
  */
 public class Median extends StatsExpression {
     public static final String DEFAULT_FIELD = "median";
@@ -40,7 +50,7 @@ public class Median extends StatsExpression {
 
     /**
      * Initializes the statsFunction to calculate the median by collecting the values for the specified field and
-     * finding the middle value using two heaps.
+     * finding the middle value using two TreeMultisets (lowerHalf and upperHalf).
      */
     private Median(String fieldNameToMedian) {
         super(DEFAULT_FIELD);
@@ -48,19 +58,19 @@ public class Median extends StatsExpression {
             String fieldNameLowerHalf = createInternalFieldName("lowerHalf");
             String fieldNameUpperHalf = createInternalFieldName("upperHalf");
 
-            PriorityQueue<Double> lowerHalf = aggregate.get(fieldNameLowerHalf);
-            PriorityQueue<Double> upperHalf = aggregate.get(fieldNameUpperHalf);
+            TreeMultiset<Double> lowerHalf = aggregate.get(fieldNameLowerHalf);
+            TreeMultiset<Double> upperHalf = aggregate.get(fieldNameUpperHalf);
 
             if (lowerHalf == null) {
-                lowerHalf = new PriorityQueue<>(Comparator.reverseOrder());
+                lowerHalf = TreeMultiset.create();
             }
             if (upperHalf == null) {
-                upperHalf = new PriorityQueue<>(Comparator.naturalOrder());
+                upperHalf = TreeMultiset.create();
             }
 
             Double fieldValue = value.getNumber(fieldNameToMedian).doubleValue();
             addValue(fieldValue, lowerHalf, upperHalf);
-            rebalanceHeaps(lowerHalf, upperHalf);
+            rebalanceMultisets(lowerHalf, upperHalf);
 
             aggregate.set(fieldNameLowerHalf, lowerHalf);
             aggregate.set(fieldNameUpperHalf, upperHalf);
@@ -69,28 +79,28 @@ public class Median extends StatsExpression {
         };
     }
 
-    private void addValue(Double fieldValue, PriorityQueue<Double> lowerHalf, PriorityQueue<Double> upperHalf) {
-        if (lowerHalf.isEmpty() || fieldValue < lowerHalf.peek()) {
+    private void addValue(Double fieldValue, TreeMultiset<Double> lowerHalf, TreeMultiset<Double> upperHalf) {
+        if (lowerHalf.isEmpty() || fieldValue < lowerHalf.lastEntry().getElement()) {
             lowerHalf.add(fieldValue);
         } else {
             upperHalf.add(fieldValue);
         }
     }
 
-    private void rebalanceHeaps(PriorityQueue<Double> lowerHalf, PriorityQueue<Double> upperHalf) {
+    private void rebalanceMultisets(TreeMultiset<Double> lowerHalf, TreeMultiset<Double> upperHalf) {
         while (lowerHalf.size() > upperHalf.size() + 1) {
-            upperHalf.add(lowerHalf.poll());
+            upperHalf.add(lowerHalf.pollLastEntry().getElement());
         }
         while (upperHalf.size() > lowerHalf.size()) {
-            lowerHalf.add(upperHalf.poll());
+            lowerHalf.add(upperHalf.pollFirstEntry().getElement());
         }
     }
 
-    private double calculateMedian(PriorityQueue<Double> lowerHalf, PriorityQueue<Double> upperHalf) {
+    private double calculateMedian(TreeMultiset<Double> lowerHalf, TreeMultiset<Double> upperHalf) {
         if (lowerHalf.size() == upperHalf.size()) {
-            return (lowerHalf.peek() + upperHalf.peek()) / 2;
+            return (lowerHalf.lastEntry().getElement() + upperHalf.firstEntry().getElement()) / 2;
         } else {
-            return lowerHalf.peek();
+            return lowerHalf.lastEntry().getElement();
         }
     }
 }
