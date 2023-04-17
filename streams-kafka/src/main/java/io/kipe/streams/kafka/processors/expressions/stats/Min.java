@@ -52,7 +52,13 @@ public class Min extends StatsExpression {
         this.statsFunction = (groupKey, value, aggregate) -> {
             var currentMin = aggregate.getNumber(this.fieldName);
             var newValue = value.getNumber(fieldName);
-            return currentMin == null || newValue.doubleValue() < currentMin.doubleValue() ? newValue : currentMin;
+            if (newValue == null) {
+                return currentMin;
+            }
+            if (currentMin == null || newValue.doubleValue() < currentMin.doubleValue()) {
+                return newValue;
+            }
+            return currentMin;
         };
     }
 }

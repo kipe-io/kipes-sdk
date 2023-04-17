@@ -53,7 +53,13 @@ public class Max extends StatsExpression {
         this.statsFunction = (groupKey, value, aggregate) -> {
             var currentMax = aggregate.getNumber(this.fieldName);
             var newValue = value.getNumber(fieldNameToMax);
-            return currentMax == null || newValue.doubleValue() > currentMax.doubleValue() ? newValue : currentMax;
+            if (newValue == null) {
+                return currentMax;
+            }
+            if (currentMax == null || newValue.doubleValue() > currentMax.doubleValue()) {
+                return newValue;
+            }
+            return currentMax;
         };
     }
 }

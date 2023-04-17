@@ -61,13 +61,11 @@ class StatsBuilderVarianceTest extends AbstractGenericRecordProcessorTopologyTes
      */
     @Test
     void test() {
-        // given four records
         send(GenericRecord.create().with("group", "A").with("field", 10));
         send(GenericRecord.create().with("group", "A").with("field", -20));
         send(GenericRecord.create().with("group", "B").with("field", 13));
         send(GenericRecord.create().with("group", "B").with("field", 25));
 
-        // then we get four results
         assertEquals(4, this.targetTopic.getQueueSize());
 
         GenericRecord r = this.targetTopic.readValue();
@@ -114,9 +112,38 @@ class StatsBuilderVarianceTest extends AbstractGenericRecordProcessorTopologyTes
     }
 
     @Test
-    void testNullValue() {
-        assertThrows(StreamsException.class, () ->
-                send(GenericRecord.create().with("group", "D").with("field", null))
-        );
+    void testNullValues() {
+        send(GenericRecord.create().with("group", "D").with("field", 10));
+        send(GenericRecord.create().with("group", "D").with("field", null));
+        send(GenericRecord.create().with("group", "D").with("field", -20));
+        send(GenericRecord.create().with("group", "E").with("field", null));
+        send(GenericRecord.create().with("group", "E").with("field", -20));
+        
+        assertEquals(5, this.targetTopic.getQueueSize());
+
+        GenericRecord r = this.targetTopic.readValue();
+        assertEquals("D", r.getString("group"));
+        assertEquals(0.0, r.getNumber("myVar").doubleValue());
+        assertEquals(0.0, r.getNumber("myVarp").doubleValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("D", r.getString("group"));
+        assertEquals(0.0, r.getNumber("myVar").doubleValue());
+        assertEquals(0.0, r.getNumber("myVarp").doubleValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("D", r.getString("group"));
+        assertEquals(450.0, r.getNumber("myVar").doubleValue());
+        assertEquals    (225.0, r.getNumber("myVarp").doubleValue());
+
+        r = this.targetTopic.readValue();
+        assertEquals("E", r.getString("group"));
+        assertNull(r.get("myVar"));
+        assertNull(r.get("myVarp"));
+
+        r = this.targetTopic.readValue();
+        assertEquals("E", r.getString("group"));
+        assertEquals(0.0, r.getNumber("myVar").doubleValue());
+        assertEquals(0.0, r.getNumber("myVarp").doubleValue());
     }
 }
