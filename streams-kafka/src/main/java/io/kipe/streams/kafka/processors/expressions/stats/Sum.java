@@ -62,14 +62,14 @@ public class Sum extends StatsExpression {
 		super(DEFAULT_FIELD);
 		this.fieldNameToSum = fieldNameToSum;
 		this.statsFunction = (groupKey, value, aggregate) -> {
-			var sum = aggregate.getNumber(this.fieldName);
-			var fieldValue = value.getNumber(this.fieldNameToSum);
+			Number fieldValue = value.getNumber(this.fieldNameToSum);
 
 			if (fieldValue == null) {
-				return sum;
+				return aggregate.getNumber(this.fieldName);
 			}
-			
-			return sum == null? fieldValue.doubleValue() : sum.doubleValue() + fieldValue.doubleValue();
+
+			Number sum = aggregate.get(this.fieldName, () -> 0.0);
+			return sum.doubleValue() + fieldValue.doubleValue();
 		};
 	}
 

@@ -49,9 +49,8 @@ public class First extends StatsExpression {
     private First(String fieldNameToFirst) {
         super(DEFAULT_FIELD);
         this.statsFunction = (groupKey, value, aggregate) -> {
-            var firstSeenValue = aggregate.get(fieldName);
             var fieldValue = value.get(fieldNameToFirst);
-            return firstSeenValue == null ? fieldValue : firstSeenValue;
+            return aggregate.get(this.fieldName, () -> fieldValue);
         };
     }
 
