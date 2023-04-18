@@ -52,8 +52,8 @@ public class Range extends StatsExpression {
     private Range(String fieldNameToRange) {
         super(DEFAULT_FIELD);
         this.statsFunction = (groupKey, value, aggregate) -> {
-            String fieldNameMin = String.format("_%s_min", this.fieldName);
-            String fieldNameMax = String.format("_%s_max", this.fieldName);
+            String fieldNameMin = createInternalFieldName("min");
+            String fieldNameMax = createInternalFieldName("max");
 
             Number min = aggregate.getNumber(fieldNameMin);
             Number max = aggregate.getNumber(fieldNameMax);

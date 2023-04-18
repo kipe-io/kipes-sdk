@@ -60,20 +60,15 @@ public class Mode extends StatsExpression {
         this.statsFunction = (groupKey, value, aggregate) -> {
             String fieldNameCounts = createInternalFieldName("counts");
 
-            Map<String, Integer> counts = aggregate.getMap(fieldNameCounts);
-
-            String fieldValue = value.getString(fieldNameToMode);
+            String fieldValue = value.get(fieldNameToMode);
 
             if (fieldValue == null) {
                 return aggregate.get(this.fieldName);
             }
 
-            if (counts == null) {
-                counts = new HashMap<>();
-                aggregate.set(fieldNameCounts, counts);
-            }
-
+            Map<String, Integer> counts = aggregate.get(fieldNameCounts, HashMap::new);
             counts.put(fieldValue, counts.getOrDefault(fieldValue, 0) + 1);
+            aggregate.set(fieldNameCounts, counts);
 
             return calculateModes(counts);
         };
