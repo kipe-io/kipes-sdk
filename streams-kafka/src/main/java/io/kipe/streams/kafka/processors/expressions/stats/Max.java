@@ -51,13 +51,15 @@ public class Max extends StatsExpression {
     private Max(String fieldNameToMax) {
         super(DEFAULT_FIELD);
         this.statsFunction = (groupKey, value, aggregate) -> {
-            var currentMax = aggregate.getNumber(this.fieldName);
-            var newValue = value.getNumber(fieldNameToMax);
-            if (newValue == null) {
-                return currentMax;
+            Number fieldValue = value.getNumber(fieldNameToMax);
+            if (fieldValue == null) {
+                return aggregate.getNumber(this.fieldName);
             }
-            if (currentMax == null || newValue.doubleValue() > currentMax.doubleValue()) {
-                return newValue;
+
+            Number currentMax = aggregate.get(this.fieldName, () -> fieldValue);
+            if (fieldValue.doubleValue() > currentMax.doubleValue()) {
+                aggregate.set(this.fieldName, fieldValue);
+                return fieldValue;
             }
             return currentMax;
         };

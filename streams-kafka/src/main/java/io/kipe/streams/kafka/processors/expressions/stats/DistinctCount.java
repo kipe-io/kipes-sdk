@@ -55,10 +55,7 @@ public class DistinctCount extends StatsExpression {
         super(DEFAULT_FIELD);
         this.statsFunction = (groupKey, value, aggregate) -> {
             String fieldNameValues = createInternalFieldName("values");
-            Set<Object> uniqueValues = aggregate.get(fieldNameValues);
-            if (uniqueValues == null) {
-                uniqueValues = new HashSet<>();
-            }
+            Set<Object> uniqueValues = aggregate.get(fieldNameValues, HashSet::new);
             uniqueValues.add(value.get(fieldNameToDistinctCount));
             aggregate.set(fieldNameValues, uniqueValues);
             return uniqueValues.size();

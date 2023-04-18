@@ -57,25 +57,24 @@ public class Average extends StatsExpression {
             String fieldNameSum = createInternalFieldName("sum");
             String fieldNameCount = createInternalFieldName("count");
 
-            Number currentSumNumber = aggregate.getNumber(fieldNameSum);
-            Number currentCountNumber = aggregate.getNumber(fieldNameCount);
             Number fieldValue = value.getNumber(fieldNameToAverage);
-
-            double currentSum = (currentSumNumber != null) ? currentSumNumber.doubleValue() : 0.0;
-            int currentCount = (currentCountNumber != null) ? currentCountNumber.intValue() : 0;
 
             if (fieldValue != null) {
                 double newValue = fieldValue.doubleValue();
+
+                double currentSum = aggregate.get(fieldNameSum, () -> 0.0);
+                int currentCount = aggregate.get(fieldNameCount, () -> 0);
+
                 currentSum += newValue;
                 currentCount++;
 
                 aggregate.set(fieldNameSum, currentSum);
                 aggregate.set(fieldNameCount, currentCount);
+
+                return currentCount > 0 ? currentSum / currentCount : 0;
             } else {
                 return aggregate.getNumber(this.fieldName);
             }
-
-            return currentCount > 0 ? currentSum / currentCount : 0;
         };
     }
 }

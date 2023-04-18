@@ -50,13 +50,15 @@ public class Min extends StatsExpression {
     private Min(String fieldName) {
         super(DEFAULT_FIELD);
         this.statsFunction = (groupKey, value, aggregate) -> {
-            var currentMin = aggregate.getNumber(this.fieldName);
-            var newValue = value.getNumber(fieldName);
-            if (newValue == null) {
-                return currentMin;
+            Number fieldValue = value.getNumber(fieldName);
+            if (fieldValue == null) {
+                return aggregate.getNumber(this.fieldName);
             }
-            if (currentMin == null || newValue.doubleValue() < currentMin.doubleValue()) {
-                return newValue;
+
+            Number currentMin = aggregate.get(this.fieldName, () -> fieldValue);
+            if (fieldValue.doubleValue() < currentMin.doubleValue()) {
+                aggregate.set(this.fieldName, fieldValue);
+                return fieldValue;
             }
             return currentMin;
         };

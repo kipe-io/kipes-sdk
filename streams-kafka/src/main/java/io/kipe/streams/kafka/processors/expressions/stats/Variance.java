@@ -31,7 +31,7 @@ import org.apache.kafka.streams.errors.StreamsException;
  * | field       | internal | type   | description                                          |
  * |-------------|----------|--------|------------------------------------------------------|
  * | var or varp | no       | double | the variance of values at the measured value field   |
- * | count       | yes      | double | the number of values processed                       |
+ * | count       | yes      | long   | the number of values processed                       |
  * | mean        | yes      | double | the running mean of the values                       |
  * | ssd         | yes      | double | the running sum of squared differences from the mean |
  * </pre>
@@ -92,11 +92,11 @@ public class Variance extends StatsExpression {
                 return aggregate.getDouble(this.fieldName);
             }
 
-            double previousMean = aggregate.getDouble(fieldNameMean) == null ? 0.0 : aggregate.getDouble(fieldNameMean);
-            double previousCount = aggregate.getNumber(fieldNameCount) == null ? 0.0 : aggregate.getNumber(fieldNameCount).doubleValue();
+            double previousMean = aggregate.get(fieldNameMean, () -> 0.0);
+            long previousCount = aggregate.get(fieldNameCount, () -> 0L);
             previousCount += 1;
             double updatedMean = previousMean + (fieldValue - previousMean) / previousCount;
-            double previousSsd = aggregate.getDouble(fieldNameSsd) == null ? 0.0 : aggregate.getDouble(fieldNameSsd);
+            double previousSsd = aggregate.get(fieldNameSsd, () -> 0.0);
             double updatedSsd = previousSsd + (fieldValue - previousMean) * (fieldValue - updatedMean);
 
             aggregate.set(fieldNameCount, previousCount);
