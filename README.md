@@ -10,10 +10,12 @@
 Kipe.io is a user-friendly wrapper around the Kafka Streams API that simplifies building and managing Kafka stream
 topologies. It provides a fluent API for building and chaining various stream operations, making it easier to work with
 Kafka Streams.
-Table of Contents
+
+## Table of Contents
 
 <!-- TOC -->
 * [Kipes SDK](#kipes-sdk)
+  * [Table of Contents](#table-of-contents)
   * [Features](#features)
   * [Requirements](#requirements)
   * [Getting Started](#getting-started)
@@ -27,8 +29,8 @@ Table of Contents
     * [Avro](#avro)
     * [Protobuf](#protobuf)
   * [Testing](#testing)
-    * [Testing with `AbstractTopologyTest`](#testing-with-abstracttopologytest)
-    * [Testing with `AbstractGenericRecordProcessorTopologyTest`](#testing-with-abstractgenericrecordprocessortopologytest)
+    * [Testing with AbstractTopologyTest](#testing-with-abstracttopologytest)
+    * [Testing with AbstractGenericRecordProcessorTopologyTest](#testing-with-abstractgenericrecordprocessortopologytest)
   * [Examples](#examples)
     * [Basic Example](#basic-example)
     * [Advanced Example](#advanced-example)
@@ -57,7 +59,6 @@ Add the Kipe dependency to your project using Maven or Gradle.
 ### Maven
 
 ```xml
-
 <dependency>
 	<groupId>io.kipe</groupId>
 	<artifactId>kipes-sdk</artifactId>
@@ -79,8 +80,8 @@ To create a `KipesBuilder`, you must first have a Kafka Streams `StreamsBuilder`
 the `init()` method, passing in a `StreamsBuilder` object.
 
 ```java
-StreamsBuilder streamsBuilder=new StreamsBuilder();
-        KipesBuilder<K, V> kipesBuilder=KipesBuilder.init(streamsBuilder);
+StreamsBuilder streamsBuilder = new StreamsBuilder();
+KipesBuilder<K, V> kipesBuilder = KipesBuilder.init(streamsBuilder);
 ```
 
 ### Building Stream Topologies
@@ -88,18 +89,18 @@ StreamsBuilder streamsBuilder=new StreamsBuilder();
 Specify the input `KStream` and its corresponding `Serdes`, and pass them into the `from()` method:
 
 ```java
-KStream<String, Integer> inputStream=streamsBuilder.stream("inputTopic");
-        kipesBuilder.from(inputStream,Serdes.String(),Serdes.Integer());
+KStream<String, Integer> inputStream = streamsBuilder.stream("inputTopic");
+kipesBuilder.from(inputStream, Serdes.String(), Serdes.Integer());
 ```
 
 Chain various operations on the KipesBuilder instance to build your desired stream topology:
 
 ```java
 kipesBuilder
-        .logDebug("Input")
-        .filter((key,value)->value>0)
-        .logDebug("Filtered")
-        .to(outputTopic);
+    .logDebug("Input")
+    .filter((key, value) -> value > 0)>value>0)
+    .logDebug("Filtered"))
+    .to(outputTopic);
 ```
 
 ## Serializers
@@ -112,7 +113,7 @@ default serializers by passing in a `Serde` to various builder methods that requ
 Use the `JsonSerdeFactory` to obtain `Serde` instances for JSON serialization and deserialization using Jackson:
 
 ```java
-Serde<MyDataClass> jsonSerde=JsonSerdeFactory.getJsonSerde(MyDataClass.class);
+Serde<MyDataClass> jsonSerde = JsonSerdeFactory.getJsonSerde(MyDataClass.class);
 ```
 
 ### Avro
@@ -142,7 +143,7 @@ The Kipe SDK offers testing support for Kipe topologies through two base classes
 
 These classes utilize `TopologyTestDriver` to test Kipe applications without a running Kafka cluster.
 
-### Testing with `AbstractTopologyTest`
+### Testing with AbstractTopologyTest
 
 `AbstractTopologyTest` is a base class for testing Kipe applications using `TopologyTestDriver`. To create tests for
 your builders, follow these steps:
@@ -152,7 +153,7 @@ your builders, follow these steps:
 3. Create test input and output topics using `TopologyTestContext`.
 4. Send and receive messages using `TestInputTopic` and `TestOutputTopic`.
 
-### Testing with `AbstractGenericRecordProcessorTopologyTest`
+### Testing with AbstractGenericRecordProcessorTopologyTest
 
 For topologies processing `GenericRecords`, extend `AbstractGenericRecordProcessorTopologyTest`:
 
@@ -168,15 +169,15 @@ For topologies processing `GenericRecords`, extend `AbstractGenericRecordProcess
 Here is an example of using `KipesBuilder` to create a simple stream topology:
 
 ```java
-KipesBuilder<String, Integer> kipesBuilder=KipesBuilder.init(streamsBuilder);
+KipesBuilder<String, Integer> kipesBuilder = KipesBuilder.init(streamsBuilder);
 
 // Chain various operations on the KipesBuilder instance
-        kipesBuilder
-        .from(inputStream,Serdes.String(),Serdes.Integer())
-        .logDebug("Input")
-        .filter((key,value)->value>0)
-        .logDebug("Filtered")
-        .to(outputTopic);
+kipesBuilder
+    .from(inputStream, Serdes.String(), Serdes.Integer())
+    .logDebug("Input")
+    .filter((key, value) -> value > 0)
+    .logDebug("Filtered")
+    .to(outputTopic);
 
 // run the stream…
 ```
@@ -186,34 +187,34 @@ KipesBuilder<String, Integer> kipesBuilder=KipesBuilder.init(streamsBuilder);
 Here is an example of using `KipesBuilder` and sub-builders to create a more advanced stream topology:
 
 ```java
-JsonSerdeRegistry serdes=topologyTestContext.getJsonSerdeRegistry();
-        StreamsBuilder streamsBuilder=new StreamsBuilder();
+JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
+StreamsBuilder streamsBuilder = new StreamsBuilder();
 
 // Create the kipe builder
-        KipesBuilder<String, GenericRecord> builder=KipesBuilder
-        .init(topologyTestContext.getStreamsBuilder())
-        .from(
+KipesBuilder<String, GenericRecord> builder = KipesBuilder
+    .init(topologyTestContext.getStreamsBuilder())
+    .from(
         streamsBuilder
-        .stream(
-        SOURCE,
-        Consumed.with(
-        serdes.getSerde(String.class),
-        serdes.getSerde(GenericRecord.class)
-        )
-        .withOffsetResetPolicy(Topology.AutoOffsetReset.EARLIEST)
-        ),
-        serdes.getSerde(String.class),
-        serdes.getSerde(GenericRecord.class)
-        )
-        .withTopicsBaseName(SOURCE);
+            .stream(
+                SOURCE,
+                Consumed.with(
+                    JsonSerdeFactory.getJsonSerde(String.class),
+                    JsonSerdeFactory.getJsonSerde(GenericRecord.class)
+                )
+                .withOffsetResetPolicy(Topology.AutoOffsetReset.EARLIEST)
+            ),
+        JsonSerdeFactory.getJsonSerde(String.class),
+        JsonSerdeFactory.getJsonSerde(GenericRecord.class)
+    )
+    .withTopicsBaseName(SOURCE);
 
-        builder
-        // call the sub-builder 
-        .bin()
-        .field("input")
-        .span(0.1)
-        .build()
-        .to(TARGET);
+builder
+    // call the sub-builder
+    .bin()
+    .field("input")
+    .span(0.1)
+    .build()
+    .to(TARGET);
 ```
 
 ## Documentation
