@@ -108,7 +108,7 @@
 				<configuration>
 					<licenseSets>
 						<licenseSet>
-							<header>../licence-header.txt</header>
+							<header>../license-header.yaml</header>
 						</licenseSet>
 					</licenseSets>
 				</configuration>
