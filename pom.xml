@@ -210,7 +210,7 @@
 					<configuration>
 						<licenseSets>
 							<licenseSet>
-								<header>licence-header.txt</header>
+								<header>license-header.yaml</header>
 								<excludes>
 									<exclude>**/*.md</exclude>
 									<exclude>**/*.txt</exclude>
