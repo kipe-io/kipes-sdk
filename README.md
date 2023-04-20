@@ -70,8 +70,8 @@ To further speed up the development of stream-processing microservices, our Kipe
 ## Features
 
 - High-level, multi-faceted stream processing commands in a fluent API
-- Pre-packaged serializers for JSON, Avro, and Protobuf
-- Support for custom serializers
+- Out-of-the-box serializers for JSON, Avro, and Protobuf
+- Custom serializer support
 - Stream testing utilities
 - And more!
 
@@ -105,7 +105,7 @@ dependencies {
 
 ### Initialization
 
-To create a `KipesBuilder`, you must first have a Kafka Streams `StreamsBuilder`. Instantiate a new `KipesBuilder` using the `init()` method, passing in a `StreamsBuilder` object.
+Start by creating a `KipesBuilder` instance using the `init()` method, passing in a `StreamsBuilder` object:
 
 ```java
 StreamsBuilder streamsBuilder = new StreamsBuilder();
@@ -114,14 +114,14 @@ KipesBuilder<K, V> kipesBuilder = KipesBuilder.init(streamsBuilder);
 
 ### Building Stream Topologies
 
-Specify the input `KStream` and its corresponding `Serdes`, and pass them into the `from()` method:
+To begin, specify the input `KStream` and its corresponding `Serdes`. Pass them into the `from()` method:
 
 ```java
 KStream<String, Integer> inputStream = streamsBuilder.stream("inputTopic");
 kipesBuilder.from(inputStream, Serdes.String(), Serdes.Integer());
 ```
 
-Chain various operations on the KipesBuilder instance to build your desired stream topology:
+Next, chain various operations on the KipesBuilder instance to construct your desired stream topology:
 
 ```java
 kipesBuilder
@@ -136,12 +136,12 @@ kipesBuilder
 
 ## Serializers
 
-Kipe includes pre-packaged serializers for JSON, Avro, and Protobuf. You can also use custom serializers or override
-default serializers by passing in a `Serde` to various builder methods that require streams.
+Kipes SDK includes pre-packaged serializers for JSON, Avro, and Protobuf. To use custom serializers or override default
+serializers, pass a `Serde` to the builder methods requiring streams.
 
 ### JSON
 
-Use the `JsonSerdeFactory` to obtain `Serde` instances for JSON serialization and deserialization using Jackson:
+To obtain `Serde` instances for JSON serialization and deserialization using Jackson, use the `JsonSerdeFactory`:
 
 ```java
 Serde<MyDataClass> jsonSerde = JsonSerdeFactory.getJsonSerde(MyDataClass.class);
@@ -149,8 +149,8 @@ Serde<MyDataClass> jsonSerde = JsonSerdeFactory.getJsonSerde(MyDataClass.class);
 
 ### Avro
 
-Use the `AvroSerdeFactory` to obtain `Serde` instances for Avro serialization and deserialization using Confluent
-classes:
+To obtain `Serde` instances for Avro serialization and deserialization using Confluent classes, use
+the `AvroSerdeFactory`:
 
 ```java
 // TODO: Add example of using Avro serialization
@@ -158,8 +158,8 @@ classes:
 
 ### Protobuf
 
-Use the `ProtobufSerdeFactory` to obtain `Serde` instances for Protobuf serialization and deserialization using
-Confluent classes:
+To obtain `Serde` instances for Protobuf serialization and deserialization using Confluent classes, use
+the `ProtobufSerdeFactory`:
 
 ```java
 // TODO: Add example of using Protobuf serialization
@@ -167,7 +167,7 @@ Confluent classes:
 
 ## Testing
 
-The Kipe SDK offers testing support for Kipe topologies through two base classes:
+Kipes SDK provides testing support for Kipe topologies through two base classes:
 
 - `AbstractTopologyTest`
 - `AbstractGenericRecordProcessorTopologyTest`
@@ -197,7 +197,7 @@ For topologies processing `GenericRecords`, extend `AbstractGenericRecordProcess
 
 ### Basic Example
 
-Here is an example of using `KipesBuilder` to create a simple stream topology:
+Here's a simple example of using `KipesBuilder` to create a stream topology:
 
 ```java
 KipesBuilder<String, Integer> kipesBuilder = KipesBuilder.init(streamsBuilder);
@@ -215,7 +215,7 @@ kipesBuilder
 
 ### Advanced Example
 
-Here is an example of using `KipesBuilder` and sub-builders to create a more advanced stream topology:
+This example demonstrates using `KipesBuilder` and sub-builders to create a more complex stream topology:
 
 ```java
 JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
