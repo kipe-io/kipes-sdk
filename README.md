@@ -2,14 +2,42 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://github.com/kipe-io/kipes-sdk/actions/workflows/ci.yaml/badge.svg)](https://github.com/kipe-io/kipes-sdk/actions/workflows/ci.yaml)
-[![codecov](https://codecov.io/gh/kipe-io/kipes-sdk/branch/main/graph/badge.svg?token=YOURTOKEN)](https://codecov.io/gh/kipe-io/kipes-sdk)
-[![Maven Central](https://img.shields.io/maven-central/v/io.kipe/kipes-sdk.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.kipe%22%20AND%20a:%22kipes-sdk%22)
-[![Javadocs](https://www.javadoc.io/badge/io.kipe/kipes-sdk.svg)](https://www.kipe.io/doc/io.kipe/kipes-sdk)
+[![Maven Central](https://img.shields.io/maven-central/v/io.kipe/kipes-sdk)](https://search.maven.org/search?q=g:%22io.kipe%22%20AND%20a:%22kipes-sdk%22)
 [![Contributors](https://img.shields.io/github/contributors/kipe-io/kipes-sdk.svg)](https://github.com/kipe-io/kipes-sdk/graphs/contributors)
 
-Kipe.io is a user-friendly wrapper around the Kafka Streams API that simplifies building and managing Kafka stream
-topologies. It provides a fluent API for building and chaining various stream operations, making it easier to work with
-Kafka Streams.
+The Kipes SDK simplifies the implementation of Kafka stream processing applications. The SDK provides a high-level interface to describe stream analytics, eliminates the need for much of the repetitive technical boilerplate code, and provides scaffolding to set up stream processing microservices quickly and structured. 
+
+We built the SDK applying the concept of Linux command pipes, making it easy to pick a specific command for each stream transformation case and forward the results to the next. The SDK commands cover areas like:
+- Event and field manipulation
+- Event filtering
+- Event correlation
+- Statistical evaluations
+- Event time adjustments
+With these dedicated commands, Engineers can directly create complex stream-processing applications in a much more business logic-aligned language. 
+
+**Example**
+
+Story: As a ProductMarketer I want to know how many customers visited a particular Product but didn't purchased it, so that I can identify what are the most visited Products that not get purchased."
+
+```java
+  Kipes.with(StreamBuilder)
+  .from(topicShopEvents)
+  .transaction()
+    .groupBy("sessionId")
+    .startswith(type == ProductVisited)
+    .endswith(type == NoPurchase)
+    .emitEvents()
+  .filter(type == ProductVisited)
+  .stats()
+    .groupBy("productId")
+    .count().as("qtyVisitedButNotBought")
+    .build()
+  .to(topicProductStats)
+```
+
+Besides this easy to use stream processing commands the SDK provides specialized test classes so that Engineers can quickly set up unit tests around their stream topologies without connecting to an actual running Kafka cluster. The testbed speeds up development and delivery time and makes testing and understanding complex applications more accessible. 
+
+To further speed up the development of stream-processing microservices, our Kipes SDK comes with dedicated classes and blueprints to scaffold microservices quickly. We support multiple application frameworks like Micronaut or Spring Boot (planned). 
 
 ## Table of Contents
 
@@ -41,8 +69,7 @@ Kafka Streams.
 
 ## Features
 
-- Simplified stream topology creation with fluent API
-- Processors built for common use-cases
+- High-level, multi-faceted stream processing commands in a fluent API
 - Pre-packaged serializers for JSON, Avro, and Protobuf
 - Support for custom serializers
 - Stream testing utilities
@@ -50,11 +77,11 @@ Kafka Streams.
 
 ## Requirements
 
-- Java 8 or higher
+- Java 11 or higher
 
 ## Getting Started
 
-Add the Kipe dependency to your project using Maven or Gradle.
+Add the Kipes SDK dependency to your project using Maven or Gradle.
 
 ### Maven
 
@@ -62,22 +89,23 @@ Add the Kipe dependency to your project using Maven or Gradle.
 <dependency>
 	<groupId>io.kipe</groupId>
 	<artifactId>kipes-sdk</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>${kipes.version}</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation group: 'io.kipe', name: 'kipes-sdk', version: '0.1-SNAPSHOT'
+dependencies {
+	implementation "io.kipe:kipes-sdk:$kipesVersion"
+}
 ```
 
 ## Usage
 
 ### Initialization
 
-To create a `KipesBuilder`, you must first have a Kafka Streams `StreamsBuilder`. Instantiate a new `KipesBuilder` using
-the `init()` method, passing in a `StreamsBuilder` object.
+To create a `KipesBuilder`, you must first have a Kafka Streams `StreamsBuilder`. Instantiate a new `KipesBuilder` using the `init()` method, passing in a `StreamsBuilder` object.
 
 ```java
 StreamsBuilder streamsBuilder = new StreamsBuilder();
@@ -102,6 +130,9 @@ kipesBuilder
     .logDebug("Filtered"))
     .to(outputTopic);
 ```
+## GenericRecord
+
+*add info*
 
 ## Serializers
 
