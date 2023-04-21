@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>io.kipe</groupId>
+		<artifactId>parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<groupId>io.kipe</groupId>
+	<artifactId>streams</artifactId>
+	<packaging>jar</packaging>
+
+	<name>io.kipe.streams - kafka</name>
+
+	<!-- Placeholder dependencies -->
+	<dependencies>
+		<!-- Add dependencies specific to the streams module -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.micronaut.kafka</groupId>
+			<artifactId>micronaut-kafka-streams</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.kipe</groupId>
+			<artifactId>streams.test</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<!-- Placeholder build plugins -->
+	<build>
+		<pluginManagement>
+			<plugins>
+				<!-- Add build plugins specific to the streams module -->
+			</plugins>
+		</pluginManagement>
+	</build>
+
+</project>
