@@ -1,6 +1,6 @@
 # Kipes SDK
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![Build Status](https://github.com/kipe-io/kipes-sdk/actions/workflows/ci.yaml/badge.svg)](https://github.com/kipe-io/kipes-sdk/actions/workflows/ci.yaml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.kipe/kipes-sdk)](https://search.maven.org/search?q=g:%22io.kipe%22%20AND%20a:%22kipes-sdk%22)
 [![Contributors](https://img.shields.io/github/contributors/kipe-io/kipes-sdk.svg)](https://github.com/kipe-io/kipes-sdk/graphs/contributors)
@@ -349,5 +349,4 @@ guidelines on how to contribute to this project.
 
 ## License
 
-This project is licensed under
-the [GNU General Public License v3.0](https://github.com/kipe-io/kipes-sdk/blob/main/LICENSE).
+This project is licensed under the [GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0).
