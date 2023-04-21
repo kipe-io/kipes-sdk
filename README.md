@@ -20,19 +20,18 @@ With these dedicated commands, Engineers can directly create complex stream-proc
 Story: As a ProductMarketer I want to know how many customers visited a particular Product but didn't purchased it, so that I can identify what are the most visited Products that not get purchased."
 
 ```java
-  Kipes.with(StreamBuilder)
-  .from(topicShopEvents)
-  .transaction()
-    .groupBy("sessionId")
-    .startswith(type == ProductVisited)
-    .endswith(type == NoPurchase)
-    .emitEvents()
-  .filter(type == ProductVisited)
-  .stats()
-    .groupBy("productId")
-    .count().as("qtyVisitedButNotBought")
-    .build()
-  .to(topicProductStats)
+	KipesBuilder.init(streamsBuilder)
+	  .from(topicShopEvents)
+	  .transaction()
+	    .groupBy((key, value) -> value.getSessionId())
+	    .startswith((key, value) -> value.getType() == ProductVisited)
+	    .endswith((key, value) -> value.getType() == NoPurchase)
+	    .emit(END)
+	  .stats()
+	    .groupBy((key, value) -> value.getProductId())
+	    .count().as("qtyVisitedButNotBought")
+	    .build()
+	  .to(topicProductStats);
 ```
 
 Besides this easy to use stream processing commands the SDK provides specialized test classes so that Engineers can quickly set up unit tests around their stream topologies without connecting to an actual running Kafka cluster. The testbed speeds up development and delivery time and makes testing and understanding complex applications more accessible. 
