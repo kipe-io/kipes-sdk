@@ -50,14 +50,16 @@ To further speed up the development of stream-processing microservices, our Kipe
     * [Maven](#maven)
     * [Gradle](#gradle)
   * [Usage](#usage)
-    * [Initialization](#initialization)
-    * [Building Stream Topologies](#building-stream-topologies)
+    * [Initialization and Building Stream Topologies](#initialization-and-building-stream-topologies)
+  * [GenericRecord](#genericrecord)
   * [Serializers](#serializers)
+    * [Default Serdes](#default-serdes)
     * [JSON](#json)
     * [Avro](#avro)
     * [Protobuf](#protobuf)
   * [Testing](#testing)
     * [Testing with AbstractTopologyTest](#testing-with-abstracttopologytest)
+      * [Example](#example)
     * [Testing with AbstractGenericRecordProcessorTopologyTest](#testing-with-abstractgenericrecordprocessortopologytest)
   * [Examples](#examples)
     * [Basic Example](#basic-example)
@@ -103,45 +105,69 @@ dependencies {
 
 ## Usage
 
-### Initialization
+### Initialization and Building Stream Topologies
 
-Start by creating a `KipesBuilder` instance using the `init()` method, passing in a `StreamsBuilder` object:
+Follow these steps to create a KipesBuilder instance, define an input KStream, and build the stream topology by chaining
+operations:
 
 ```java
+// 1. Create a KipesBuilder instance with a StreamsBuilder object
 StreamsBuilder streamsBuilder = new StreamsBuilder();
 KipesBuilder<K, V> kipesBuilder = KipesBuilder.init(streamsBuilder);
-```
 
-### Building Stream Topologies
-
-To begin, specify the input `KStream` and its corresponding `Serdes`. Pass them into the `from()` method:
-
-```java
+// 2. Define the input KStream and pass it to the from() method
 KStream<String, Integer> inputStream = streamsBuilder.stream("inputTopic");
 kipesBuilder.from(inputStream, Serdes.String(), Serdes.Integer());
-```
 
-Next, chain various operations on the KipesBuilder instance to construct your desired stream topology:
-
-```java
+// 3. Chain operations on the KipesBuilder instance to build the stream topology
 kipesBuilder
     .logDebug("Input")
-    .filter((key, value) -> value > 0)>value>0)
-    .logDebug("Filtered"))
+    .filter((key, value) -> value > 0)
+    .logDebug("Filtered")
     .to(outputTopic);
 ```
+
 ## GenericRecord
 
-*add info*
+`GenericRecord` is a flexible data representation in the Kipes SDK for storing and manipulating records with various
+fields. It allows reading and writing data without generating code based on a specific schema, making it ideal for
+evolving data structures or handling data with different field combinations. The Kipes SDK uses `GenericRecord` in
+builder
+classes such as `EvalBuilder`, `BinBuilder`, `StatsBuilder`, and `TableBuilder`.
+
+Create a `GenericRecord` instance and set field values using the fluent interface or the `set()` method:
+
+```java
+GenericRecord record=GenericRecord.create()
+    .with("sensorId","S001")
+    .with("timestamp",1628493021L)
+    .with("temperature",25.6);
+
+record.set("newField": "value");
+```
+
+Retrieve field values with `get(fieldName)` and perform advanced operations using other `GenericRecord` methods.
 
 ## Serializers
 
-Kipes SDK includes pre-packaged serializers for JSON, Avro, and Protobuf. To use custom serializers or override default
-serializers, pass a `Serde` to the builder methods requiring streams.
+The Kipes SDK comes with pre-packaged serializers for JSON, Avro, and Protobuf. To use custom serializers or override
+default serializers, provide a Serde to the builder methods that require streams.
+
+### Default Serdes
+
+```java
+Properties props = new Properties();
+props.put(StreamsConfig.APPLICATION_ID_CONFIG, "my-app-id");
+props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
+
+StreamsConfig config = new StreamsConfig(props);
+```
 
 ### JSON
 
-To obtain `Serde` instances for JSON serialization and deserialization using Jackson, use the `JsonSerdeFactory`:
+For JSON serialization and deserialization using Jackson, obtain Serde instances through the JsonSerdeFactory:
 
 ```java
 Serde<MyDataClass> jsonSerde = JsonSerdeFactory.getJsonSerde(MyDataClass.class);
@@ -149,20 +175,24 @@ Serde<MyDataClass> jsonSerde = JsonSerdeFactory.getJsonSerde(MyDataClass.class);
 
 ### Avro
 
-To obtain `Serde` instances for Avro serialization and deserialization using Confluent classes, use
-the `AvroSerdeFactory`:
+For Avro serialization and deserialization using Confluent classes, obtain Serde instances through the AvroSerdeFactory.
+Here are some options:
 
 ```java
-// TODO: Add example of using Avro serialization
+Serde<FooEvent> serde = AvroSerdeFactory.createSpecificAvroSerde(SCHEMA_REGISTRY_URL_CONFIG,false);
+
+GenericAvroSerde serde = AvroSerdeFactory.createGenericAvroSerde(SCHEMA_REGISTRY_URL_CONFIG,false);
+
+PrimitiveAvroSerde<Integer> serde = AvroSerdeFactory.createPrimitiveAvroSerde(SCHEMA_REGISTRY_URL_CONFIG,false);
 ```
 
 ### Protobuf
 
-To obtain `Serde` instances for Protobuf serialization and deserialization using Confluent classes, use
-the `ProtobufSerdeFactory`:
+For Protobuf serialization and deserialization using Confluent classes, obtain Serde instances through the
+ProtobufSerdeFactory. Here's an option:
 
 ```java
-// TODO: Add example of using Protobuf serialization
+KafkaProtobufSerde<Message> protoSerde=ProtobufSerdeFactory.createProtoSerde(SCHEMA_REGISTRY_URL_CONFIG,false);
 ```
 
 ## Testing
@@ -174,6 +204,9 @@ Kipes SDK provides testing support for Kipe topologies through two base classes:
 
 These classes utilize `TopologyTestDriver` to test Kipe applications without a running Kafka cluster.
 
+To configure topology-specific properties, pass a map of properties into the `super()` method in the constructor of your
+test class:
+
 ### Testing with AbstractTopologyTest
 
 `AbstractTopologyTest` is a base class for testing Kipe applications using `TopologyTestDriver`. To create tests for
@@ -183,6 +216,80 @@ your builders, follow these steps:
 2. Implement `initTopology()` and `initTestTopics()` to set up the topology and test topics.
 3. Create test input and output topics using `TopologyTestContext`.
 4. Send and receive messages using `TestInputTopic` and `TestOutputTopic`.
+
+#### Example
+
+In this example, we will create a test for the simple topology from the "Initialization and Building Stream Topologies"
+section.
+
+For example, in the SimpleTopologyTest class, you can pass an empty map:``
+
+First, extend `AbstractTopologyTest` and implement the required methods:
+
+```java
+import io.kipe.sdk.testing.AbstractTopologyTest;
+import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.Topology;
+
+class SimpleTopologyTest extends AbstractTopologyTest {
+    private final String INPUT_TOPIC = "inputTopic";
+    private final String OUTPUT_TOPIC = "outputTopic";
+
+    private TestInputTopic<String, Integer> inputTopic;
+    private TestOutputTopic<String, Integer> outputTopic;
+
+    public SimpleTopologyTest() {
+        super(Map.of());
+    }
+
+    @Override
+    protected void initTopology(TopologyTestContext topologyTestContext) {
+        KipesBuilder<?, ?> kipesBuilder = KipesBuilder.init(topologyTestContext.getStreamsBuilder());
+
+        kipesBuilder
+                .from(topologyTestContext.createKStream(INPUT_TOPIC, Serdes.String(), Serdes.Integer()), Serdes.String(), Serdes.Integer())
+                .logDebug("Input")
+                .filter((key, value) -> value > 1)
+                .logDebug("Filtered")
+                .to(OUTPUT_TOPIC);
+    }
+
+    @Override
+    protected void initTestTopics(TopologyTestContext topologyTestContext) {
+        this.inputTopic = topologyTestContext.createTestInputTopic(INPUT_TOPIC, Serdes.String(), Serdes.Integer());
+        this.outputTopic = topologyTestContext.createTestOutputTopic(OUTPUT_TOPIC, Serdes.String(), Serdes.Integer());
+    }
+}
+```
+
+Now, add a test method to send input records and verify the output records:
+
+```java
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class SimpleTopologyTest extends AbstractTopologyTest {
+
+    // ...
+
+    @Test
+    void testFilterPositiveValues() {
+        // Send 5 input records to the input topic
+        inputTopic.pipeInput("key1", 5);
+        inputTopic.pipeInput("key2", -3);
+        inputTopic.pipeInput("key3", 7);
+        inputTopic.pipeInput("key4", 0);
+        inputTopic.pipeInput("key5", 2);
+
+        // Get 3 records back after the filter
+        assertEquals(3, this.outputTopic.getQueueSize());
+    }
+}
+```
 
 ### Testing with AbstractGenericRecordProcessorTopologyTest
 
@@ -218,29 +325,12 @@ kipesBuilder
 This example demonstrates using `KipesBuilder` and sub-builders to create a more complex stream topology:
 
 ```java
-JsonSerdeRegistry serdes = topologyTestContext.getJsonSerdeRegistry();
-StreamsBuilder streamsBuilder = new StreamsBuilder();
-
-// Create the kipe builder
 KipesBuilder<String, GenericRecord> builder = KipesBuilder
-    .init(topologyTestContext.getStreamsBuilder())
-    .from(
-        streamsBuilder
-            .stream(
-                SOURCE,
-                Consumed.with(
-                    JsonSerdeFactory.getJsonSerde(String.class),
-                    JsonSerdeFactory.getJsonSerde(GenericRecord.class)
-                )
-                .withOffsetResetPolicy(Topology.AutoOffsetReset.EARLIEST)
-            ),
-        JsonSerdeFactory.getJsonSerde(String.class),
-        JsonSerdeFactory.getJsonSerde(GenericRecord.class)
-    )
+    .init(streamsBuilder)
+    .from(inputStream)
     .withTopicsBaseName(SOURCE);
 
 builder
-    // call the sub-builder
     .bin()
     .field("input")
     .span(0.1)
