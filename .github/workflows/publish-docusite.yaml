@@ -1,0 +1,30 @@
+name: Publish Retype powered documentation to GitHub Pages
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - jens/github-pages
+
+jobs:
+  publish:
+    name: Publish documentation site
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Generate documentation site
+        uses: retypeapp/action-build@latest
+        with:
+          config: documentation/retype.yml
+        
+      - name: Publish to Github Pages docsite branch
+        uses: retypeapp/action-github-pages@latest
+        with:
+          branch: docsite
+          update-branch: true
