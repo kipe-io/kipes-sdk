@@ -8,6 +8,30 @@ order: 10
 
 # Contributing Guide to Kipes SDK
 
+Thank you for considering contributing to the Kipes SDK! We appreciate all the help we can get from the community. This guide will help you get started with contributing to this project. 
+ 
+You can contribute in many ways: 
+ 
+**Report a Bug** 
+If you find a bug in the code, please report it as an issue. When creating an issue, please provide a clear description of the bug and steps to reproduce it.
+
+**Suggest a new Feature** 
+If you have an idea for a new feature or improvement to the project, please suggest it as an issue. When creating the issue, please provide a clear description of the feature or improvement and why you think it would be useful. The maintainers will review your suggestion and provide feedback on whether it aligns with the project's goals and priorities. If your suggestion is approved, you are welcome to implement it yourself by following the guidelines for submitting a pull request. 
+ 
+**Submit a Pull Request** 
+If you want to contribute code to the project, please submit a pull request. Before submitting a pull request, please make sure that your code adheres to the project's coding standards and that you have added appropriate tests and updated the documentation as necessary. 
+ 
+This project uses the fork-and-pull Git workflow. This means that you will need to fork the repository and create a new branch for your changes. Once you have made your changes and committed them to your branch, you can submit a pull request to the original repository. For more information on the fork-and-pull Git workflow, please see [fork-and-pull](https://github.com/susam/gitpr). 
+ 
+**Become a Maintainer** 
+Maintainers are responsible for reviewing and merging pull requests, managing issues, and ensuring that the project is up to date and running smoothly. If you are interested in becoming a maintainer, please contact [maintainers@kipe.io].
+ 
+## Code of Conduct
+This project follows the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). By participating in this project, you are expected to uphold this code. Please report any unacceptable behavior to [maintainers@kipe.io]. 
+ 
+## License
+This project is licensed under the [LGPL v3 License](https://www.gnu.org/licenses/lgpl-3.0.en.html). By contributing to this project, you agree to license your contributions under the same license. 
+ 
 ## Github Reference Environment
 
 ```
@@ -16,85 +40,4 @@ Java version: 11.0.18, vendor: Azul Systems, Inc., runtime: /opt/hostedtoolcache
 Default locale: en, platform encoding: UTF-8
 OS name: "linux", version: "5.15.0-1034-azure", arch: "amd64", family: "unix"
 ```
-
-## Releasing
-
-**NOTE**  
-
-You have to be an authorized maintainer before you can release :)  
-Talk to us if you are interested!  
-
-### Release Setup
-  
-#### Configuring Maven settings.xml
-  
-Showing only relevant settings:  
-  
-```xml
-
-  <!-- configure your sonatype JIRA credentials registered with the relevant project -->
-  <server>
-    <id>ossrh</id>
-    <username>username</username>
-    <password>password</password>
-  </server>
-  
-  <!-- configure git access -->
-  <server>
-    <id>github</id>
-    <username>git</username>
-    <privateKey>path-to-ssh-private-key</privateKey>
-  </server>
-  
-  <profiles>
-
-    <!-- configure the needed release profile settings -->
-    <profile>
-      <id>release-kipe</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <project.scm.id>github</project.scm.id>
-        <gpg.passphrase><![CDATA[your-gpg-key-passphrase]]></gpg.passphrase>
-      </properties>
-    </profile>
-  </profiles>
-```
-
-### Release Execution
-
-#### 1. Release Preparation
-
-- block main from further PRs
-- checkout release branch from main
-- verify version numbers: RC Release vs. Official Release
-
-#### 2. Run Staging Release to OSS
-
-
-- run through the typical maven release process
-
-```
-$ mvn -Prelease-kipe release:prepare
-$ mvn -Prelease-kipe release:perform
-```
-
-on Nexus https://s01.oss.sonatype.org/#stagingRepositories
-
-- check the staging repository if everything looks good
-- release or drop accordingly
-
-#### Cleanup After Dropping a Release
-
-- `mvn -Prelease-kipe release:clean`
-- drop the last two commits done by the maven-release-plugin and force-push
-- delete the release tag locally and on Github
-- unblock main to allow new PRs
-
-#### Finalizing a Successful Release
-
-- `mvn -Prelease-kipe release:clean`
-- merge (not rebase) the release branch to main
-- unblock main to allow new PRs
 
