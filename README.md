@@ -13,6 +13,7 @@ We built the SDK applying the concept of Linux command pipes, making it easy to 
 - Event correlation
 - Statistical evaluations
 - Event time adjustments
+
 With these dedicated commands, Engineers can directly create complex stream-processing applications in a much more business logic-aligned language. 
 
 **Example**
