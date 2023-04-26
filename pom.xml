@@ -22,7 +22,7 @@
 
 	<groupId>io.kipe</groupId>
 	<artifactId>kipes-sdk</artifactId>
-	<version>0.1-RC</version>
+	<version>0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Kipes SDK</name>
@@ -476,7 +476,7 @@
 		<connection>scm:git:git://github.com/kipe-io/kipes-sdk.git</connection>
 		<developerConnection>scm:git:ssh://github.com/kipe-io/kipes-sdk.git</developerConnection>
 		<url>https://github.com/kipe-io/kipes-sdk.git/tree/main</url>
-	  <tag>kipes-sdk-0.1-RC</tag>
+	  <tag>HEAD</tag>
   </scm>
 
 	<distributionManagement>
