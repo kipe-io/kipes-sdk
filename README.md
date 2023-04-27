@@ -96,7 +96,7 @@ Add the required dependencies `streams-kafka` and/or `streams-kafka-test` to you
 		<version>${kipes.version}</version>
 	</dependency>
 
-	<!-- Streams Test (Optional) -->
+	<!-- Streams Kafka Test (Optional) -->
 	<dependency>
 		<groupId>io.kipe</groupId>
 		<artifactId>streams-kafka-test</artifactId>
@@ -113,8 +113,8 @@ dependencies {
     // Streams Kafka
     implementation "io.kipe:streams-kafka:$kipesVersion"
 
-    // Streams Test (Optional)
-    testImplementation "io.kipe:streams-test:$kipesVersion"
+    // Streams Kafka Test (Optional)
+    testImplementation "io.kipe:streams-kafka-test:$kipesVersion"
 }
 ```
 
