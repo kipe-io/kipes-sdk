@@ -83,23 +83,38 @@ To further speed up the development of stream-processing microservices, our Kipe
 
 ## Getting Started
 
-Add the Kipes SDK dependency to your project using Maven or Gradle.
+Add the required dependencies `streams-kafka` and/or `streams-kafka-test` to your project using Maven or Gradle.
 
 ### Maven
 
 ```xml
-<dependency>
-	<groupId>io.kipe</groupId>
-	<artifactId>kipes-sdk</artifactId>
-	<version>${kipes.version}</version>
-</dependency>
+<dependencies>
+	<!-- Streams Kafka -->
+	<dependency>
+		<groupId>io.kipe</groupId>
+		<artifactId>streams-kafka</artifactId>
+		<version>${kipes.version}</version>
+	</dependency>
+
+	<!-- Streams Test (Optional) -->
+	<dependency>
+		<groupId>io.kipe</groupId>
+		<artifactId>streams-kafka-test</artifactId>
+		<version>${kipes.version}</version>
+		<scope>test</scope>
+	</dependency>
+</dependencies>
 ```
 
 ### Gradle
 
 ```groovy
 dependencies {
-	implementation "io.kipe:kipes-sdk:$kipesVersion"
+    // Streams Kafka
+    implementation "io.kipe:streams-kafka:$kipesVersion"
+
+    // Streams Test (Optional)
+    testImplementation "io.kipe:streams-test:$kipesVersion"
 }
 ```
 
