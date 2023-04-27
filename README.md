@@ -83,7 +83,10 @@ To further speed up the development of stream-processing microservices, our Kipe
 
 ## Getting Started
 
-Add the required dependencies `streams-kafka` and/or `streams-kafka-test` to your project using Maven or Gradle.
+Add the required dependencies `streams-kafka` and/or `streams-kafka-test` to your project using Maven or Gradle. 
+ 
+[![Maven Central](https://img.shields.io/maven-central/v/io.kipe/streams-kafka?label=io.kipe%3Astreams-kafka)](https://search.maven.org/search?q=g:io.kipe%20AND%20a:streams-kafka)
+[![Maven Central](https://img.shields.io/maven-central/v/io.kipe/streams-kafka-test?label=io.kipe%3Astreams-kafka-test)](https://search.maven.org/search?q=g:io.kipe%20AND%20a:streams-kafka-test)
 
 ### Maven
 
