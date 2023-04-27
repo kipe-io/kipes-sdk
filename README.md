@@ -2,7 +2,7 @@
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![Build Status](https://github.com/kipe-io/kipes-sdk/actions/workflows/ci.yaml/badge.svg)](https://github.com/kipe-io/kipes-sdk/actions/workflows/ci.yaml)
-[![Maven Central](https://img.shields.io/maven-central/v/io.kipe/kipes-sdk)](https://search.maven.org/search?q=g:io.kipe%20AND%20a:kipes-sdk)
+[![Maven Central](https://img.shields.io/maven-central/v/io.kipe/kipes-sdk)](https://search.maven.org/search?q=g:io.kipe%20)
 [![Contributors](https://img.shields.io/github/contributors/kipe-io/kipes-sdk.svg)](https://github.com/kipe-io/kipes-sdk/graphs/contributors)
 
 The Kipes SDK simplifies the implementation of Kafka stream processing applications. The SDK provides a high-level interface to describe stream analytics, eliminates the need for much of the repetitive technical boilerplate code, and provides scaffolding to set up stream processing microservices quickly and structured. 
