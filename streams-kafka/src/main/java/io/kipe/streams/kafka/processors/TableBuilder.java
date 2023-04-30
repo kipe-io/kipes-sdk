@@ -31,7 +31,7 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
-import io.kipe.streams.kafka.processors.recordtypes.TableRecord;
+import io.kipe.streams.recordtypes.TableRecord;
 import io.kipe.streams.recordtypes.GenericRecord;
 
 /**
