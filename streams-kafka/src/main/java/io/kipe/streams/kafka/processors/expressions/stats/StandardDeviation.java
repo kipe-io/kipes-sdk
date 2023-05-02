@@ -24,8 +24,6 @@ import org.apache.kafka.streams.errors.StreamsException;
  * The StandardDeviation class calculates the standard deviation of values in a data stream using Welford's algorithm
  * for better numerical stability.
  * <p>
- * Note that an Exception will be thrown if a null field value is encountered during processing.
- * <p>
  * The fields for this statistical expression are as follows:
  * <pre>
  * | field           | internal | type   | description                                                  |
