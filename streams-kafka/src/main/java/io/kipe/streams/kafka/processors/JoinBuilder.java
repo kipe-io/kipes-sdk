@@ -64,6 +64,17 @@ import org.slf4j.LoggerFactory;
  * (keySerde and valueSerde). The joinBuilder will join the streams with a given window size (Duration.ofDays(1)) and
  * retention period (Duration.ofDays(7)) and use the given valueJoiner function to combine the values of matching keys
  * (value1 + value2). The output of the join operation is written to a topic named "join-output-topic".
+ * <p>
+ * The table below shows the available JoinBuilder commands with their stateful and internal topics details:
+ * <pre>
+ * | Command              | Stateful | Internal Topics                                                     |
+ * |----------------------|----------|---------------------------------------------------------------------|
+ * | withWindowSize       | no       | -                                                                   |
+ * | withWindowSizeBefore | no       | -                                                                   |
+ * | withWindowSizeAfter  | no       | -                                                                   |
+ * | withRetentionPeriod  | no       | -                                                                   |
+ * | as                   | yes      | {topicsBaseName}-join-store-left, {topicsBaseName}-join-store-right |
+ * </pre>
  *
  * @param <K>  key type of both streams
  * @param <V>  value type of the left stream

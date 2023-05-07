@@ -70,6 +70,20 @@ import org.apache.kafka.streams.kstream.KStream;
  * <p>
  * Finally, we use the changeValue method to specify a transformation function that converts the incoming values from
  * Integer to String, and then use the asKipesBuilder method to build and return the topology.
+ * <p>
+ * The table below shows the available TransformBuilder commands with their stateful and internal topics details:
+ * <pre>
+ * | command        | stateful | internal topics |
+ * |----------------|----------|-----------------|
+ * | changeValue    | no       | -               |
+ * | newValues      | no       | -               |
+ * | asValueType    | no       | -               |
+ * | changeKey      | no       | -               |
+ * | newKeys        | no       | -               |
+ * | asKeyType      | no       | -               |
+ * | newKeyValues   | no       | -               |
+ * | asKeyValueType | no       | -               |
+ * </pre>
  *
  * @param <K>  the source stream's key type.
  * @param <V>  the source stream's value type.

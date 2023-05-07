@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A Builder to that is used to de-duplicate incoming records. Clients do not instantiate this class directly but use
- * {@link KipesBuilder#stats()}
+ * {@link KipesBuilder#dedup()}
  * <p>
  * The de-duplication process can be configured on two levels:
  * <ol>
@@ -63,6 +63,15 @@ import org.slf4j.LoggerFactory;
  * String. The dedup-topic parameter is the base name for the topics used by the DedupBuilder. Next, we group the
  * incoming records by their values and configure the deduplication function to use the record values to determine the
  * deduplication group. Finally, we call the build method to set up the stream and start the de-duplication process.
+ * <p>
+ * The table below shows the available DedupBuilder commands with their stateful and internal topics details:
+ * <pre>
+ * | command   | stateful | internal topics                       |
+ * |-----------|----------|---------------------------------------|
+ * | groupBy   | yes      | -                                     |
+ * | advanceBy | yes      | -                                     |
+ * | emitFirst | yes      | {baseTopicName}-dedup-processor-store |
+ * </pre>
  *
  * @param <K>  the incoming and outgoing streams' key type
  * @param <V>  the incoming and outgoing streams' value type

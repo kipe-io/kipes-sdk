@@ -78,6 +78,15 @@ import com.fasterxml.jackson.databind.type.CollectionType;
  * The input stream is stream and the topics base name is "topics-base-name". The input records are grouped by the value
  * in the groupBy method and the size of the sequences is set to 5 in the size method. The as method takes a function
  * that aggregates the complete sequence of records for each group key and converts the values to a string.
+ * <p>
+ * The table below shows the available SequenceBuilder commands with their stateful and internal topics details:
+ * <pre>
+ * | Command | Stateful | Internal Topics                           |
+ * |---------|----------|-------------------------------------------|
+ * | groupBy | no       | -                                         |
+ * | size    | no       | -                                         |
+ * | as      | yes      | {topicsBaseName}-sequence-processor-store |
+ * </pre>
  *
  * @param <K>  The type of the key in the input stream
  * @param <V>  The type of the value in the input stream
