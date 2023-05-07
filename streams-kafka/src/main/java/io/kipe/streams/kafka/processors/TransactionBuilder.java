@@ -81,6 +81,17 @@ import io.kipe.streams.recordtypes.TransactionRecord;
  * used to determine when a transaction starts and ends respectively. In this example, a transaction starts when the
  * value starts with "start" and ends when the value ends with "end". The emitType is set to {@link EmitType#ALL}, which
  * means that all the records in the transaction will be emitted as TransactionRecords.
+ * <p>
+ * The table below shows the available TransactionBuilder commands with their stateful and internal topics details:
+ * <pre>
+ * | Command    | Stateful | Internal Topics                              |
+ * |------------|----------|----------------------------------------------|
+ * | groupBy    | no       | -                                            |
+ * | startsWith | no       | -                                            |
+ * | endsWith   | no       | -                                            |
+ * | emit       | no       | -                                            |
+ * | as         | yes      | {topicsBaseName}-transaction-processor-store |
+ * </pre>
  *
  * @param <K>  the key type.
  * @param <V>  the input value type.

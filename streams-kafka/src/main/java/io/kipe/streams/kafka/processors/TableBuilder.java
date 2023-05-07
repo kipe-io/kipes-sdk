@@ -62,6 +62,13 @@ import io.kipe.streams.recordtypes.GenericRecord;
  * deserialization is defined using the keySerde and valueSerde objects. The TableBuilder is then instantiated with the
  * streamsBuilder, stream, keySerde and valueSerde as arguments, and the build method is called to create the topology
  * component that groups incoming data by key and stores it in a state store accessible through the transformer.
+ * <p>
+ * The table below shows the available TableBuilder commands with their stateful and internal topics details:
+ * <pre>
+ * | Command | Stateful | Internal Topics                               |
+ * |---------|----------|-----------------------------------------------|
+ * | build   | yes      | {topicsBaseName}-tablebuilder-processor-store |
+ * </pre>
  *
  * @param <K> The key type of the input stream.
  */

@@ -56,7 +56,14 @@ import io.kipe.streams.recordtypes.GenericRecord;
  * serdes for the key and value and the base name for the topics. Then, the with method is called to add an expression
  * to update the "fieldName" field with the value "new-value". Finally, the build method is called to build the topology
  * and return a KipesBuilder object.
- *
+ * <p>
+ * The table below shows the available EvalBuilder commands with their stateful and internal topics details:
+ * <pre>
+ * | command | stateful | internal topics |
+ * |---------|----------|-----------------|
+ * | with    | no       | -               |
+ * | build   | no       | -               |
+ * </pre>
  * @param <K> the key type
  */
 public class EvalBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecord> {

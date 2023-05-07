@@ -55,6 +55,16 @@ import io.kipe.streams.recordtypes.GenericRecord;
  * to be binned is specified using the .field("price") method, the bin span is set with .span(10), and the name of the
  * new field is defined with .newField("price_bin"). Finally, the .build() method is called to construct the topology
  * for the binning operation, which returns a KipesBuilder object.
+ * <p>
+ * The table below shows the available BinBuilder commands with their stateful and internal topics details:
+ * <pre>
+ * | Command  | Stateful | Internal Topics |
+ * |----------|----------|-----------------|
+ * | field    | no       | -               |
+ * | span     | no       | -               |
+ * | newField | no       | -               |
+ * | build    | no       | -               |
+ * </pre>
  *
  * @param <K> the key type.
  */
