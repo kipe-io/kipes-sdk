@@ -56,14 +56,11 @@ import io.kipe.streams.recordtypes.GenericRecord;
  * new field is defined with .newField("price_bin"). Finally, the .build() method is called to construct the topology
  * for the binning operation, which returns a KipesBuilder object.
  * <p>
- * The table below shows the available BinBuilder commands with their stateful and internal topics details:
+ * The table below shows the bin command with its stateful and internal topics details:
  * <pre>
- * | Command  | Stateful | Internal Topics |
- * |----------|----------|-----------------|
- * | field    | no       | -               |
- * | span     | no       | -               |
- * | newField | no       | -               |
- * | build    | no       | -               |
+ * | command | stateful | internal topics |
+ * |---------|----------|-----------------|
+ * | bin     | no       | -               |
  * </pre>
  *
  * @param <K> the key type.

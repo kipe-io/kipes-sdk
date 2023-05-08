@@ -57,12 +57,11 @@ import io.kipe.streams.recordtypes.GenericRecord;
  * to update the "fieldName" field with the value "new-value". Finally, the build method is called to build the topology
  * and return a KipesBuilder object.
  * <p>
- * The table below shows the available EvalBuilder commands with their stateful and internal topics details:
+ * The table below shows the eval command with its stateful and internal topics details:
  * <pre>
  * | command | stateful | internal topics |
  * |---------|----------|-----------------|
- * | with    | no       | -               |
- * | build   | no       | -               |
+ * | eval    | no       | -               |
  * </pre>
  * @param <K> the key type
  */

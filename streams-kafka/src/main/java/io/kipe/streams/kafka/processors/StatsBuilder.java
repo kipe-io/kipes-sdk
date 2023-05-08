@@ -72,17 +72,12 @@ import io.kipe.streams.recordtypes.GenericRecord;
  * value Serde, and a topic base name "topic-base-name". The statistics expression is then added using the "with"
  * method, with the target field specified as "myCount". Finally, the topology is built with a grouping based on the
  * "group" field, and the output is a KeyValueStore with a key of type "String".
- * 
  * <p>
- * The table below shows the available StatsBuilder commands with their stateful and internal topics details:
+ * The table below shows the stats command with its stateful and internal topics details:
  * <pre>
- * | Command  | Stateful | Internal Topics                  |
- * |----------|----------|----------------------------------|
- * | groupBy  | no       | -                                |
- * | with     | no       | -                                |
- * | as       | no       | -                                |
- * | asKTable | yes      | {topicsBaseName}-processor-store |
- * | build    | yes      | {topicsBaseName}-processor-store |
+ * | command | stateful | internal topics                  |
+ * |---------|----------|----------------------------------|
+ * | stats   | yes      | {topicsBaseName}-processor-store |
  * </pre>
  *
  * @param <K> The key type of the input Kafka topic.
