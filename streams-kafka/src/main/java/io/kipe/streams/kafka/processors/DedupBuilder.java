@@ -64,13 +64,11 @@ import org.slf4j.LoggerFactory;
  * incoming records by their values and configure the deduplication function to use the record values to determine the
  * deduplication group. Finally, we call the build method to set up the stream and start the de-duplication process.
  * <p>
- * The table below shows the available DedupBuilder commands with their stateful and internal topics details:
+ * The table below shows the dedup command with its stateful and internal topics details:
  * <pre>
- * | command   | stateful | internal topics                       |
- * |-----------|----------|---------------------------------------|
- * | groupBy   | no       | -                                     |
- * | advanceBy | no       | -                                     |
- * | emitFirst | yes      | {baseTopicName}-dedup-processor-store |
+ * | command | stateful | internal topics                       |
+ * |---------|----------|---------------------------------------|
+ * | dedup   | yes      | {baseTopicName}-dedup-processor-store |
  * </pre>
  *
  * @param <K>  the incoming and outgoing streams' key type

@@ -82,15 +82,11 @@ import io.kipe.streams.recordtypes.TransactionRecord;
  * value starts with "start" and ends when the value ends with "end". The emitType is set to {@link EmitType#ALL}, which
  * means that all the records in the transaction will be emitted as TransactionRecords.
  * <p>
- * The table below shows the available TransactionBuilder commands with their stateful and internal topics details:
+ * The table below shows the transaction command with its stateful and internal topics details:
  * <pre>
- * | Command    | Stateful | Internal Topics                              |
- * |------------|----------|----------------------------------------------|
- * | groupBy    | no       | -                                            |
- * | startsWith | no       | -                                            |
- * | endsWith   | no       | -                                            |
- * | emit       | no       | -                                            |
- * | as         | yes      | {topicsBaseName}-transaction-processor-store |
+ * | command     | stateful | internal topics                              |
+ * |-------------|----------|----------------------------------------------|
+ * | transaction | yes      | {topicsBaseName}-transaction-processor-store |
  * </pre>
  *
  * @param <K>  the key type.

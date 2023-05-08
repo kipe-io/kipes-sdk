@@ -79,13 +79,11 @@ import com.fasterxml.jackson.databind.type.CollectionType;
  * in the groupBy method and the size of the sequences is set to 5 in the size method. The as method takes a function
  * that aggregates the complete sequence of records for each group key and converts the values to a string.
  * <p>
- * The table below shows the available SequenceBuilder commands with their stateful and internal topics details:
+ * The table below shows the sequence command with its stateful and internal topics details:
  * <pre>
- * | Command | Stateful | Internal Topics                           |
- * |---------|----------|-------------------------------------------|
- * | groupBy | no       | -                                         |
- * | size    | no       | -                                         |
- * | as      | yes      | {topicsBaseName}-sequence-processor-store |
+ * | command  | stateful | internal topics                           |
+ * |----------|----------|-------------------------------------------|
+ * | sequence | yes      | {topicsBaseName}-sequence-processor-store |
  * </pre>
  *
  * @param <K>  The type of the key in the input stream
