@@ -68,8 +68,8 @@ import org.slf4j.LoggerFactory;
  * <pre>
  * | command   | stateful | internal topics                       |
  * |-----------|----------|---------------------------------------|
- * | groupBy   | yes      | -                                     |
- * | advanceBy | yes      | -                                     |
+ * | groupBy   | no       | -                                     |
+ * | advanceBy | no       | -                                     |
  * | emitFirst | yes      | {baseTopicName}-dedup-processor-store |
  * </pre>
  *
