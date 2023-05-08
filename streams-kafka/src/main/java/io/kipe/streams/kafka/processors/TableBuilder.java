@@ -110,7 +110,7 @@ public class TableBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 		Objects.requireNonNull(resultValueSerde, "resultValueSerde");
 		Objects.requireNonNull(getTopicsBaseName(), "topicsBaseName must be set");
 		
-		final String stateStoreName = getProcessorStoreTopicName(getTopicsBaseName()+"-tablebuilder");
+		final String stateStoreName = getProcessorStoreTopicName(getTopicsBaseName()+"-table");
 		
 		StoreBuilder<KeyValueStore<String, TableRecord<K,GenericRecord>>> tableStoreBuilder =
 				Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(stateStoreName),

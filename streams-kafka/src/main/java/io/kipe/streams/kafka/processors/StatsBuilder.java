@@ -166,6 +166,8 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 		}
 		Objects.requireNonNull(getTopicsBaseName(), "topicBaseName");
 
+		final String stateStoreName = getProcessorStoreTopicName(getTopicsBaseName()+"-stats");
+
 		return this.stream
 				
 				.groupBy(
@@ -199,7 +201,7 @@ public class StatsBuilder<K> extends AbstractTopologyPartBuilder<K, GenericRecor
 							return a;
 						},
 						Materialized
-						.<String, GenericRecord, KeyValueStore<Bytes,byte[]>>as(getProcessorStoreTopicName(getTopicsBaseName())) 
+						.<String, GenericRecord, KeyValueStore<Bytes,byte[]>>as(stateStoreName)
 						.withKeySerde(keySerde)
 						.withValueSerde(this.valueSerde)
 						.withCachingDisabled());	// disabled so that incremental aggregates are available
