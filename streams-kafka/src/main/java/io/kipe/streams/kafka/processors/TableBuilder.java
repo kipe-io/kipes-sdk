@@ -67,7 +67,7 @@ import io.kipe.streams.recordtypes.GenericRecord;
  * <pre>
  * | command | stateful | internal topics                               |
  * |---------|----------|-----------------------------------------------|
- * | table   | yes      | {topicsBaseName}-tablebuilder-processor-store |
+ * | table   | yes      | {topicsBaseName}-table-processor-store |
  * </pre>
  *
  * @param <K> The key type of the input stream.

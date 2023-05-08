@@ -77,7 +77,7 @@ import io.kipe.streams.recordtypes.GenericRecord;
  * <pre>
  * | command | stateful | internal topics                  |
  * |---------|----------|----------------------------------|
- * | stats   | yes      | {topicsBaseName}-processor-store |
+ * | stats   | yes      | {topicsBaseName}-stats-processor-store |
  * </pre>
  *
  * @param <K> The key type of the input Kafka topic.
