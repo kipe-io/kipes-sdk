@@ -104,7 +104,7 @@ public class JsonSerdeFactory {
 	 * <p>The {@link #close()} method is a no-op in this implementation.
 	 */
 	private static class JsonPOJOSerializer<T> implements Serializer<T> {
-	    private final ObjectMapper objectMapper = new ObjectMapper();
+	    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
 	    /**
 	     * Default constructor needed by Kafka
@@ -164,7 +164,7 @@ public class JsonSerdeFactory {
 	 * The class should be used with Kafka as it includes a default constructor that is needed by Kafka.
 	 */
 	private static class JsonPOJODeserializer<T> implements Deserializer<T> {
-	    private final ObjectMapper objectMapper = new ObjectMapper();
+	    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
 	    private Class<T> tClass;
 
