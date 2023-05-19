@@ -85,6 +85,7 @@
 		<module>streams-kafka-test</module>
 		<module>streams-kafka</module>
 		<module>streams-kafka-micronaut</module>
+		<module>streams-kafka-examples</module>
 	</modules>
 
 	<!-- =================================================================== -->
